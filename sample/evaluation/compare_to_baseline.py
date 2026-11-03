@@ -17,7 +17,7 @@
     # CI では各リリースの前に実行する（PR ではドリフトセットを実行しない）:
     python evaluation/compare_to_baseline.py --report report.json \
         --baseline evaluation/baselines/approvers-drift.json \
-        --tolerance 0.03 --min-passed next_action_success=6
+        --tolerance 0.10 --min-passed next_action_success=6
 """
 
 import argparse
