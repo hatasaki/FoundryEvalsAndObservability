@@ -1,6 +1,6 @@
-"""CI support for evaluate.py: baseline compatibility, waiting for results and the score report.
+"""evaluate.py の CI 支援: ベースライン互換性、結果待ち、スコアレポート。
 
-Not needed to follow the demo. The report JSON is what compare_to_baseline.py gates on.
+デモの理解にこのコードは不要。compare_to_baseline.py はレポート JSON でゲート判定する。
 """
 
 import hashlib
@@ -21,7 +21,7 @@ def fingerprint(value: object) -> str:
 
 
 def provenance(rows: list[dict], evaluation: dict) -> dict:
-    """What a score depends on: the exact questions and each judge's definition and inputs."""
+    """スコアの前提となる、質問の内容と各評価器の定義・入力を記録する。"""
     return {
         "dataset_sha256": fingerprint(rows),
         "judges": {
@@ -49,8 +49,8 @@ def check_baseline(baseline: Path, rows: list[dict], evaluation: dict) -> None:
 
 
 def judge_problems(client: OpenAI, run_id: str, eval_id: str, name: str) -> list[str]:
-    """Which questions an evaluator errored on or skipped, and what it said."""
-    lines = [f"Questions where {name} did not score:"]
+    """評価器がエラーを起こした、または採点しなかった質問とその詳細を返す。"""
+    lines = [f"{name} が採点しなかった質問:"]
     for item in client.evals.runs.output_items.list(run_id, eval_id=eval_id, limit=100):
         data = item.model_dump(warnings=False)
         question = (data.get("datasource_item") or {}).get("name", item.id)
@@ -100,9 +100,9 @@ def wait_for_evaluation(
             report_path.write_text(json.dumps(report, indent=2) + "\n")
         if time.monotonic() >= deadline:
             raise TimeoutError(
-                f"Evaluation {run_id} did not finish within 60 minutes; it may still be running."
+                f"評価 {run_id} が60分以内に完了しませんでした。まだ実行中の可能性があります。"
             )
-        print(f"Waiting for evaluation: {run.status}", flush=True)
+        print(f"評価の完了待ち: {run.status}", flush=True)
         time.sleep(30)
         run = client.evals.runs.retrieve(run_id, eval_id=eval_id)
 
@@ -112,20 +112,22 @@ def wait_for_evaluation(
     if report_path:
         report_path.write_text(json.dumps(report, indent=2) + "\n")
     if run.status != "completed":
-        raise RuntimeError(f"Evaluation {run_id} ended with status {run.status}: {run.error}")
-    # The agent must have answered every question; a judge may miss a few (see --max-unscored).
+        raise RuntimeError(f"評価 {run_id} が状態 {run.status} で終了しました: {run.error}")
+    # エージェントは全問に回答する必要がある。評価器の未採点は --max-unscored で許容する。
     if run.error is not None or run.result_counts.total != expected_rows:
-        raise RuntimeError(f"Evaluation {run_id} is incomplete: {run.result_counts}")
+        raise RuntimeError(f"評価 {run_id} が不完全です: {run.result_counts}")
 
     scores: dict[str, list[float]] = {name: [] for name in expected_criteria}
     passes = dict.fromkeys(expected_criteria, 0)
     unscored = dict.fromkeys(expected_criteria, 0)
     items = list(client.evals.runs.output_items.list(run_id, eval_id=eval_id, limit=100))
     if len(items) != expected_rows:
-        raise RuntimeError(f"Expected {expected_rows} evaluation rows, received {len(items)}")
+        raise RuntimeError(f"評価結果は {expected_rows} 件必要ですが、{len(items)} 件でした")
     for item in items:
         if item.sample.error is not None:
-            raise RuntimeError(f"The agent failed on evaluation row {item.id}: {item.sample.error}")
+            raise RuntimeError(
+                f"評価ケース {item.id} でエージェントが失敗しました: {item.sample.error}"
+            )
         results = {r.get("name"): r for r in item.model_dump(warnings=False)["results"] or []}
         for name in expected_criteria:
             result = results.get(name, {})
@@ -150,13 +152,14 @@ def wait_for_evaluation(
             print(line, flush=True)
         if missed > max_unscored:
             raise RuntimeError(
-                f"{name} did not score {missed} question(s), more than --max-unscored "
-                f"{max_unscored}; see above. A 429 is the judge model's rate limit: re-run. "
-                "A 401 means you lack account-level Foundry User (new roles take ~10 minutes)."
+                f"{name} の未採点が {missed} 件あり、--max-unscored {max_unscored} を超えました。"
+                "詳細は上記を確認してください。429 は評価モデルのレート制限です。"
+                "再実行してください。401 はアカウントレベルの Foundry User 権限の不足です"
+                "（新しい権限の反映には約10分かかります）。"
             )
         print(
-            f"WARNING: {name} did not score {missed} question(s); its averages use the other "
-            f"{expected_rows - missed}.",
+            f"警告: {name} の未採点が {missed} 件あります。"
+            f"平均には残りの {expected_rows - missed} 件を使います。",
             flush=True,
         )
 

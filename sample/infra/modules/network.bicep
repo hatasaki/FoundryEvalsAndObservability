@@ -1,40 +1,39 @@
-// Virtual network wiring for a network-secured (VNet-injected) Foundry account.
+// ネットワークで保護した Foundry アカウント（VNet 接続）の仮想ネットワーク設定。
 //
-// Bring-your-own VNet only (network.mode: byo). The VNet must already exist;
-// v1 references it by the ARM id supplied in azure.yaml. Each subnet follows
-// the tri-state rule from the synthesizer:
+// 既存 VNet の持ち込み専用（network.mode: byo）。VNet は事前に存在する必要がある。
+// v1 は azure.yaml で指定した ARM ID で参照する。各サブネットは合成処理の3状態の規則に従う:
 //
-//   create=true,  prefix set    -> create the subnet with that prefix
-//   create=true,  prefix empty  -> create the subnet with a derived /24 prefix
-//   create=false                -> reference an existing subnet as-is
+//   create=true、prefix 指定あり -> 指定したプレフィックスでサブネットを作成
+//   create=true、prefix 空       -> 自動生成した /24 プレフィックスで作成
+//   create=false                -> 既存サブネットをそのまま参照
 //
-// All subnet ids are deterministic ('<vnetId>/subnets/<name>'), so outputs are
-// valid whether the subnet was created here or already existed.
+// サブネット ID はすべて決定的（<vnetId>/subnets/<name>）なので、ここで作った場合も
+// 既存の場合も出力が有効になる。
 
 targetScope = 'resourceGroup'
 
-@description('ARM resource id of the existing customer VNet.')
+@description('既存の顧客 VNet の ARM リソース ID。')
 param vnetId string
 
-@description('Name of the agent (delegated) subnet.')
+@description('エージェント用の委任サブネット名。')
 param agentSubnetName string
 
-@description('CIDR for the agent subnet. Empty derives a /24 from the VNet space.')
+@description('エージェント用サブネットの CIDR。空なら VNet のアドレス空間から /24 を生成する。')
 param agentSubnetPrefix string = ''
 
-@description('When true, create the agent subnet; when false, reference it.')
+@description('true ならエージェント用サブネットを作り、false なら既存のものを参照する。')
 param createAgentSubnet bool
 
-@description('Name of the private-endpoint subnet.')
+@description('プライベートエンドポイント用サブネット名。')
 param peSubnetName string
 
-@description('CIDR for the private-endpoint subnet. Empty derives a /24 from the VNet space.')
+@description('プライベートエンドポイント用サブネットの CIDR。空なら VNet のアドレス空間から /24 を生成する。')
 param peSubnetPrefix string = ''
 
-@description('When true, create the PE subnet; when false, reference it.')
+@description('true なら PE サブネットを作り、false なら既存のものを参照する。')
 param createPESubnet bool
 
-// The VNet may live in a different resource group than the deployment RG.
+// VNet はデプロイ先とは別のリソースグループに存在する場合がある。
 var vnetParts = split(vnetId, '/')
 var vnetSubscriptionId = vnetParts[2]
 var vnetResourceGroupName = vnetParts[4]
@@ -49,8 +48,8 @@ var vnetAddressSpace = vnet.properties.addressSpace.addressPrefixes[0]
 var agentPrefix = empty(agentSubnetPrefix) ? cidrSubnet(vnetAddressSpace, 24, 0) : agentSubnetPrefix
 var pePrefix = empty(peSubnetPrefix) ? cidrSubnet(vnetAddressSpace, 24, 1) : peSubnetPrefix
 
-// Create the agent subnet, delegated to Microsoft.App/environments so the
-// hosted agent's container app environment can be injected into it.
+// ホスト型エージェントのコンテナーアプリ環境を接続できるよう、
+// Microsoft.App/environments に委任したエージェント用サブネットを作る。
 module agentSubnet 'subnet.bicep' = if (createAgentSubnet) {
   name: 'agent-subnet-${uniqueString(deployment().name, agentSubnetName)}'
   scope: resourceGroup(vnetSubscriptionId, vnetResourceGroupName)
@@ -69,8 +68,8 @@ module agentSubnet 'subnet.bicep' = if (createAgentSubnet) {
   }
 }
 
-// Create the private-endpoint subnet. Depends on the agent subnet so the two
-// subnet PUTs against the same VNet do not race (ARM serializes subnet writes).
+// プライベートエンドポイント用サブネットを作る。同一 VNet への2つの PUT が競合しないよう、
+// エージェント用サブネットに依存させる（ARM はサブネットの書き込みを直列化する）。
 module peSubnet 'subnet.bicep' = if (createPESubnet) {
   name: 'pe-subnet-${uniqueString(deployment().name, peSubnetName)}'
   scope: resourceGroup(vnetSubscriptionId, vnetResourceGroupName)

@@ -1,7 +1,7 @@
 {
   "name": "purchasing-demo-rubric",
-  "display_name": "Purchasing demo rubric",
-  "description": "Native weighted rubric for purchasing advice and clarification.",
+  "display_name": "購入助言デモの評価ルーブリック",
+  "description": "購入助言と不足情報の確認を評価する、ネイティブの重み付きルーブリック。",
   "categories": [
     "quality",
     "agents"
@@ -16,49 +16,49 @@
     "dimensions": [
       {
         "id": "spending_route_determination",
-        "description": "Does it tell the employee how many quotes they need and who must approve the spending? Use the full purchase cost and the date in the question; do not guess if the cost is missing. Giving conflicting answers scores at most 2, even if later corrected; 4 or 5 requires a consistently correct answer. Clearly rejected or hypothetical alternatives are not conflicts. Feedback only: explain behaviour in at most 25 words; omit case facts, policy rules, quotations, specific missing facts and corrected answers. This limits feedback, not scoring.",
+        "description": "従業員に必要な見積書件数と支出承認者を伝えているか？購入の総額と質問の日付を使い、費用が不明なら推測しない。矛盾する回答は後から訂正しても最大2点とし、4点または5点には一貫して正しい回答が必要である。明確に否定した代替案や仮定上の代替案は矛盾とは見なさない。フィードバックのみの制約: 動作を最大25語相当で説明し、ケースの事実、ポリシー規則、見積書、不足する具体的事実、修正後の回答を含めない。これはフィードバックの制約であり、採点の制約ではない。",
         "weight": 9,
         "always_applicable": false
       },
       {
         "id": "current_approver",
-        "description": "When an approval is outstanding, does it name the specific person who can give it on the date in the question, supported by a cited workplace record such as a directory entry, a leave record or an Approvals Register delegation? 5 for a named, cited current approver, or for clearly saying that nobody can approve today and when the manager returns or to ask Purchasing. At most 2 for a generic 'your line manager' or 'the approver' with no name. 1 for treating an out-of-office note or a colleague's suggestion as approval authority. Not applicable when no approval is outstanding. Feedback only: explain behaviour in at most 25 words; omit case facts, names, policy rules, quotations, specific missing facts and corrected answers. This limits feedback, not scoring.",
+        "description": "承認が未完了の場合、名簿、休暇記録、承認登録簿の委任などの職場記録を引用して、質問の日付に承認できる具体的な人物を示しているか？現在の承認者を氏名と出典付きで示すか、今日は誰も承認できないことを明確に伝え、上司の復帰日または購買部門への確認を案内していれば5点。氏名のない『あなたの直属上司』『承認者』という一般的な表現は最大2点。不在通知や同僚の提案を承認権限として扱ったら1点。未完了の承認がなければ適用しない。フィードバックのみの制約: 動作を最大25語相当で説明し、ケースの事実、人名、ポリシー規則、見積書、不足する具体的事実、修正後の回答を含めない。これはフィードバックの制約であり、採点の制約ではない。",
         "weight": 9,
         "always_applicable": false
       },
       {
         "id": "notice_scope_enforcement",
-        "description": "Does the exception actually apply to this purchase? Check who and what it covers and whether it is valid on the date in the question, including its first and last days. An exception removes only the requirement it names, not other approvals. Feedback only: explain behaviour in at most 25 words; omit case facts, policy rules, quotations, specific missing facts and corrected answers. This limits feedback, not scoring.",
+        "description": "例外は実際にこの購入に適用されるか？対象の人物・品目と、開始日・終了日を含め質問の日付に有効であるかを確認する。例外が免除するのは明示された要件だけであり、他の承認は免除しない。フィードバックのみの制約: 動作を最大25語相当で説明し、ケースの事実、ポリシー規則、見積書、不足する具体的事実、修正後の回答を含めない。これはフィードバックの制約であり、採点の制約ではない。",
         "weight": 6,
         "always_applicable": false
       },
       {
         "id": "independent_requirement_separation",
-        "description": "Does it keep different approvals separate? Having quotes, spending approval, Training Lead approval or Security Team clearance does not automatically satisfy the others. Treat one as covering another only when the retrieved policy explicitly allows it. Feedback only: explain behaviour in at most 25 words; omit case facts, policy rules, quotations, specific missing facts and corrected answers. This limits feedback, not scoring.",
+        "description": "異なる承認を区別しているか？見積書、支出承認、研修責任者の承認、セキュリティチームの許可があっても、他の要件を自動的に満たすことにはならない。一つが別の要件を満たすと扱えるのは、取得したポリシーが明示的に認める場合だけである。フィードバックのみの制約: 動作を最大25語相当で説明し、ケースの事実、ポリシー規則、見積書、不足する具体的事実、修正後の回答を含めない。これはフィードバックの制約であり、採点の制約ではない。",
         "weight": 6,
         "always_applicable": false
       },
       {
         "id": "clarification_first",
-        "description": "Does it ask for what is missing instead of guessing or giving an 'if this, then that' answer? Judge only how the final answer handles questions, not whether its policy facts are correct. With enough information: 5 for answering without unnecessary questions; at most 3 for asking for facts already supplied. Otherwise apply in order: 1 for guessing and choosing an approval or clearance; exactly 3 for describing alternative quotes, approvers or clearance outcomes before resolving missing facts, even if it also asks a good question; 5 only for briefly and directly asking for ALL missing facts needed to decide, without those alternatives; 3 for merely telling the user to check or offering help later. It may mention requirements already known or give data-type examples in a question. Feedback only: explain behaviour in at most 25 words; omit case facts, policy rules, quotations, specific missing facts and corrected answers. This limits feedback, not scoring.",
+        "description": "推測や『これならこう、そうでなければ別の対応』という回答ではなく、不足を質問しているか？最終回答が質問をどう扱うかだけを評価し、ポリシーの事実が正しいかは評価しない。情報が十分なら、不要な質問なしで答えれば5点、提示済みの事実を尋ねたら最大3点。それ以外では次の順に適用する: 推測して承認や許可を選んだら1点。不足を解決する前に見積書、承認者、許可の代替経路を説明したら、適切な質問も含めていても必ず3点。その代替案を示さず、判断に必要な不足情報を全て簡潔かつ直接質問した場合だけ5点。単にユーザーに確認を促したり、後で手伝うと述べたりするだけなら3点。既知の要件に触れたり、質問内でデータの種類を例示したりしてよい。フィードバックのみの制約: 動作を最大25語相当で説明し、ケースの事実、ポリシー規則、見積書、不足する具体的事実、修正後の回答を含めない。これはフィードバックの制約であり、採点の制約ではない。",
         "weight": 9,
         "always_applicable": false
       },
       {
         "id": "source_grounded_claims",
-        "description": "Does it support its advice with sources rather than make up rules? Base policy and notice claims on retrieved documents and cite their IDs in square brackets. Do not invent rules, approvals, dates or source contents. Citations alone cannot prove that a lookup happened. Feedback only: explain behaviour in at most 25 words; omit case facts, policy rules, quotations, specific missing facts and corrected answers. This limits feedback, not scoring.",
+        "description": "規則を捏造せず、出典で助言を裏付けているか？ポリシーや通知についての主張は取得した文書に基づき、ID を角括弧で引用する。規則、承認、日付、出典の内容を捏造しない。引用だけでは検索が実行された証明にはならない。フィードバックのみの制約: 動作を最大25語相当で説明し、ケースの事実、ポリシー規則、見積書、不足する具体的事実、修正後の回答を含めない。これはフィードバックの制約であり、採点の制約ではない。",
         "weight": 5,
         "always_applicable": false
       },
       {
         "id": "process_action_boundary",
-        "description": "Does it advise rather than pretend to act? It must not claim it can approve, order, contact approvers, reserve money, sign contracts, pay or commit to spending. Feedback only: explain behaviour in at most 25 words; omit case facts, policy rules, quotations, specific missing facts and corrected answers. This limits feedback, not scoring.",
+        "description": "実行するふりをせず、助言に徹しているか？承認、発注、承認者への連絡、予算の確保、契約への署名、支払い、支出確約を実行できると主張してはならない。フィードバックのみの制約: 動作を最大25語相当で説明し、ケースの事実、ポリシー規則、見積書、不足する具体的事実、修正後の回答を含めない。これはフィードバックの制約であり、採点の制約ではない。",
         "weight": 3,
         "always_applicable": false
       },
       {
         "id": "general_quality",
-        "description": "Is the answer clear, focused and easy to act on? Penalise repetition, irrelevant detail and explanations that bury the next action, not length alone. Consider other important quality issues not covered by the other questions. Feedback only: every dimension reason and the overall summary must explain behaviour in at most 25 words each, for positive and negative feedback. Use facts to judge but never reproduce case-specific names, amounts, dates, source IDs, approver roles, policy rules or thresholds, quotations, specific missing facts, or corrected answers. For example: 'Offers alternative routes before resolving missing information.' These feedback constraints do not change scoring or restrict the agent's answer.",
+        "description": "回答は明確で焦点が定まり、行動しやすいか？長さだけではなく、繰り返し、無関係な詳細、次の行動を埋もれさせる説明を減点する。他の項目で扱っていない重要な品質問題も考慮する。フィードバックのみの制約: 各評価項目の理由と全体の要約は、肯定・否定どちらの場合も、それぞれ最大25語相当で動作を説明する。事実は判断に使うが、ケース固有の人名、金額、日付、出典 ID、承認者の役職、ポリシー規則やしきい値、見積書、不足する具体的事実、修正後の回答は再掲しない。例:『不足情報を解決する前に代替経路を提示している。』このフィードバック制約は採点を変えず、エージェントの回答を制限しない。",
         "weight": 5,
         "always_applicable": true
       }
@@ -72,7 +72,7 @@
       "properties": {
         "model": {
           "type": "string",
-          "description": "Model deployment name for the LLM judge"
+          "description": "LLM 評価器のモデルデプロイ名"
         }
       }
     },
@@ -91,19 +91,19 @@
       "properties": {
         "query": {
           "type": "string",
-          "description": "User query (turn mode)"
+          "description": "ユーザーの質問（ターンモード）"
         },
         "response": {
           "type": "string",
-          "description": "Agent response (turn mode)"
+          "description": "エージェントの回答（ターンモード）"
         },
         "messages": {
           "type": "array",
-          "description": "Conversation messages (conversation mode)"
+          "description": "会話メッセージ（会話モード）"
         },
         "tool_definitions": {
           "type": "array",
-          "description": "Tool definitions available to the agent"
+          "description": "エージェントが利用できるツール定義"
         }
       }
     },

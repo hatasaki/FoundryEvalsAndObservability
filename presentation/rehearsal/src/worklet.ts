@@ -75,7 +75,7 @@ class RehearsalCapture extends AudioWorkletProcessor {
         this.levelEnergy = 0;
         this.peak = Math.max(this.peak, rms);
         this.quietWindows = rms < quietLevel ? this.quietWindows + 1 : 0;
-        // Cut at a natural pause so Whisper never sees half a word.
+        // 単語の途中で Whisper に渡さないよう、自然な間で区切る。
         if (this.length >= sampleRate * minSeconds && this.quietWindows >= pauseWindows) this.flush();
       }
       if (this.length >= sampleRate * maxSeconds) this.flush();

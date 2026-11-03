@@ -5,19 +5,19 @@ requiredVersions:
   extensions:
     azure.ai.agents: ">=1.0.0-beta.13"
     azure.ai.projects: ">=1.0.0-beta.8"
-    azure.ai.connections: ">=1.0.0-beta.9"  # Foundry Connections: the app-insights service
+    azure.ai.connections: ">=1.0.0-beta.9"  # Foundry Connections: app-insights サービス
 infra:
   provider: microsoft.foundry
-# infra/main.bicep is the generated Foundry template plus modules/monitoring.bicep
-# (Application Insights, evaluator access, the GitHub Actions identity).
+# infra/main.bicep は生成された Foundry テンプレートと modules/monitoring.bicep。
+# Application Insights、評価器のアクセス権、GitHub Actions の ID を追加する。
 hooks:
-  # Asks once for the GitHub repository (main.bicep requires it); saved as GITHUB_REPOSITORY.
+  # main.bicep が必要とする GitHub リポジトリを一度だけ尋ね、GITHUB_REPOSITORY に保存する。
   preprovision:
     shell: sh
     interactive: true
     run: sh infra/preprovision.sh
-  # Creates the GitHub `demo` environment and its variables if `gh` is signed in.
-  # Re-run on its own: azd hooks run postprovision
+  # gh にログイン済みなら、GitHub の demo 環境とその変数を作る。
+  # 単独で再実行: azd hooks run postprovision
   postprovision:
     shell: sh
     run: sh infra/postprovision.sh
@@ -40,7 +40,7 @@ services:
           version: "2026-04-24"
         sku:
           name: GlobalStandard
-          capacity: 300  # judges send long tool traces; 100 hit rate limits in CI
+          capacity: 300  # 評価器は長いツールトレースを送る。100では CI でレート制限に達した
       - name: text-embedding-3-small
         model:
           format: OpenAI
@@ -49,8 +49,8 @@ services:
         sku:
           name: GlobalStandard
           capacity: 50
-  # Project connection to the Application Insights that infra/main.bicep creates; hosting uses
-  # it for traces. Applied by azd after provisioning (outputs appInsightsId, appInsightsConnectionString).
+  # infra/main.bicep が作る Application Insights へのプロジェクト接続。ホスティングのトレースに使う。
+  # プロビジョニング後に azd が適用する（出力: appInsightsId、appInsightsConnectionString）。
   app-insights:
     host: azure.ai.connection
     uses:
@@ -69,7 +69,7 @@ services:
     language: python
     kind: hosted
     name: purchasing-advice-demo
-    description: MAF purchasing advice agent with local policy search and optimizer configuration.
+    description: ローカルのポリシー検索と最適化設定を備える MAF 購入助言エージェント。
     uses:
       - ai-project
     codeConfiguration:
@@ -87,8 +87,8 @@ services:
         cpu: "1"
         memory: 2Gi
     hooks:
-      # The agent's own identity exists only after deploy; grant it embedding access then.
-      # Inline, so azd never passes our folder path (which has spaces) to sh unquoted.
+      # エージェント自身の ID はデプロイ後に作られるため、その時点で埋め込みへのアクセス権を付ける。
+      # インラインで指定し、空白を含むフォルダーパスを azd が引用符なしで sh に渡すのを避ける。
       postdeploy:
         shell: sh
         run: sh ../infra/grant-agent-embeddings.sh

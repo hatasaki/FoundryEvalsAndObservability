@@ -1,19 +1,19 @@
-// Resource-group-scoped resources for a microsoft.foundry service: the
-// Foundry (AIServices) account, its project, model deployments, the optional
-// container registry, and the developer role assignment.
+// microsoft.foundry サービスのリソースグループスコープのリソース。
+// Foundry（AIServices）アカウント、プロジェクト、モデルデプロイ、
+// 任意のコンテナーレジストリ、開発者のロール割り当てを含む。
 //
-// Deployed by main.bicep into a resource group it creates at subscription
-// scope. Kept as a separate module so main.bicep can target the subscription
-// (and thus create the resource group) while these resources stay RG-scoped.
+// main.bicep がサブスクリプションスコープで作るリソースグループにデプロイする。
+// main.bicep がサブスクリプションを対象にしてリソースグループを作れるよう別モジュールにし、
+// これらのリソースはリソースグループスコープに保つ。
 
 targetScope = 'resourceGroup'
 
-// User-defined types
+// ユーザー定義型
 
-@description('Shape of one model deployment entry in azure.yaml.')
+@description('azure.yaml のモデルデプロイ項目の型。')
 type deploymentsType = deploymentType[]
 
-@description('Shape of a single model deployment.')
+@description('1件のモデルデプロイの型。')
 type deploymentType = {
   name: string
   model: {
@@ -27,74 +27,74 @@ type deploymentType = {
   }
 }
 
-// Parameters
+// パラメーター
 
-@description('Azure region for all resources.')
+@description('すべてのリソースを配置する Azure リージョン。')
 param location string = resourceGroup().location
 
-@description('Tags applied to all resources.')
+@description('すべてのリソースに適用するタグ。')
 param tags object = {}
 
-@description('Optional salt to vary resource names across re-provisions.')
+@description('再プロビジョニング時にリソース名を変えるための任意のソルト。')
 param resourceTokenSalt string = ''
 
-@description('Foundry project name. 3-32 alphanumeric/hyphen chars.')
+@description('Foundry プロジェクト名。英数字とハイフンで3〜32文字。')
 @minLength(3)
 @maxLength(32)
 param foundryProjectName string
 
-@description('Model deployments to provision on the Foundry account.')
+@description('Foundry アカウントにプロビジョニングするモデルデプロイ。')
 param deployments deploymentsType = []
 
-@description('Include an Azure Container Registry. Set true when any agent uses docker:.')
+@description('Azure Container Registry を含める。docker: を使うエージェントがあれば true。')
 param includeAcr bool = false
 
-@description('Object id of the developer running azd. When set, grants Cognitive Services User on the project. Empty disables the role assignment so headless / CI runs do not fail.')
+@description('azd を実行する開発者のオブジェクト ID。設定するとプロジェクトの Cognitive Services User を付与する。空ならロール割り当てを無効にし、非対話・CI 実行の失敗を避ける。')
 param principalId string = ''
 
-@description('Principal type used in the developer role assignment.')
+@description('開発者のロール割り当てに使うプリンシパルの種類。')
 param principalType string = 'User'
 
-// Network isolation parameters. All default off so an absent network: block in
-// azure.yaml yields a public account identical to the pre-network template.
+// ネットワーク分離のパラメーター。既定ですべて無効。
+// azure.yaml に network: ブロックがなければ、ネットワーク対応前と同じ公開アカウントになる。
 
-@description('Master switch: when true the account is VNet-bound (private).')
+@description('全体のスイッチ。true ならアカウントを VNet に接続して非公開にする。')
 param enableNetworkIsolation bool = false
 
-@description('When true (and isolation on), the agent runtime uses the Microsoft-managed network instead of injecting into a customer subnet.')
+@description('true で分離が有効なら、エージェントのランタイムは顧客サブネットではなく Microsoft 管理のネットワークを使う。')
 param useManagedEgress bool = false
 
-@description('ARM id of the existing customer VNet (byo mode).')
+@description('既存の顧客 VNet の ARM ID（byo モード）。')
 param vnetId string = ''
 
-@description('Agent (delegated) subnet name.')
+@description('エージェント用の委任サブネット名。')
 param agentSubnetName string = 'agent-subnet'
 
-@description('Agent subnet CIDR. Empty derives a /24 from the VNet space.')
+@description('エージェント用サブネットの CIDR。空なら VNet のアドレス空間から /24 を生成する。')
 param agentSubnetPrefix string = ''
 
-@description('When true, create the agent subnet; when false, reference it.')
+@description('true ならエージェント用サブネットを作り、false なら既存のものを参照する。')
 param createAgentSubnet bool = false
 
-@description('Private-endpoint subnet name.')
+@description('プライベートエンドポイント用サブネット名。')
 param peSubnetName string = 'pe-subnet'
 
-@description('Private-endpoint subnet CIDR. Empty derives a /24 from the VNet space.')
+@description('プライベートエンドポイント用サブネットの CIDR。空なら VNet のアドレス空間から /24 を生成する。')
 param peSubnetPrefix string = ''
 
-@description('When true, create the PE subnet; when false, reference it.')
+@description('true なら PE サブネットを作り、false なら既存のものを参照する。')
 param createPESubnet bool = false
 
-@description('Managed-network isolation mode (managed mode). AllowInternetOutbound | AllowOnlyApprovedOutbound.')
+@description('管理ネットワークの分離モード（managed モード）。AllowInternetOutbound | AllowOnlyApprovedOutbound。')
 param managedIsolationMode string = ''
 
-@description('Resource group holding existing private DNS zones. Empty creates and links new zones.')
+@description('既存のプライベート DNS ゾーンがあるリソースグループ。空なら新しいゾーンを作り、リンクする。')
 param dnsZonesResourceGroup string = ''
 
-@description('Subscription holding existing private DNS zones. Empty defaults to this subscription.')
+@description('既存のプライベート DNS ゾーンがあるサブスクリプション。空なら現在のものを使う。')
 param dnsZonesSubscription string = ''
 
-// Variables
+// 変数
 
 var resourceToken = empty(resourceTokenSalt)
   ? uniqueString(subscription().id, resourceGroup().id, location)
@@ -104,24 +104,22 @@ var abbrs = loadJsonContent('../abbreviations.json')
 
 var foundryAccountName = '${abbrs.cognitiveServicesAccounts}${resourceToken}'
 
-// Egress: byo injects the agent into a customer subnet; managed uses the
-// Microsoft-managed network. Ingress: an account private endpoint is always
-// provisioned when isolation is on, so the data plane is never left public.
+// 送信: byo は顧客サブネットにエージェントを接続し、managed は Microsoft 管理ネットワークを使う。
+// 受信: 分離が有効ならアカウントのプライベートエンドポイントを必ず作り、データプレーンを公開しない。
 var useByoNetwork = enableNetworkIsolation && !useManagedEgress
 var useManagedNetwork = enableNetworkIsolation && useManagedEgress
 var disablePublicDataPlaneAccess = enableNetworkIsolation
 
-// Built-in role definition ids. See: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles
+// 組み込みロール定義 ID: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles
 var cognitiveServicesUserRoleId = subscriptionResourceId(
   'Microsoft.Authorization/roleDefinitions',
   'a97b65f3-24c7-4388-baec-2e87135dc908'
 )
 
-// Resources
+// リソース
 
-// Customer VNet wiring: reference the VNet and create or reference the agent
-// (byo egress only) + private-endpoint subnets. Runs whenever isolation is on
-// because the account private endpoint is always provisioned.
+// 顧客 VNet の接続: VNet を参照し、エージェント用（byo の送信のみ）とプライベートエンドポイント用の
+// サブネットを作成または参照する。アカウントのプライベートエンドポイントを必ず作るため、分離時は常に実行。
 module network 'network.bicep' = if (enableNetworkIsolation) {
   name: 'foundry-network'
   params: {
@@ -135,16 +133,14 @@ module network 'network.bicep' = if (enableNetworkIsolation) {
   }
 }
 
-// networkInjections wires the account into the agent subnet (byo) or the
-// Microsoft-managed network (managed). Null when isolation is off.
+// networkInjections はアカウントをエージェント用サブネット（byo）か
+// Microsoft 管理ネットワーク（managed）に接続する。分離が無効なら null。
 //
-// subnetArmId is built as a concrete string from the (concrete) vnetId param
-// rather than network!.outputs.agentSubnetId. The account and the network
-// module deploy in the same template, so an inter-module reference() here is
-// unresolved at the CognitiveServices RP preflight, which then fails to convert
-// networkInjections to its typed contract (ARM what-if does not catch this).
-// The deterministic id avoids the unresolved reference; an explicit dependsOn
-// on the network module preserves ordering (the subnet must exist first).
+// subnetArmId は network!.outputs.agentSubnetId ではなく、具体的な vnetId から文字列で作る。
+// アカウントとネットワークのモジュールは同じテンプレートでデプロイされるため、ここでのモジュール間
+// reference() は CognitiveServices RP の事前検証時に未解決となり、networkInjections の型変換が失敗する。
+// ARM what-if はこれを検出しない。決定的な ID で未解決参照を避け、ネットワークへの明示的な dependsOn で
+// サブネットが先に存在する順序を保つ。
 var agentSubnetArmId = '${vnetId}/subnets/${agentSubnetName}'
 var agentNetworkInjections = useByoNetwork
   ? [
@@ -188,13 +184,11 @@ resource foundryAccount 'Microsoft.CognitiveServices/accounts@2025-06-01' = {
     networkInjections: agentNetworkInjections
   }
 
-  // The account injects into the agent subnet via a deterministic id (above),
-  // so Bicep cannot infer the dependency on the network module that creates
-  // that subnet. Declare it explicitly so the subnet exists before injection.
+  // 上記の決定的な ID で接続するため、Bicep はサブネットを作るネットワークモジュールへの依存を推論できない。
+  // 接続前にサブネットが存在するよう、依存を明示する。
   dependsOn: useByoNetwork ? [network] : []
 
-  // Sequential model deployment creation; ARM throttles concurrent
-  // deployments on the same account.
+  // 同一アカウントへの同時デプロイは ARM が制限するため、モデルを順番にデプロイする。
   @batchSize(1)
   resource modelDeployments 'deployments' = [
     for d in deployments: {
@@ -213,24 +207,22 @@ resource foundryAccount 'Microsoft.CognitiveServices/accounts@2025-06-01' = {
       type: 'SystemAssigned'
     }
     properties: {
-      description: '${foundryProjectName} Project'
+      description: '${foundryProjectName} プロジェクト'
       displayName: foundryProjectName
     }
-    // Explicit dependsOn ensures all model deployments complete before
-    // the project is created; the project does not reference them so
-    // there is no implicit dependency Bicep can infer.
+    // プロジェクト作成前に全モデルのデプロイが完了するよう dependsOn を明示する。
+    // プロジェクトはモデルを参照しないため、Bicep が推論できる暗黙の依存はない。
     dependsOn: [
       modelDeployments
     ]
   }
 }
 
-// Managed-network isolation (managed egress only). Applies the chosen outbound
-// isolation mode to the Microsoft-managed VNet that hosts the agent runtime.
-// Only deployed when an explicit isolationMode is requested; otherwise the
-// platform default applies. Note: AllowOnlyApprovedOutbound additionally
-// requires approved outbound rules for the agent to reach dependent resources;
-// for the platform-managed stores used here those are managed by the platform.
+// 管理ネットワークの分離（managed の送信のみ）。エージェントのランタイムを置く
+// Microsoft 管理 VNet に、選択した送信分離モードを適用する。
+// isolationMode を明示した場合だけデプロイし、それ以外はプラットフォームの既定を使う。
+// AllowOnlyApprovedOutbound では、依存リソースへの接続に承認済み送信規則も必要。
+// ここで使うプラットフォーム管理ストアの規則は、プラットフォームが管理する。
 resource foundryManagedNetwork 'Microsoft.CognitiveServices/accounts/managednetworks@2025-10-01-preview' =
   if (useManagedNetwork && !empty(managedIsolationMode)) {
     parent: foundryAccount
@@ -255,9 +247,9 @@ module acr 'acr.bicep' = if (includeAcr) {
   }
 }
 
-// Account private endpoint + AI private DNS zones. The account is always given a
-// private endpoint when isolation is on (byo or managed egress); dependent
-// stores stay platform-managed, so only the account gets an endpoint.
+// アカウントのプライベートエンドポイントと AI 用プライベート DNS ゾーン。
+// 分離時は byo・managed のどちらでもエンドポイントを必ず作る。
+// 依存ストアはプラットフォーム管理のままなので、エンドポイントはアカウントだけに付ける。
 module privateEndpointDns 'private-endpoint-dns.bicep' = if (enableNetworkIsolation) {
   name: 'foundry-private-endpoint-dns'
   params: {
@@ -271,8 +263,8 @@ module privateEndpointDns 'private-endpoint-dns.bicep' = if (enableNetworkIsolat
   }
 }
 
-// Grant the developer Cognitive Services User on the project so they can call
-// the Foundry data-plane (chat/completions, agents API) from their machine.
+// 開発者が自分のマシンから Foundry のデータプレーン（chat/completions、agents API）を呼べるよう、
+// プロジェクトの Cognitive Services User を付与する。
 resource developerCognitiveServicesUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(principalId)) {
   name: guid(foundryAccount::project.id, principalId, cognitiveServicesUserRoleId)
   scope: foundryAccount::project
@@ -283,7 +275,7 @@ resource developerCognitiveServicesUser 'Microsoft.Authorization/roleAssignments
   }
 }
 
-// Outputs
+// 出力
 
 output AZURE_AI_PROJECT_ID string = foundryAccount::project.id
 output AZURE_AI_ACCOUNT_NAME string = foundryAccount.name

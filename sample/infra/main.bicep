@@ -1,22 +1,21 @@
-// Provisioning template for a Foundry project service.
+// Foundry プロジェクトサービスのプロビジョニング用テンプレート。
 //
-// Inputs are derived from the host: azure.ai.project service body in
-// azure.yaml by internal/synthesis. This entry point creates a new Foundry
-// account and project; existing projects use the separate editable entry point.
+// 入力は internal/synthesis が azure.yaml の host: azure.ai.project のサービス定義から生成する。
+// このエントリーポイントは新しい Foundry アカウントとプロジェクトを作る。
+// 既存プロジェクトには別の編集可能なエントリーポイントを使う。
 //
-// Subscription-scoped so the resource group is part of the deployment. This
-// keeps `azd provision --preview` side-effect free: the resource group shows
-// up as a previewed Create instead of being created up front to satisfy a
-// resource-group-scoped what-if.
+// サブスクリプションスコープにして、リソースグループもデプロイに含める。
+// azd provision --preview では、リソースグループスコープの what-if のために事前作成せず、
+// プレビュー上の Create として表示するため、副作用がない。
 
 targetScope = 'subscription'
 
-// User-defined types
+// ユーザー定義型
 
-@description('Shape of one model deployment entry in azure.yaml.')
+@description('azure.yaml のモデルデプロイ項目の型。')
 type deploymentsType = deploymentType[]
 
-@description('Shape of a single model deployment.')
+@description('1件のモデルデプロイの型。')
 type deploymentType = {
   name: string
   model: {
@@ -30,88 +29,88 @@ type deploymentType = {
   }
 }
 
-// Parameters
+// パラメーター
 
-@description('Azure region for all resources.')
+@description('すべてのリソースを配置する Azure リージョン。')
 param location string
 
-@description('Name of the resource group to create and deploy resources into.')
+@description('作成し、リソースをデプロイするリソースグループの名前。')
 @minLength(1)
 @maxLength(90)
 param resourceGroupName string
 
-@description('Tags applied to all resources.')
+@description('すべてのリソースに適用するタグ。')
 param tags object = {}
 
-@description('Optional salt to vary resource names across re-provisions.')
+@description('再プロビジョニング時にリソース名を変えるための任意のソルト。')
 param resourceTokenSalt string = ''
 
-@description('Foundry project name. 3-32 alphanumeric/hyphen chars.')
+@description('Foundry プロジェクト名。英数字とハイフンで3〜32文字。')
 @minLength(3)
 @maxLength(32)
 param foundryProjectName string
 
-@description('Model deployments to provision on the Foundry account.')
+@description('Foundry アカウントにプロビジョニングするモデルデプロイ。')
 param deployments deploymentsType = []
 
-@description('Include an Azure Container Registry. Set true when any agent uses docker:.')
+@description('Azure Container Registry を含める。docker: を使うエージェントがあれば true。')
 param includeAcr bool = false
 
-@description('Object id of the developer running azd. When set, grants Cognitive Services User on the project. Empty disables the role assignment so headless / CI runs do not fail.')
+@description('azd を実行する開発者のオブジェクト ID。設定するとプロジェクトの Cognitive Services User を付与する。空ならロール割り当てを無効にし、非対話・CI 実行の失敗を避ける。')
 param principalId string = ''
 
-@description('Principal type used in the developer role assignment.')
+@description('開発者のロール割り当てに使うプリンシパルの種類。')
 param principalType string = 'User'
 
-// Network isolation parameters (see modules/resources.bicep for semantics).
-// All default off so an absent network: block yields a public account.
+// ネットワーク分離のパラメーター（意味は modules/resources.bicep 参照）。
+// 既定ですべて無効。network: ブロックがなければ公開アカウントになる。
 
-@description('Master switch: when true the account is VNet-bound (private).')
+@description('全体のスイッチ。true ならアカウントを VNet に接続して非公開にする。')
 param enableNetworkIsolation bool = false
 
-@description('When true (and isolation on), the agent runtime uses the Microsoft-managed network instead of injecting into a customer subnet.')
+@description('true で分離が有効なら、エージェントのランタイムは顧客サブネットではなく Microsoft 管理のネットワークを使う。')
 param useManagedEgress bool = false
 
-@description('ARM id of the existing customer VNet (byo mode).')
+@description('既存の顧客 VNet の ARM ID（byo モード）。')
 param vnetId string = ''
 
-@description('Agent (delegated) subnet name.')
+@description('エージェント用の委任サブネット名。')
 param agentSubnetName string = 'agent-subnet'
 
-@description('Agent subnet CIDR. Empty derives a /24 from the VNet space.')
+@description('エージェント用サブネットの CIDR。空なら VNet のアドレス空間から /24 を生成する。')
 param agentSubnetPrefix string = ''
 
-@description('When true, create the agent subnet; when false, reference it.')
+@description('true ならエージェント用サブネットを作り、false なら既存のものを参照する。')
 param createAgentSubnet bool = false
 
-@description('Private-endpoint subnet name.')
+@description('プライベートエンドポイント用サブネット名。')
 param peSubnetName string = 'pe-subnet'
 
-@description('Private-endpoint subnet CIDR. Empty derives a /24 from the VNet space.')
+@description('プライベートエンドポイント用サブネットの CIDR。空なら VNet のアドレス空間から /24 を生成する。')
 param peSubnetPrefix string = ''
 
-@description('When true, create the PE subnet; when false, reference it.')
+@description('true なら PE サブネットを作り、false なら既存のものを参照する。')
 param createPESubnet bool = false
 
-@description('Managed-network isolation mode (managed mode).')
+@description('管理ネットワークの分離モード（managed モード）。')
 param managedIsolationMode string = ''
 
-@description('Resource group holding existing private DNS zones. Empty creates new zones.')
+@description('既存のプライベート DNS ゾーンがあるリソースグループ。空なら新しいゾーンを作る。')
 param dnsZonesResourceGroup string = ''
 
-@description('Subscription holding existing private DNS zones. Empty defaults to this subscription.')
+@description('既存のプライベート DNS ゾーンがあるサブスクリプション。空なら現在のものを使う。')
 param dnsZonesSubscription string = ''
 
-// Added for this demo (everything above is the generated template).
+// このデモ用の追加項目（ここより上は生成されたテンプレート）。
 
-@description('GitHub repository (owner/name) whose `demo` environment may deploy and evaluate the agent. Required: the preprovision hook asks for it once and saves it as GITHUB_REPOSITORY.')
+@description('demo 環境からエージェントをデプロイ・評価できる GitHub リポジトリ（owner/name）。必須。preprovision フックで一度だけ尋ね、GITHUB_REPOSITORY に保存する。')
 @minLength(3)
 param githubRepository string
 
-@description('Exact OIDC subject GitHub sends for the demo environment (set by the preprovision hook from the GitHub API). Empty uses the classic repo:owner/name:environment:demo form.')
+@description('GitHub が demo 環境用に送る正確な OIDC subject（preprovision フックが GitHub API から設定）。空なら従来の repo:owner/name:environment:demo 形式を使う。')
 param githubOidcSubject string = ''
 
-// Resources
+// リソース
 
 resource resourceGroup 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: resourceGroupName
@@ -146,8 +145,8 @@ module resources 'modules/resources.bicep' = {
   }
 }
 
-// Application Insights, evaluator access (the developer running azd) and the GitHub Actions
-// identity: a user-assigned identity trusted for `repo:<githubRepository>:environment:demo`.
+// Application Insights、評価器のアクセス権（azd を実行する開発者）、GitHub Actions の ID。
+// repo:<githubRepository>:environment:demo を信頼するユーザー割り当て ID。
 module monitoring 'modules/monitoring.bicep' = {
   name: 'monitoring'
   scope: resourceGroup
@@ -163,7 +162,7 @@ module monitoring 'modules/monitoring.bicep' = {
   }
 }
 
-// Outputs
+// 出力
 
 output AZURE_RESOURCE_GROUP string = resourceGroupName
 output AZURE_FOUNDRY_RESOURCE_GROUP string = resourceGroupName
@@ -177,11 +176,11 @@ output AZURE_CONTAINER_REGISTRY_RESOURCE_ID string = resources.outputs.AZURE_CON
 output AZURE_AI_PROJECT_ACR_CONNECTION_NAME string = resources.outputs.AZURE_AI_PROJECT_ACR_CONNECTION_NAME
 output AZURE_FOUNDRY_NETWORK_MODE string = resources.outputs.AZURE_FOUNDRY_NETWORK_MODE
 output AZURE_FOUNDRY_MANAGED_ISOLATION_MODE string = resources.outputs.AZURE_FOUNDRY_MANAGED_ISOLATION_MODE
-// Our own outputs are camelCase: the Foundry provider camel-cases output names on the way into
-// the azd environment (APPLICATIONINSIGHTS_ID arrived as applicationinsightS_ID), and a
-// camelCase name comes through unchanged. Read them as ${appInsightsId} and so on.
+// 独自の出力名は camelCase。Foundry プロバイダーは azd 環境へ渡す際に出力名を camelCase に変換する
+// （APPLICATIONINSIGHTS_ID は applicationinsightS_ID になった）。元から camelCase なら変わらない。
+// ${appInsightsId} などで参照する。
 output appInsightsId string = monitoring.outputs.applicationInsightsId
-#disable-next-line outputs-should-not-contain-secrets // read by the app-insights connection in azure.yaml
+#disable-next-line outputs-should-not-contain-secrets // azure.yaml の app-insights 接続が読み取る
 output appInsightsConnectionString string = monitoring.outputs.applicationInsightsConnectionString
 output githubClientId string = monitoring.outputs.githubClientId
 output githubTenantId string = monitoring.outputs.githubTenantId

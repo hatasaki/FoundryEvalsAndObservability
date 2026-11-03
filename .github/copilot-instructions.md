@@ -1,122 +1,117 @@
-# Repository context and working agreements
+# リポジトリの概要と作業上の取り決め
 
-## Start here
+## はじめに
 
-Read `PLAYBOOK.md` before changing this repository. It is the single source for
-the presentation flow, reusable setup and commands. Keep run history, scores,
-cloud resource IDs and machine-specific handoffs outside the repository.
-These instructions guide coding assistants; the hosted agent's instructions
-are in `sample/agent/.agent_configs/baseline/instructions.md`.
+このリポジトリを変更する前に `PLAYBOOK.md` を読む。プレゼンの流れ、再利用可能なセットアップ、
+コマンドはこのファイルだけで管理する。実行履歴、スコア、クラウドのリソース ID、
+マシン固有の引き継ぎ情報はリポジトリの外に置く。
+この指示はコーディング支援用であり、ホストされたエージェントの指示は
+`sample/agent/.agent_configs/baseline/instructions.md` にある。
 
-This is a presentation and deliberately small demonstration, not a production
-agent framework. The story is **agent -> evaluation -> traces -> continuous
-evaluation -> optimisation**. Keep the audience focused on those concepts.
-The user's priority is simplicity: avoid scaffolding, abstractions, helper
-layers and documentation that obscure the sample.
+これはプレゼンと意図的に小さくしたデモであり、本番用のエージェントフレームワークではない。
+流れは **エージェント -> 評価 -> トレース -> 継続的評価 -> 最適化**。
+聴衆の注意をこれらの概念に保つ。ユーザーは単純さを優先する。
+サンプルを分かりにくくするひな形、抽象化、補助レイヤー、ドキュメントを増やさない。
 
-## Layout
+## 構成
 
-- `presentation/deck.html` is the source of truth; `presentation/presentation.pptx`
-  is derived. All images in `presentation/assets/` are referenced by HTML.
-- `sample/agent/`: the deployable Python agent, baseline configuration and
-  fictional policy/notice documents.
-- `sample/evaluation/`: `evaluate.py`, `compare_to_baseline.py`, `optimize.yaml`,
-  two judge definitions, committed baselines and the development, holdout and
-  drift JSONL datasets.
-- `.github/workflows/`: PR gate (development set) and promotion (holdout, then
-  drift, then release), sharing `_agent-eval.yml`.
-- `sample/azure.yaml`, dependency manifests and lock files: runnable sample
-  configuration. Run backstage commands from `sample/`.
-- `sample/infra/monitoring.bicep`: companion deployment for Application Insights,
-  its project connection and account-level Foundry User access for the evaluator.
-- `PLAYBOOK.md`: the only presenter/operator guide. Update it rather than
-  introducing another README, presenter-notes file or historical run sheet.
+- `presentation/deck.html` が正本であり、`presentation/presentation.pptx` は派生物。
+  `presentation/assets/` の画像はすべて HTML から参照される。
+- `sample/agent/`: デプロイ可能な Python エージェント、ベースライン設定、架空のポリシーと通知。
+- `sample/evaluation/`: `evaluate.py`、`compare_to_baseline.py`、`optimize.yaml`、2つの評価器の定義、
+  コミット済みベースライン、開発・ホールドアウト・ドリフトの JSONL データセット。
+- `.github/workflows/`: PR ゲート（開発セット）と昇格（ホールドアウト、ドリフト、リリースの順）。
+  `_agent-eval.yml` を共有する。
+- `sample/azure.yaml`、依存関係の定義とロックファイル: 実行可能なサンプル設定。
+  舞台裏のコマンドは `sample/` から実行する。
+- `sample/infra/monitoring.bicep`: Application Insights、そのプロジェクト接続、
+  評価器のアカウントレベル Foundry User 権限を追加するデプロイ。
+- `PLAYBOOK.md`: 発表者・運用者向けの唯一のガイド。別の README、発表メモ、
+  過去の実行記録を追加せず、このファイルを更新する。
 
-Do not restore the removed `src/`, test suite, historical datasets, slide-review
-screenshots or template/conversion files unless requested. Generated
-`sample/evidence/` remains ignored; the demo script does not generate evidence files.
+依頼がない限り、削除済みの `src/`、テストスイート、過去のデータセット、
+スライドレビューのスクリーンショット、テンプレート・変換ファイルを復元しない。
+生成された `sample/evidence/` は引き続き無視する。デモスクリプトは証拠ファイルを生成しない。
 
-## Agent design
+## エージェントの設計
 
-- Native Microsoft Agent Framework with `FoundryChatClient` and
-  `ResponsesHostServer`. Hosting and Agent Framework own tracing and the
-  model/tool loop. Do not reintroduce custom spans or orchestration.
-- Three read-only tools over local JSON stand in for the IQ tools:
-  `knowledge_base_retrieve` (Foundry IQ; hybrid keyword plus embedding search over
-  policies), `ask` (Work IQ; roles, leave, delegations) and `search_ontology`
-  (Fabric IQ; budget). **No real Foundry, Work or Fabric IQ is connected.**
-- The agent advises on purchasing; it cannot approve, buy or contact approvers.
-- Keep mutable policy facts in retrieved documents, not system instructions or
-  tool descriptions. Preserve native optimiser configuration loading.
-- Use the decision date supplied in the question. Ask if it is needed and
-  missing. Do not inject today's date or restore a fixed sample/reference date.
-  Policy effective dates come from retrieved documents.
+- `FoundryChatClient` と `ResponsesHostServer` を使うネイティブな Microsoft Agent Framework。
+  トレースとモデル・ツールのループはホスティングと Agent Framework に任せる。
+  独自のスパンやオーケストレーションを再導入しない。
+- ローカル JSON を使う3つの読み取り専用ツールで IQ を模す。
+  `knowledge_base_retrieve`（Foundry IQ: ポリシーのキーワードと埋め込みによるハイブリッド検索）、
+  `ask`（Work IQ: 役職、休暇、権限委任）、`search_ontology`（Fabric IQ: 予算）。
+  **実際の Foundry IQ、Work IQ、Fabric IQ には接続しない。**
+- エージェントは購入について助言するだけであり、承認、購入、承認者への連絡はできない。
+- 変更され得るポリシーの事実は取得文書に置き、システム指示やツール説明に埋め込まない。
+  ネイティブな最適化設定の読み込みを維持する。
+- 質問で指定された判断日を使う。必要なのに欠けていれば質問する。
+  今日の日付を注入したり、固定のサンプル日・基準日を復元したりしない。
+  ポリシーの適用日は取得文書から確認する。
 
-## Evaluation and optimisation
+## 評価と最適化
 
-The objective is **next best action**, not always next best question:
-ask for missing decision facts, identify outstanding requirements, or recognise
-readiness. Do not list alternative routes before resolving missing facts or
-reopen approvals already supplied as complete.
+目的は常に次の質問をすることではなく、**次に取るべき最善の行動**を示すこと。
+判断に不足する事実を質問し、未完了の要件を特定し、または準備完了を認識する。
+不足する事実を解決する前に代替経路を列挙せず、完了済みと示された承認をやり直させない。
 
-- The binary `purchasing-next-action` judge is shared by evaluation and
-  optimisation; `purchasing-demo-rubric` adds feedback dimensions. Do not
-  silently change a rubric to improve a score.
-- Only the question goes to the agent. The judge receives the question,
-  `ground_truth` and final answer. The optimiser service receives references;
-  its exact internal reflector inputs have not been established.
-- `evaluate.py` registers the judges (`--register-only`), submits an evaluation
-  (`EVAL_DATASET` selects the set; `--dry-run` prints the request) and writes the
-  report that `compare_to_baseline.py` gates. Optimisation uses the static baseline,
-  separate datasets and registered judge version in `evaluation/optimize.yaml`.
-  Dataset paths resolve from the service's `sample/agent/` directory, not the YAML.
-- **`azd ai agent optimize` submits optimisation jobs.** Python is not a
-  replacement optimisation engine. Submit `evaluation/optimize.yaml` directly;
-  no Python preparation or copied input package is needed.
-- Preserve separate development and native `validation_dataset` inputs.
-  Validation influences candidate selection; it is not untouched acceptance.
-- Inspect effective system instructions **and tool/parameter descriptions**.
-  A mutation record alone may omit inherited candidate configuration.
-- The CLI can rewrite baseline `metadata.yaml` to reference frozen tools.
-  Preserve evidence, compare tool bytes, then restore only the unintended path.
-  The local baseline normally uses `tools_file: tools.json`.
+- 二値評価器 `purchasing-next-action` は評価と最適化で共有する。
+  `purchasing-demo-rubric` はフィードバックの観点を追加する。
+  スコアを上げるためにルーブリックを黙って変更しない。
+- エージェントには質問だけを渡す。評価器には質問、`ground_truth`、最終回答を渡す。
+  最適化サービスには参照回答を渡すが、内部のリフレクターへの正確な入力は確認できていない。
+- `evaluate.py` は評価器を登録し（`--register-only`）、評価を送信し
+  （`EVAL_DATASET` でセットを選択、`--dry-run` でリクエストを表示）、
+  `compare_to_baseline.py` がゲート判定するレポートを書く。
+  最適化は `evaluation/optimize.yaml` の静的ベースライン、分離したデータセット、
+  登録済み評価器のバージョンを使う。データセットのパスは YAML の場所ではなく、
+  サービスの `sample/agent/` から解決する。
+- **`azd ai agent optimize` が最適化ジョブを送信する。** Python を代替の最適化エンジンにしない。
+  `evaluation/optimize.yaml` を直接送信する。Python による準備や入力パッケージのコピーは不要。
+- 開発データとネイティブな `validation_dataset` 入力の分離を維持する。
+  検証は候補選択に影響するため、未使用の受け入れ試験ではない。
+- 実際に適用されるシステム指示**とツール・パラメーターの説明**を確認する。
+  変更記録だけでは候補が継承した設定が抜ける場合がある。
+- CLI がベースラインの `metadata.yaml` を書き換え、固定されたツールを参照させる場合がある。
+  証拠を保全してツールのバイト列を比較し、意図しないパスだけを戻す。
+  ローカルのベースラインは通常 `tools_file: tools.json` を使う。
 
-CLI evaluation is possible. The user deliberately chose to retain the proven
-Python workflow. `azd ai agent eval` and the separate `azd ai eval` extension
-have different configurations; do not conflate them or claim golden-data
-evaluation is unsupported. Do not restart that migration without a request.
+CLI による評価も可能だが、ユーザーは実績のある Python ワークフローを意図的に維持している。
+`azd ai agent eval` と別の拡張機能 `azd ai eval` は設定が異なる。
+混同したり、正解データによる評価が非対応だと主張したりしない。
+依頼なしにその移行を再開しない。
 
-## Demo conventions
+## デモの取り決め
 
-- Use the Foundry project display name **Agent Evaluation Demo** and agent name
-  `purchasing-advice-demo`. Get actual resource IDs from the selected azd environment.
-- Agent and judge versions default to 1 for a fresh project. Check actual returned
-  versions and align the script/YAML; do not infer live state from documentation.
-- The agent uses GPT-5.4-mini with low reasoning; judge/generator use GPT-5.5.
-- The corpus contains 22 policies and five notices; datasets contain 34 development,
-  22 holdout and 8 drift cases. All questions supply an explicit decision date.
-- Gates compare with baselines committed by a person; a pipeline never writes
-  its own bar. Never give the drift set to the optimiser.
-- The companion Bicep provides monitoring and account-level Foundry User access.
-  Project-only or OpenAI-only access is insufficient for cloud judging.
-- Continuous evaluation is a setup walkthrough. Do not enable it or promote a
-  candidate as part of routine demo preparation.
+- Foundry プロジェクトの表示名は **Agent Evaluation Demo**、エージェント名は
+  `purchasing-advice-demo`。実際のリソース ID は選択中の azd 環境から取得する。
+- 新規プロジェクトではエージェントと評価器のバージョンは1から始まる。
+  実際に返されたバージョンを確認してスクリプト・YAML に揃える。
+  ドキュメントから稼働中の状態を推測しない。
+- エージェントは低い推論設定の GPT-5.4-mini、評価器と生成器は GPT-5.5 を使う。
+- コーパスはポリシー22件、通知5件。データセットは開発34件、ホールドアウト22件、ドリフト8件。
+  すべての質問が判断日を明示する。
+- ゲートは人がコミットしたベースラインと比較する。パイプラインが自分の合格基準を書き換えない。
+  ドリフトセットは最適化に絶対に渡さない。
+- 追加の Bicep は監視とアカウントレベルの Foundry User 権限を提供する。
+  プロジェクトのみ、または OpenAI のみの権限ではクラウド評価に不十分。
+- 継続的評価は設定手順の紹介にとどめる。通常のデモ準備で有効化したり、候補を昇格したりしない。
 
-## Change and execution discipline
+## 変更と実行の規律
 
-Explain the reason and obtain confirmation before substantive code, configuration
-or cloud changes. Preserve unrelated user edits. Do not commit or push unless
-asked. Keep source comments and documentation concise.
+実質的なコード・設定・クラウド変更の前に、理由を説明して確認を得る。
+無関係なユーザーの変更を保持する。依頼なしにコミットや push をしない。
+ソースのコメントとドキュメントは簡潔にする。
 
-Do not run billable evaluations/searches, deploy, promote candidates, provision,
-delete resources or change RBAC/networking without explicit approval. Discover
-project/environment details from local azd state. An authorised app-only
-deployment uses `azd deploy purchasing-advice-demo`, not `azd up`.
+明示的な許可なしに、有料の評価・検索、デプロイ、候補の昇格、プロビジョニング、
+リソース削除、RBAC・ネットワーク変更を実行しない。プロジェクトや環境の詳細は
+ローカルの azd 状態から調べる。許可されたアプリのみのデプロイには
+`azd up` ではなく `azd deploy purchasing-advice-demo` を使う。
 
-Use Python 3.13 and the existing locked dependencies (`requirements*.txt`,
-exported from `uv.lock`). Pull requests run offline checks, then a billable
-development-set evaluation; pushes to main touching `sample/**` start the
-billable promotion workflow. Offline checks, from `sample/`:
+Python 3.13 と、既存のロック済み依存関係（`uv.lock` から出力した `requirements*.txt`）を使う。
+PR ではオフライン検査の後に有料の開発セット評価を実行する。
+`sample/**` に触れる main への push は有料の昇格ワークフローを開始する。
+オフライン検査は `sample/` から実行する:
 
 ```bash
 .venv/bin/ruff check agent evaluation
@@ -124,10 +119,10 @@ billable promotion workflow. Offline checks, from `sample/`:
 .venv/bin/python evaluation/evaluate.py --dry-run
 ```
 
-The dry run prints the request without writing files or making cloud calls. Check actual input
-mapping, dataset separation and file paths when editing the evaluation helper.
-Do not recreate a test framework as part of routine cleanup.
+ドライランはファイルを書かず、クラウドも呼び出さず、リクエストだけを表示する。
+評価の補助コードを変更するときは、実際の入力対応、データセットの分離、パスを確認する。
+通常の整理作業でテストフレームワークを再作成しない。
 
-Use the package index approved for the current environment.
-Do not casually upgrade agent dependencies or azd extensions during a demo task.
-Never check in credentials, environment secrets or unreviewed raw telemetry.
+現在の環境で承認されたパッケージインデックスを使う。
+デモ作業中にエージェントの依存関係や azd 拡張機能を安易に更新しない。
+認証情報、環境の秘密情報、未確認の生のテレメトリを絶対にコミットしない。

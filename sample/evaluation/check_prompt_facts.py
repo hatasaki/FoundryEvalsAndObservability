@@ -1,18 +1,17 @@
-"""Flag domain facts that a candidate config copied into its prompt or tool descriptions.
+"""候補設定がプロンプトやツール説明にコピーした業務上の事実を検出する。
 
-The optimizer can raise scores by writing policy facts (amounts, approvers, dates,
-people) into instructions.md or tools.json. Those copies go stale when the policy
-changes. This check fails when a candidate introduces facts that the baseline did
-not already contain.
+最適化は、ポリシーの事実（金額、承認者、日付、人名）を instructions.md や tools.json に
+書き込んでスコアを上げる場合がある。コピーした事実はポリシー変更で古くなる。
+この検査は、ベースラインにない事実を候補が追加すると失敗する。
 
-Usage (from sample/):
+使用例（sample/ から）:
     python evaluation/check_prompt_facts.py \
         --baseline agent/.agent_configs/baseline \
         --candidate path/to/candidate_config \
         --data agent/data/*.json
 
-Exit code 1 means new facts were found. It's blunt on purpose: a human reviews the
-list and either accepts the candidate or rejects it.
+終了コード1は新しい事実の検出を示す。意図的に大まかな検査であり、人が一覧を確認して
+候補を採用するか却下するかを判断する。
 """
 
 import argparse
@@ -23,18 +22,24 @@ from pathlib import Path
 
 GENERIC_FACTS = {
     "amount": re.compile(r"\$\s?\d{1,3}(?:,\d{3})+(?:\.\d+)?|\$\s?\d+(?:\.\d+)?"),
-    "duration": re.compile(r"\b\d+\s*(?:calendar\s+)?(?:hours?|days?|months?|years?)\b", re.I),
+    "duration": re.compile(
+        r"\b\d+\s*(?:calendar\s+)?(?:hours?|days?|months?|years?)\b"
+        r"|\d+\s*(?:暦日|時間|日間|日|か月|カ月|ヶ月|年間|年)",
+        re.I,
+    ),
     "date": re.compile(
         r"\b(?:\d{4}-\d{2}-\d{2}|(?:January|February|March|April|May|June|July|August|"
         r"September|October|November|December)\s+\d{1,2}|\d{1,2}\s+(?:January|February|"
-        r"March|April|May|June|July|August|September|October|November|December))\b",
+        r"March|April|May|June|July|August|September|October|November|December))\b"
+        r"|(?:\d{4}年)?\d{1,2}月\d{1,2}日",
         re.I,
     ),
-    "source_id": re.compile(r"\b(?:policy|notice|people|register|message):[a-z0-9-]+\b"),
+    "source_id": re.compile(
+        r"(?<![a-z0-9-])(?:policy|notice|people|register|message):[a-z0-9-]+(?![a-z0-9-])"
+    ),
 }
 
-# Capitalised phrases such as "Category Manager" or "Head of Learning", and
-# CamelCase names such as "PrintForge". Used to harvest names from the corpus.
+# 英語の役職名や CamelCase の名称をコーパスから取得する。
 NAME_PHRASE = re.compile(
     r"\b[A-Z][a-z]+(?:\s+(?:of\s+)?[A-Z][a-zA-Z]+)+\b|\b[A-Z][a-z]+[A-Z][a-zA-Z]+\b"
 )
@@ -60,10 +65,11 @@ def corpus_names(paths: list[Path]) -> set[str]:
     names = set()
     for path in paths:
         documents = json.loads(path.read_text(encoding="utf-8"))
-        if not isinstance(documents, list):  # e.g. policy_embeddings.json: vectors, no text
+        if not isinstance(documents, list):  # policy_embeddings.json などは本文でなくベクトル
             continue
         for document in documents:
             text = f"{document.get('title', '')}. {document.get('content', '')}"
+            names.update(re.findall(r"役職名簿:.*? は (.+?) です", text))
             for match in NAME_PHRASE.findall(text):
                 if match not in STOP_PHRASES and not match.startswith(
                     ("The ", "This ", "For ", "An ", "A ")
@@ -79,7 +85,11 @@ def find_facts(text: str, names: set[str]) -> set[tuple[str, str]]:
             found.add((kind, " ".join(match.split())))
     lowered = text.lower()
     for name in names:
-        if re.search(r"\b" + re.escape(name.lower()) + r"\b", lowered):
+        if (
+            not name.isascii()
+            and name.lower() in lowered
+            or re.search(r"\b" + re.escape(name.lower()) + r"\b", lowered)
+        ):
             found.add(("name", name))
     return found
 
@@ -91,7 +101,7 @@ def main() -> int:
     parser.add_argument("--baseline", type=Path, required=True)
     parser.add_argument("--candidate", type=Path, required=True)
     parser.add_argument(
-        "--data", type=Path, nargs="+", required=True, help="Policy/notice/people JSON files"
+        "--data", type=Path, nargs="+", required=True, help="ポリシー・通知・人員の JSON ファイル"
     )
     args = parser.parse_args()
 
@@ -101,12 +111,12 @@ def main() -> int:
     new_facts = sorted(candidate - baseline)
 
     if not new_facts:
-        print("OK: candidate adds no domain facts beyond the baseline.")
+        print("OK: 候補はベースラインにない業務上の事実を追加していません。")
         return 0
-    print(f"FAIL: candidate adds {len(new_facts)} domain fact(s) not in the baseline:")
+    print(f"FAIL: 候補がベースラインにない業務上の事実を {len(new_facts)} 件追加しています:")
     for kind, value in new_facts:
         print(f"  [{kind}] {value}")
-    print("These belong in the knowledge sources, not the prompt. Review before promoting.")
+    print("これらはプロンプトではなく知識ソースに置く内容です。昇格前に確認してください。")
     return 1
 
 

@@ -1,41 +1,41 @@
-name: Evaluate agent (reusable)
+name: エージェント評価（再利用可能）
 
-# Shared by the PR gate and main promotion workflow.
-# Deploys the checked-out agent, runs one dataset through the judges, then either
-# compares with a stored baseline or saves this run as the new baseline.
+# PR ゲートと main の昇格ワークフローで共有する。
+# チェックアウトしたエージェントをデプロイし、1セットを評価器で採点する。
+# 保存済みベースラインと比較するか、この実行を新しいベースラインとして保存する。
 on:
   workflow_call:
     inputs:
       agent_name:
-        description: Foundry agent to deploy and evaluate
+        description: デプロイして評価する Foundry エージェント
         type: string
         required: true
       deploy_agent:
-        description: Deploy before evaluating (false reuses the tested dev deployment)
+        description: 評価前にデプロイする（false は検証済み dev デプロイを再利用）
         type: boolean
         default: true
       dataset:
-        description: JSONL file under sample/evaluation/datasets/
+        description: sample/evaluation/datasets/ 内の JSONL ファイル
         type: string
         required: true
       tolerance:
-        description: Allowed drop in each evaluator's mean score before failing.
+        description: 各評価器の平均スコアで許容する低下幅。
         type: number
         default: 0.03
       must_pass:
-        description: Space-separated evaluators where any failed row blocks.
+        description: 1件の不合格でも阻止する評価器。空白区切りで指定。
         type: string
         default: ""
       detail:
-        description: "full = publish the Foundry report link; counts = scores only (for the drift set)."
+        description: "full = Foundry レポートのリンクを公開。counts = スコアのみ（ドリフト用）。"
         type: string
         default: full
       max_unscored:
-        description: Questions each judge may fail to score (e.g. a rate limit) before the run fails.
+        description: 実行失敗までに各評価器で許容する未採点数（レート制限など）。
         type: number
         default: 1
       write_baseline:
-        description: Save this run as the baseline artifact instead of comparing.
+        description: 比較せず、この実行をベースライン成果物として保存する。
         type: boolean
         default: false
 
@@ -72,7 +72,7 @@ jobs:
           ref: ${{ github.sha }}
           persist-credentials: false
           fetch-depth: 0
-      - name: Select comparison baseline
+      - name: 比較用ベースラインを選択
         id: base
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -80,7 +80,7 @@ jobs:
         run: |
           if [ "$WRITE_BASELINE" = "true" ]; then
             if [ "$GITHUB_EVENT_NAME" != "workflow_dispatch" ]; then
-              echo "::error::Only a manual run may write a baseline."
+              echo "::error::ベースラインを書けるのは手動実行だけです。"
               exit 1
             fi
             echo "save=true" >> "$GITHUB_OUTPUT"
@@ -89,44 +89,44 @@ jobs:
             if [ -n "$BASE_SHA" ]; then
               baseline="$RUNNER_TEMP/comparison-baseline.json"
               if ! git show "${BASE_SHA}:sample/${path}" > "$baseline"; then
-                echo "::error::No baseline at sample/${path} in the PR's base revision. Run the appropriate workflow in its explicit baseline mode, then review and commit the artifact."
+                echo "::error::PR の基点リビジョンに sample/${path} のベースラインがありません。対応するワークフローを明示的なベースラインモードで実行し、成果物をレビューしてコミットしてください。"
                 exit 1
               fi
             else
               baseline="$GITHUB_WORKSPACE/sample/${path}"
               if [ ! -f "$baseline" ]; then
-                echo "::error::No baseline at sample/${path}. Run the appropriate workflow in its explicit baseline mode, then review and commit the artifact."
+                echo "::error::sample/${path} にベースラインがありません。対応するワークフローを明示的なベースラインモードで実行し、成果物をレビューしてコミットしてください。"
                 exit 1
               fi
             fi
             echo "BASELINE_PATH=$baseline" >> "$GITHUB_ENV"
             echo "save=false" >> "$GITHUB_OUTPUT"
           fi
-      - name: Check configuration
+      - name: 設定を確認
         run: |
           if [[ ! "$AGENT_NAME" =~ ^purchasing-advice-demo-(dev|pr-[0-9]+|check-[0-9]+)$ ]]; then
-            echo "::error::Invalid evaluation agent name: $AGENT_NAME"
+            echo "::error::評価用エージェント名が不正です: $AGENT_NAME"
             exit 1
           fi
           for key in AZURE_CLIENT_ID AZURE_TENANT_ID AZURE_SUBSCRIPTION_ID \
             AZURE_ENV_NAME AZURE_LOCATION AZURE_AI_PROJECT_ID FOUNDRY_PROJECT_ENDPOINT; do
             if [ -z "$(printenv "$key")" ]; then
-              echo "::error::Missing GitHub variable: $key"
+              echo "::error::GitHub 変数がありません: $key"
               exit 1
             fi
           done
           test -f "evaluation/datasets/${DATASET_STEM}.jsonl" \
-            || { echo "::error::No dataset evaluation/datasets/${DATASET_STEM}.jsonl"; exit 1; }
+            || { echo "::error::データセット evaluation/datasets/${DATASET_STEM}.jsonl がありません"; exit 1; }
       - uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
           version: "0.12.11"
           python-version: "3.13"
           working-directory: sample
-      - name: Install pinned evaluation dependencies
+      - name: 固定バージョンの評価用依存関係をインストール
         run: |
           uv venv
           uv pip install --require-hashes -r requirements-dev.txt
-      - name: Check baseline inputs without Azure
+      - name: Azure を使わずベースライン入力を確認
         if: steps.base.outputs.save != 'true'
         env:
           EVAL_DATASET: evaluation/datasets/${{ inputs.dataset }}.jsonl
@@ -134,18 +134,18 @@ jobs:
       - uses: Azure/setup-azd@0b7e3a35ab00f2eee7080c845eb39c3f0ebfa553 # v2.4.0
         with:
           version: "1.35.0"
-      - name: Install pinned Foundry extensions
+      - name: 固定バージョンの Foundry 拡張機能をインストール
         run: |
           azd extension install azure.ai.agents --version 1.0.0-beta.13
           azd extension install azure.ai.projects --version 1.0.0-beta.8
-          azd extension install azure.ai.connections --version 1.0.0-beta.9  # app-insights connection service
-      - name: Sign in with OIDC
+          azd extension install azure.ai.connections --version 1.0.0-beta.9  # app-insights 接続サービス
+      - name: OIDC でログイン
         uses: Azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           client-id: ${{ env.AZURE_CLIENT_ID }}
           tenant-id: ${{ env.AZURE_TENANT_ID }}
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
-      - name: Configure existing project
+      - name: 既存プロジェクトを設定
         run: |
           azd config set auth.useAzCliAuth true
           azd env new "$AZURE_ENV_NAME" --subscription "$AZURE_SUBSCRIPTION_ID" \
@@ -154,14 +154,14 @@ jobs:
           azd env set AZURE_AI_PROJECT_ID "$AZURE_AI_PROJECT_ID"
           azd env set FOUNDRY_PROJECT_ENDPOINT "$FOUNDRY_PROJECT_ENDPOINT"
           azd env set AGENT_NAME "$AGENT_NAME"
-      - name: Deploy agent
+      - name: エージェントをデプロイ
         if: inputs.deploy_agent
         run: |
-          # The pinned extension validates the name before expanding environment variables.
+          # 固定した拡張機能は、環境変数の展開前に名前を検証する。
           yq -i '.services.purchasing-advice-demo.name = strenv(AGENT_NAME) |
             .services.purchasing-advice-demo.env.AGENT_NAME = strenv(AGENT_NAME)' azure.yaml
           azd deploy purchasing-advice-demo --no-prompt
-      - name: Verify evaluation target
+      - name: 評価対象を確認
         if: inputs.deploy_agent
         run: |
           azd ai agent show purchasing-advice-demo --output json | python3 -c '
@@ -169,10 +169,10 @@ jobs:
           actual = json.load(sys.stdin)["name"]
           expected = os.environ["AGENT_NAME"]
           if actual != expected:
-              raise SystemExit(f"Agent name mismatch: deployed {actual}, expected {expected}")
-          print(f"Verified evaluation target: {actual}")
+              raise SystemExit(f"エージェント名が不一致です: デプロイ済み {actual}、期待値 {expected}")
+          print(f"確認した評価対象: {actual}")
           '
-      - name: Run ${{ inputs.dataset }}
+      - name: ${{ inputs.dataset }} を実行
         env:
           EVAL_DATASET: evaluation/datasets/${{ inputs.dataset }}.jsonl
           SAVE_BASELINE: ${{ steps.base.outputs.save }}
@@ -182,12 +182,12 @@ jobs:
             args+=(--baseline "$BASELINE_PATH")
           fi
           if [ "${{ inputs.detail }}" = "counts" ]; then
-            # Keep per-question detail and the report link out of the logs for the drift set.
+            # ドリフトでは、質問ごとの詳細とレポートリンクをログに残さない。
             .venv/bin/python evaluation/evaluate.py "${args[@]}" > eval.log
           else
             .venv/bin/python evaluation/evaluate.py "${args[@]}"
           fi
-      - name: Save as baseline
+      - name: ベースラインとして保存
         if: steps.base.outputs.save == 'true'
         env:
           DETAIL: ${{ inputs.detail }}
@@ -195,35 +195,35 @@ jobs:
           mkdir -p baseline-out
           cp report.json "baseline-out/${DATASET_STEM}.json"
           {
-            echo "## New baseline: ${DATASET_STEM}"
+            echo "## 新しいベースライン: ${DATASET_STEM}"
             python3 - <<'PY'
           import json, os
           r = json.load(open("report.json"))
-          print("| Judge | Passed | Average score | Not scored |\n| --- | --- | --- | --- |")
+          print("| 評価器 | 合格件数 | 平均スコア | 未採点 |\n| --- | --- | --- | --- |")
           for c in r["criteria"]:
               print(f"| {c['name']} | {c['passed']} / {c['total']} | {c['mean_score']:.3f} "
                     f"| {c.get('unscored', 0)} |")
           if os.environ.get("DETAIL") == "full" and r.get("report_url"):
-              print(f"\n[Foundry report]({r['report_url']})")
+              print(f"\n[Foundry レポート]({r['report_url']})")
           PY
-            echo "Download the **baseline-${DATASET_STEM}** artifact and commit it as"
-            echo "\`sample/evaluation/baselines/${DATASET_STEM}.json\`."
+            echo "**baseline-${DATASET_STEM}** 成果物をダウンロードし、"
+            echo "\`sample/evaluation/baselines/${DATASET_STEM}.json\` としてコミットしてください。"
           } >> "$GITHUB_STEP_SUMMARY"
-      # Must-pass rules don't need a baseline: even a run that saves one still blocks on a
-      # failed must-pass row (comparing the run with itself means only those rules can fail).
-      - name: Must-pass rows
+      # 必須合格の規則にはベースラインが不要。保存する実行でも必須ケースの不合格は阻止する。
+      # 実行を自身と比較するため、失敗し得るのは必須合格の規則だけ。
+      - name: 必須合格ケースを検査
         if: steps.base.outputs.save == 'true' && inputs.must_pass != ''
         run: |
           .venv/bin/python evaluation/compare_to_baseline.py --report report.json \
             --baseline report.json --tolerance 0 --must-pass ${{ inputs.must_pass }}
-      - name: Upload baseline
+      - name: ベースラインをアップロード
         if: steps.base.outputs.save == 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: baseline-${{ inputs.dataset }}
           path: sample/baseline-out/${{ inputs.dataset }}.json
           if-no-files-found: error
-      - name: Compare with baseline
+      - name: ベースラインと比較
         if: steps.base.outputs.save != 'true'
         run: |
           set +e
@@ -235,14 +235,14 @@ jobs:
           status=$?
           cat gate.txt
           {
-            echo "## ${DATASET_STEM}: $([ $status -eq 0 ] && echo passed || echo regression)"
-            echo "Agent: \`${AGENT_NAME}\`"
-            echo "Revision: \`${GITHUB_SHA}\`"
+            echo "## ${DATASET_STEM}: $([ $status -eq 0 ] && echo 合格 || echo 回帰)"
+            echo "エージェント: \`${AGENT_NAME}\`"
+            echo "リビジョン: \`${GITHUB_SHA}\`"
             echo '```'
             cat gate.txt
             echo '```'
             if [ "${{ inputs.detail }}" = "full" ]; then
-              python3 -c "import json; print('Foundry report:', json.load(open('report.json')).get('report_url'))"
+              python3 -c "import json; print('Foundry レポート:', json.load(open('report.json')).get('report_url'))"
             fi
           } >> "$GITHUB_STEP_SUMMARY"
           exit $status

@@ -1,19 +1,19 @@
 # Agent Evaluation Demo
 
-A presentation and runnable sample exploring agent evaluation, observability
-and optimisation with Microsoft Foundry and Microsoft Agent Framework.
+Microsoft Foundry と Microsoft Agent Framework を使い、エージェントの評価、
+可観測性、最適化を紹介するプレゼンテーションと実行可能なサンプルです。
 
-**Model choice -> grounding -> traces -> evaluation -> optimisation -> CI/CD**
+**モデル選択 -> グラウンディング -> トレース -> 評価 -> 最適化 -> CI/CD**
 
-The sample agent answers purchasing questions using fictional policies, a workplace
-directory and a department budget. Its three read-only tools are local stand-ins for
-Foundry IQ, Work IQ and Fabric IQ; they don't connect to the real services.
+サンプルのエージェントは、架空のポリシー、職場の名簿、部門予算を使って購入に関する質問に
+答えます。3つの読み取り専用ツールは Foundry IQ、Work IQ、Fabric IQ を模したローカルの
+代替実装であり、実際のサービスには接続しません。
 
-## Start here
+## はじめに
 
-- [Playbook](PLAYBOOK.md): demo walkthrough, prerequisites, setup and run commands.
-- Presentation: [HTML deck](presentation/deck.html) or [PowerPoint](presentation/presentation.pptx).
-- [Sample](sample/): agent, evaluation datasets, judges and Azure configuration.
+- [運用ガイド](PLAYBOOK.md): デモの進め方、前提条件、セットアップと実行コマンド。
+- プレゼン資料: [HTML スライド](presentation/deck.html) または [PowerPoint](presentation/presentation.pptx)。
+- [サンプル](sample/): エージェント、評価データセット、評価器、Azure 設定。
 
-Azure hosting, model calls and telemetry can incur charges. Follow the playbook
-before deploying or starting evaluation and optimisation runs.
+Azure でのホスティング、モデル呼び出し、テレメトリには料金が発生する場合があります。
+デプロイや評価・最適化を始める前に、運用ガイドを確認してください。

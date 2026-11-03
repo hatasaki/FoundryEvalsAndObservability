@@ -1,324 +1,324 @@
 [
   {
     "id": "people:mgr-grace-okafor",
-    "title": "Grace Okafor: Finance manager, availability and leave",
+    "title": "Grace Okafor: 財務部門の上司、勤務状況と休暇",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Grace Okafor manages the Finance team and gives line-manager spending approval for its staff. Calendar: annual leave from 16 November 2026 through 20 November 2026 inclusive, back at work 23 November 2026."
+    "content": "名簿: Grace Okafor は 財務部門を管理し、所属従業員の直属上司として支出を承認する。予定表: 年次休暇は2026年11月16日から2026年11月20日まで（両端の日付を含む）。復帰日は2026年11月23日。"
   },
   {
     "id": "register:delegation-grace-okafor-1116",
-    "title": "Approvals Register: Grace Okafor delegation to Ben Carter",
+    "title": "承認登録簿: Grace Okafor から Ben Carter への委任",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Recorded by Grace Okafor. Ben Carter holds Grace Okafor's line-manager spending approval for Finance staff from 16 November 2026 through 20 November 2026 inclusive. The delegation ends automatically after 20 November 2026."
+    "content": "記録者: Grace Okafor。Ben Carter は2026年11月16日から2026年11月20日まで（両端の日付を含む）、財務部門の従業員に対する Grace Okafor の直属上司としての支出承認権限を持つ。委任は2026年11月20日を過ぎると自動的に終了する。"
   },
   {
     "id": "people:ana-silva",
-    "title": "Ana Silva: Finance team member",
+    "title": "Ana Silva: 財務部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Ana Silva works in the Finance team. Line manager: Grace Okafor."
+    "content": "名簿: Ana Silva は 財務部門に所属する。直属上司: Grace Okafor。"
   },
   {
     "id": "people:ben-carter",
-    "title": "Ben Carter: Finance team member",
+    "title": "Ben Carter: 財務部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Ben Carter works in the Finance team. Line manager: Grace Okafor."
+    "content": "名簿: Ben Carter は 財務部門に所属する。直属上司: Grace Okafor。"
   },
   {
     "id": "people:chiara-rossi",
-    "title": "Chiara Rossi: Finance team member",
+    "title": "Chiara Rossi: 財務部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Chiara Rossi works in the Finance team. Line manager: Grace Okafor."
+    "content": "名簿: Chiara Rossi は 財務部門に所属する。直属上司: Grace Okafor。"
   },
   {
     "id": "people:dev-patel",
-    "title": "Dev Patel: Finance team member",
+    "title": "Dev Patel: 財務部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Dev Patel works in the Finance team. Line manager: Grace Okafor."
+    "content": "名簿: Dev Patel は 財務部門に所属する。直属上司: Grace Okafor。"
   },
   {
     "id": "people:mgr-hannah-lindqvist",
-    "title": "Hannah Lindqvist: Legal manager, availability and leave",
+    "title": "Hannah Lindqvist: 法務部門の上司、勤務状況と休暇",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Hannah Lindqvist manages the Legal team and gives line-manager spending approval for its staff. Calendar: annual leave from 14 October 2026 through 23 October 2026 inclusive, back at work 26 October 2026; annual leave from 1 December 2026 through 4 December 2026 inclusive, back at work 7 December 2026 (no delegation recorded in the Approvals Register)."
+    "content": "名簿: Hannah Lindqvist は 法務部門を管理し、所属従業員の直属上司として支出を承認する。予定表: 年次休暇は2026年10月14日から2026年10月23日まで（両端の日付を含む）。復帰日は2026年10月26日。年次休暇は2026年12月1日から2026年12月4日まで（両端の日付を含む）。復帰日は2026年12月7日（承認登録簿に委任の記録なし）。"
   },
   {
     "id": "register:delegation-hannah-lindqvist-1014",
-    "title": "Approvals Register: Hannah Lindqvist delegation to Omar Haddad",
+    "title": "承認登録簿: Hannah Lindqvist から Omar Haddad への委任",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Recorded by Hannah Lindqvist. Omar Haddad holds Hannah Lindqvist's line-manager spending approval for Legal staff from 14 October 2026 through 23 October 2026 inclusive. The delegation ends automatically after 23 October 2026."
+    "content": "記録者: Hannah Lindqvist。Omar Haddad は2026年10月14日から2026年10月23日まで（両端の日付を含む）、法務部門の従業員に対する Hannah Lindqvist の直属上司としての支出承認権限を持つ。委任は2026年10月23日を過ぎると自動的に終了する。"
   },
   {
     "id": "people:omar-haddad",
-    "title": "Omar Haddad: Legal team member",
+    "title": "Omar Haddad: 法務部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Omar Haddad works in the Legal team. Line manager: Hannah Lindqvist."
+    "content": "名簿: Omar Haddad は 法務部門に所属する。直属上司: Hannah Lindqvist。"
   },
   {
     "id": "people:priscilla-adeyemi",
-    "title": "Priscilla Adeyemi: Legal team member",
+    "title": "Priscilla Adeyemi: 法務部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Priscilla Adeyemi works in the Legal team. Line manager: Hannah Lindqvist."
+    "content": "名簿: Priscilla Adeyemi は 法務部門に所属する。直属上司: Hannah Lindqvist。"
   },
   {
     "id": "people:quentin-blake",
-    "title": "Quentin Blake: Legal team member",
+    "title": "Quentin Blake: 法務部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Quentin Blake works in the Legal team. Line manager: Hannah Lindqvist."
+    "content": "名簿: Quentin Blake は 法務部門に所属する。直属上司: Hannah Lindqvist。"
   },
   {
     "id": "people:rosa-martinez",
-    "title": "Rosa Martinez: Legal team member",
+    "title": "Rosa Martinez: 法務部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Rosa Martinez works in the Legal team. Line manager: Hannah Lindqvist."
+    "content": "名簿: Rosa Martinez は 法務部門に所属する。直属上司: Hannah Lindqvist。"
   },
   {
     "id": "people:mgr-rafael-moreno",
-    "title": "Rafael Moreno: Facilities manager, availability and leave",
+    "title": "Rafael Moreno: 施設管理部門の上司、勤務状況と休暇",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Rafael Moreno manages the Facilities team and gives line-manager spending approval for its staff. Calendar: annual leave from 19 October 2026 through 30 October 2026 inclusive, back at work 2 November 2026 (no delegation recorded in the Approvals Register); annual leave from 7 December 2026 through 11 December 2026 inclusive, back at work 14 December 2026."
+    "content": "名簿: Rafael Moreno は 施設管理部門を管理し、所属従業員の直属上司として支出を承認する。予定表: 年次休暇は2026年10月19日から2026年10月30日まで（両端の日付を含む）。復帰日は2026年11月2日（承認登録簿に委任の記録なし）。年次休暇は2026年12月7日から2026年12月11日まで（両端の日付を含む）。復帰日は2026年12月14日。"
   },
   {
     "id": "register:delegation-rafael-moreno-1207",
-    "title": "Approvals Register: Rafael Moreno delegation to Tara Nguyen",
+    "title": "承認登録簿: Rafael Moreno から Tara Nguyen への委任",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Recorded by Rafael Moreno. Tara Nguyen holds Rafael Moreno's line-manager spending approval for Facilities staff from 7 December 2026 through 11 December 2026 inclusive. The delegation ends automatically after 11 December 2026."
+    "content": "記録者: Rafael Moreno。Tara Nguyen は2026年12月7日から2026年12月11日まで（両端の日付を含む）、施設管理部門の従業員に対する Rafael Moreno の直属上司としての支出承認権限を持つ。委任は2026年12月11日を過ぎると自動的に終了する。"
   },
   {
     "id": "people:sione-taufa",
-    "title": "Sione Taufa: Facilities team member",
+    "title": "Sione Taufa: 施設管理部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Sione Taufa works in the Facilities team. Line manager: Rafael Moreno."
+    "content": "名簿: Sione Taufa は 施設管理部門に所属する。直属上司: Rafael Moreno。"
   },
   {
     "id": "people:tara-nguyen",
-    "title": "Tara Nguyen: Facilities team member",
+    "title": "Tara Nguyen: 施設管理部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Tara Nguyen works in the Facilities team. Line manager: Rafael Moreno."
+    "content": "名簿: Tara Nguyen は 施設管理部門に所属する。直属上司: Rafael Moreno。"
   },
   {
     "id": "people:umar-siddiqui",
-    "title": "Umar Siddiqui: Facilities team member",
+    "title": "Umar Siddiqui: 施設管理部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Umar Siddiqui works in the Facilities team. Line manager: Rafael Moreno."
+    "content": "名簿: Umar Siddiqui は 施設管理部門に所属する。直属上司: Rafael Moreno。"
   },
   {
     "id": "people:valentina-greco",
-    "title": "Valentina Greco: Facilities team member",
+    "title": "Valentina Greco: 施設管理部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Valentina Greco works in the Facilities team. Line manager: Rafael Moreno."
+    "content": "名簿: Valentina Greco は 施設管理部門に所属する。直属上司: Rafael Moreno。"
   },
   {
     "id": "people:mgr-yuki-tanaka",
-    "title": "Yuki Tanaka: Marketing manager, availability and leave",
+    "title": "Yuki Tanaka: マーケティング部門の上司、勤務状況と休暇",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Yuki Tanaka manages the Marketing team and gives line-manager spending approval for its staff. Calendar: annual leave from 12 October 2026 through 21 October 2026 inclusive, back at work 22 October 2026 (out-of-office reply: 'Away for a bit - Dev can sign things off for me.') (no delegation recorded in the Approvals Register); annual leave from 9 November 2026 through 13 November 2026 inclusive, back at work 16 November 2026."
+    "content": "名簿: Yuki Tanaka は マーケティング部門を管理し、所属従業員の直属上司として支出を承認する。予定表: 年次休暇は2026年10月12日から2026年10月21日まで（両端の日付を含む）。復帰日は2026年10月22日（不在通知:『しばらく不在です。Dev が私の代わりに承認できます。』）（承認登録簿に委任の記録なし）。年次休暇は2026年11月9日から2026年11月13日まで（両端の日付を含む）。復帰日は2026年11月16日。"
   },
   {
     "id": "register:delegation-yuki-tanaka-1109",
-    "title": "Approvals Register: Yuki Tanaka delegation to Zoe Fletcher",
+    "title": "承認登録簿: Yuki Tanaka から Zoe Fletcher への委任",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Recorded by Yuki Tanaka. Zoe Fletcher holds Yuki Tanaka's line-manager spending approval for Marketing staff from 9 November 2026 through 13 November 2026 inclusive. The delegation ends automatically after 13 November 2026."
+    "content": "記録者: Yuki Tanaka。Zoe Fletcher は2026年11月9日から2026年11月13日まで（両端の日付を含む）、マーケティング部門の従業員に対する Yuki Tanaka の直属上司としての支出承認権限を持つ。委任は2026年11月13日を過ぎると自動的に終了する。"
   },
   {
     "id": "people:wiremu-parata",
-    "title": "Wiremu Parata: Marketing team member",
+    "title": "Wiremu Parata: マーケティング部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Wiremu Parata works in the Marketing team. Line manager: Yuki Tanaka."
+    "content": "名簿: Wiremu Parata は マーケティング部門に所属する。直属上司: Yuki Tanaka。"
   },
   {
     "id": "people:xin-zhao",
-    "title": "Xin Zhao: Marketing team member",
+    "title": "Xin Zhao: マーケティング部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Xin Zhao works in the Marketing team. Line manager: Yuki Tanaka."
+    "content": "名簿: Xin Zhao は マーケティング部門に所属する。直属上司: Yuki Tanaka。"
   },
   {
     "id": "people:yara-haddad",
-    "title": "Yara Haddad: Marketing team member",
+    "title": "Yara Haddad: マーケティング部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Yara Haddad works in the Marketing team. Line manager: Yuki Tanaka."
+    "content": "名簿: Yara Haddad は マーケティング部門に所属する。直属上司: Yuki Tanaka。"
   },
   {
     "id": "people:zoe-fletcher",
-    "title": "Zoe Fletcher: Marketing team member",
+    "title": "Zoe Fletcher: マーケティング部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Zoe Fletcher works in the Marketing team. Line manager: Yuki Tanaka."
+    "content": "名簿: Zoe Fletcher は マーケティング部門に所属する。直属上司: Yuki Tanaka。"
   },
   {
     "id": "people:mgr-samuel-mensah",
-    "title": "Samuel Mensah: Engineering manager, availability and leave",
+    "title": "Samuel Mensah: 技術部門の上司、勤務状況と休暇",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Samuel Mensah manages the Engineering team and gives line-manager spending approval for its staff. Calendar: annual leave from 20 October 2026 through 6 November 2026 inclusive, back at work 9 November 2026."
+    "content": "名簿: Samuel Mensah は 技術部門を管理し、所属従業員の直属上司として支出を承認する。予定表: 年次休暇は2026年10月20日から2026年11月6日まで（両端の日付を含む）。復帰日は2026年11月9日。"
   },
   {
     "id": "register:delegation-samuel-mensah-1020",
-    "title": "Approvals Register: Samuel Mensah delegation to Leah Fischer",
+    "title": "承認登録簿: Samuel Mensah から Leah Fischer への委任",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Recorded by Samuel Mensah. Leah Fischer holds Samuel Mensah's line-manager spending approval for Engineering staff from 20 October 2026 through 31 October 2026 inclusive. The delegation ends automatically after 31 October 2026."
+    "content": "記録者: Samuel Mensah。Leah Fischer は2026年10月20日から2026年10月31日まで（両端の日付を含む）、技術部門の従業員に対する Samuel Mensah の直属上司としての支出承認権限を持つ。委任は2026年10月31日を過ぎると自動的に終了する。"
   },
   {
     "id": "people:leah-fischer",
-    "title": "Leah Fischer: Engineering team member",
+    "title": "Leah Fischer: 技術部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Leah Fischer works in the Engineering team. Line manager: Samuel Mensah."
+    "content": "名簿: Leah Fischer は 技術部門に所属する。直属上司: Samuel Mensah。"
   },
   {
     "id": "people:marcus-webb",
-    "title": "Marcus Webb: Engineering team member",
+    "title": "Marcus Webb: 技術部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Marcus Webb works in the Engineering team. Line manager: Samuel Mensah."
+    "content": "名簿: Marcus Webb は 技術部門に所属する。直属上司: Samuel Mensah。"
   },
   {
     "id": "people:nadia-petrova",
-    "title": "Nadia Petrova: Engineering team member",
+    "title": "Nadia Petrova: 技術部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Nadia Petrova works in the Engineering team. Line manager: Samuel Mensah."
+    "content": "名簿: Nadia Petrova は 技術部門に所属する。直属上司: Samuel Mensah。"
   },
   {
     "id": "people:oscar-lindgren",
-    "title": "Oscar Lindgren: Engineering team member",
+    "title": "Oscar Lindgren: 技術部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Oscar Lindgren works in the Engineering team. Line manager: Samuel Mensah."
+    "content": "名簿: Oscar Lindgren は 技術部門に所属する。直属上司: Samuel Mensah。"
   },
   {
     "id": "people:mgr-chloe-dubois",
-    "title": "Chloe Dubois: Logistics manager, availability and leave",
+    "title": "Chloe Dubois: 物流部門の上司、勤務状況と休暇",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Chloe Dubois manages the Logistics team and gives line-manager spending approval for its staff. Calendar: annual leave from 13 October 2026 through 22 October 2026 inclusive, back at work 23 October 2026; annual leave from 23 November 2026 through 27 November 2026 inclusive, back at work 30 November 2026 (no delegation recorded in the Approvals Register)."
+    "content": "名簿: Chloe Dubois は 物流部門を管理し、所属従業員の直属上司として支出を承認する。予定表: 年次休暇は2026年10月13日から2026年10月22日まで（両端の日付を含む）。復帰日は2026年10月23日。年次休暇は2026年11月23日から2026年11月27日まで（両端の日付を含む）。復帰日は2026年11月30日（承認登録簿に委任の記録なし）。"
   },
   {
     "id": "register:delegation-chloe-dubois-1013",
-    "title": "Approvals Register: Chloe Dubois delegation to Ibrahim Rahman",
+    "title": "承認登録簿: Chloe Dubois から Ibrahim Rahman への委任",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Recorded by Chloe Dubois. Ibrahim Rahman holds Chloe Dubois's line-manager spending approval for Logistics staff from 13 October 2026 through 20 October 2026 inclusive. The delegation ends automatically after 20 October 2026."
+    "content": "記録者: Chloe Dubois。Ibrahim Rahman は2026年10月13日から2026年10月20日まで（両端の日付を含む）、物流部門の従業員に対する Chloe Dubois の直属上司としての支出承認権限を持つ。委任は2026年10月20日を過ぎると自動的に終了する。"
   },
   {
     "id": "people:ibrahim-rahman",
-    "title": "Ibrahim Rahman: Logistics team member",
+    "title": "Ibrahim Rahman: 物流部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Ibrahim Rahman works in the Logistics team. Line manager: Chloe Dubois."
+    "content": "名簿: Ibrahim Rahman は 物流部門に所属する。直属上司: Chloe Dubois。"
   },
   {
     "id": "people:jasmine-kaur",
-    "title": "Jasmine Kaur: Logistics team member",
+    "title": "Jasmine Kaur: 物流部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Jasmine Kaur works in the Logistics team. Line manager: Chloe Dubois."
+    "content": "名簿: Jasmine Kaur は 物流部門に所属する。直属上司: Chloe Dubois。"
   },
   {
     "id": "people:kenji-mori",
-    "title": "Kenji Mori: Logistics team member",
+    "title": "Kenji Mori: 物流部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Kenji Mori works in the Logistics team. Line manager: Chloe Dubois."
+    "content": "名簿: Kenji Mori は 物流部門に所属する。直属上司: Chloe Dubois。"
   },
   {
     "id": "people:lucia-fernandez",
-    "title": "Lucia Fernandez: Logistics team member",
+    "title": "Lucia Fernandez: 物流部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Lucia Fernandez works in the Logistics team. Line manager: Chloe Dubois."
+    "content": "名簿: Lucia Fernandez は 物流部門に所属する。直属上司: Chloe Dubois。"
   },
   {
     "id": "people:mgr-mateus-costa",
-    "title": "Mateus Costa: Customer Support manager, availability and leave",
+    "title": "Mateus Costa: 顧客サポート部門の上司、勤務状況と休暇",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Mateus Costa manages the Customer Support team and gives line-manager spending approval for its staff. Calendar: annual leave from 15 October 2026 through 28 October 2026 inclusive, back at work 29 October 2026 (out-of-office reply: 'Away for a bit - Nina can sign things off for me.') (no delegation recorded in the Approvals Register)."
+    "content": "名簿: Mateus Costa は 顧客サポート部門を管理し、所属従業員の直属上司として支出を承認する。予定表: 年次休暇は2026年10月15日から2026年10月28日まで（両端の日付を含む）。復帰日は2026年10月29日（不在通知:『しばらく不在です。Nina が私の代わりに承認できます。』）（承認登録簿に委任の記録なし）。"
   },
   {
     "id": "people:nina-kowalski",
-    "title": "Nina Kowalski: Customer Support team member",
+    "title": "Nina Kowalski: 顧客サポート部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Nina Kowalski works in the Customer Support team. Line manager: Mateus Costa."
+    "content": "名簿: Nina Kowalski は 顧客サポート部門に所属する。直属上司: Mateus Costa。"
   },
   {
     "id": "people:olivia-brennan",
-    "title": "Olivia Brennan: Customer Support team member",
+    "title": "Olivia Brennan: 顧客サポート部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Olivia Brennan works in the Customer Support team. Line manager: Mateus Costa."
+    "content": "名簿: Olivia Brennan は 顧客サポート部門に所属する。直属上司: Mateus Costa。"
   },
   {
     "id": "people:pedro-alves",
-    "title": "Pedro Alves: Customer Support team member",
+    "title": "Pedro Alves: 顧客サポート部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Pedro Alves works in the Customer Support team. Line manager: Mateus Costa."
+    "content": "名簿: Pedro Alves は 顧客サポート部門に所属する。直属上司: Mateus Costa。"
   },
   {
     "id": "people:ruth-mbeki",
-    "title": "Ruth Mbeki: Customer Support team member",
+    "title": "Ruth Mbeki: 顧客サポート部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Ruth Mbeki works in the Customer Support team. Line manager: Mateus Costa."
+    "content": "名簿: Ruth Mbeki は 顧客サポート部門に所属する。直属上司: Mateus Costa。"
   },
   {
     "id": "people:mgr-amara-nwosu",
-    "title": "Amara Nwosu: Quality Assurance manager, availability and leave",
+    "title": "Amara Nwosu: 品質保証部門の上司、勤務状況と休暇",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Amara Nwosu manages the Quality Assurance team and gives line-manager spending approval for its staff. Calendar: annual leave from 2 November 2026 through 6 November 2026 inclusive, back at work 9 November 2026 (no delegation recorded in the Approvals Register)."
+    "content": "名簿: Amara Nwosu は 品質保証部門を管理し、所属従業員の直属上司として支出を承認する。予定表: 年次休暇は2026年11月2日から2026年11月6日まで（両端の日付を含む）。復帰日は2026年11月9日（承認登録簿に委任の記録なし）。"
   },
   {
     "id": "people:stefan-novak",
-    "title": "Stefan Novak: Quality Assurance team member",
+    "title": "Stefan Novak: 品質保証部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Stefan Novak works in the Quality Assurance team. Line manager: Amara Nwosu."
+    "content": "名簿: Stefan Novak は 品質保証部門に所属する。直属上司: Amara Nwosu。"
   },
   {
     "id": "people:talia-cohen",
-    "title": "Talia Cohen: Quality Assurance team member",
+    "title": "Talia Cohen: 品質保証部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Talia Cohen works in the Quality Assurance team. Line manager: Amara Nwosu."
+    "content": "名簿: Talia Cohen は 品質保証部門に所属する。直属上司: Amara Nwosu。"
   },
   {
     "id": "people:vikram-rao",
-    "title": "Vikram Rao: Quality Assurance team member",
+    "title": "Vikram Rao: 品質保証部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Vikram Rao works in the Quality Assurance team. Line manager: Amara Nwosu."
+    "content": "名簿: Vikram Rao は 品質保証部門に所属する。直属上司: Amara Nwosu。"
   },
   {
     "id": "people:wen-li",
-    "title": "Wen Li: Quality Assurance team member",
+    "title": "Wen Li: 品質保証部門の従業員",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "Directory: Wen Li works in the Quality Assurance team. Line manager: Amara Nwosu."
+    "content": "名簿: Wen Li は 品質保証部門に所属する。直属上司: Amara Nwosu。"
   }
 ]

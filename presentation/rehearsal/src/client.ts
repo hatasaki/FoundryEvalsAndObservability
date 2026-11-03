@@ -3,6 +3,7 @@ import type { Decision, JudgeTrigger, ServiceStatus, SlideRubric } from "./conce
 import { combineWavs, encodeWav } from "./audio.ts";
 
 type Mode = "idle" | "running" | "paused" | "finishing" | "finished";
+const phaseLabels = { theory: "解説", demo: "デモ", framing: "導入・まとめ" };
 interface Utterance { text: string; capturedAt: number }
 interface SlideState {
   elapsed: number;
@@ -28,7 +29,7 @@ interface AudioChunk { slideId: string; wav: Blob; capturedAt: number; seq: numb
 
 function element<T extends HTMLElement = HTMLElement>(id: string): T {
   const node = document.getElementById(id);
-  if (!node) throw new Error(`Missing rehearsal element: ${id}`);
+  if (!node) throw new Error(`リハーサルの要素がありません: ${id}`);
   return node as T;
 }
 
@@ -38,7 +39,7 @@ const slides = new Map(rubrics.map(rubric => [
 ]));
 if (slideElements.filter(slide => slide.dataset.rehearsalId).length !== rubrics.length || [...slides.values()].some(slide =>
   !slide || !Number.isFinite(Number(slide.dataset.minutes)) || Number(slide.dataset.minutes) <= 0)) {
-  throw new Error("Deck slides, time budgets and rehearsal rubrics are out of sync.");
+  throw new Error("スライド、持ち時間、リハーサルのルーブリックが一致しません。");
 }
 function emptyState(): SlideState {
   return {
@@ -84,63 +85,63 @@ document.head.appendChild(sheet);
 const panel = document.createElement("aside");
 panel.id = "rehearsalPanel";
 panel.hidden = true;
-panel.setAttribute("aria-label", "Rehearsal coach");
+panel.setAttribute("aria-label", "リハーサルコーチ");
 panel.innerHTML = `
   <header class="rh-header">
-    <h2>Rehearsal</h2>
-    <button class="control-button" id="rhClose" aria-label="Close rehearsal panel">Close</button>
+    <h2>リハーサル</h2>
+    <button class="control-button" id="rhClose" aria-label="リハーサルパネルを閉じる">閉じる</button>
   </header>
   <div class="rh-scroll">
     <section id="rhSetup">
-      <p class="rh-muted">Local Whisper listens. Decision-1 checks spoken concept coverage against the playbook.</p>
-      <div id="rhChecks" class="rh-checks" aria-live="polite">Checking local setup...</div>
-      <button class="control-button" id="rhCheck">Check setup</button>
-      <label class="rh-option"><input type="checkbox" id="rhConsent"> Send this rehearsal's slide transcripts to the configured Foundry endpoint for AI feedback (billable).</label>
-      <label class="rh-option"><input type="checkbox" id="rhKeepAudio" checked> Keep audio in this tab for local playback and download.</label>
-      <p class="rh-small">Audio never goes to Foundry. Closing or refreshing this tab discards the session unless you download it. Switching tabs for a demo does not pause the clock.</p>
+      <p class="rh-muted">ローカルの Whisper で文字起こしし、Decision-1 が運用ガイドに沿って概念の説明を確認します。</p>
+      <div id="rhChecks" class="rh-checks" aria-live="polite">ローカル設定を確認中...</div>
+      <button class="control-button" id="rhCheck">セットアップ確認</button>
+      <label class="rh-option"><input type="checkbox" id="rhConsent"> 各スライドの文字起こしを設定済み Foundry 接続先へ送信し、AI のフィードバックを受けることに同意します（有料）。</label>
+      <label class="rh-option"><input type="checkbox" id="rhKeepAudio" checked> ローカルでの再生・ダウンロード用に音声をこのタブに保持します。</label>
+      <p class="rh-small">音声は Foundry に送りません。タブを閉じるか再読み込みすると、ダウンロードしていないセッションは失われます。デモのためにタブを切り替えても時計は止まりません。</p>
     </section>
     <div class="rh-live" id="rhLive" hidden>
-      <div class="rh-clock-row"><div><span class="rh-eyebrow">TIME LEFT</span><div id="rhClock" class="rh-clock">00:00</div></div><span class="rh-badge" id="rhMode">Ready</span></div>
+      <div class="rh-clock-row"><div><span class="rh-eyebrow">残り時間</span><div id="rhClock" class="rh-clock">00:00</div></div><span class="rh-badge" id="rhMode">準備完了</span></div>
       <div class="rh-time-track" aria-hidden="true"><div id="rhTimeBar"></div></div>
-      <div class="rh-time-stats"><span>Talk left <strong id="rhTalkLeft">00:00</strong></span><span>Overspill <strong id="rhOverspill">On time</strong></span></div>
-      <div class="rh-line" id="rhHeard"><span class="rh-dot" id="rhHeardDot"></span><span id="rhHeardText">Waiting for speech</span></div>
+      <div class="rh-time-stats"><span>全体の残り <strong id="rhTalkLeft">00:00</strong></span><span>時間差 <strong id="rhOverspill">予定どおり</strong></span></div>
+      <div class="rh-line" id="rhHeard"><span class="rh-dot" id="rhHeardDot"></span><span id="rhHeardText">発話待ち</span></div>
       <div class="rh-line" id="rhJudgeLine" aria-live="polite"><span class="rh-dot" id="rhJudgeDot"></span><span id="rhJudgeText"></span><span class="rh-next" id="rhJudgeNext" hidden></span></div>
     </div>
     <div class="rh-actions" id="rhSessionControls">
-      <button class="control-button rh-primary" id="rhStart" disabled>Start rehearsal</button>
-      <button class="control-button" id="rhPause" hidden>Pause</button>
-      <button class="control-button" id="rhStop" hidden>Finish</button>
+      <button class="control-button rh-primary" id="rhStart" disabled>リハーサル開始</button>
+      <button class="control-button" id="rhPause" hidden>一時停止</button>
+      <button class="control-button" id="rhStop" hidden>終了</button>
       <span id="rhStatus" role="status" aria-live="polite"></span>
     </div>
     <div id="rhError" class="rh-error" role="alert" hidden></div>
     <section id="rhCurrent">
-      <div class="rh-slide-heading"><h3 id="rhTitle"></h3><button class="control-button" id="rhCopy" hidden>Copy for LLM</button></div>
+      <div class="rh-slide-heading"><h3 id="rhTitle"></h3><button class="control-button" id="rhCopy" hidden>LLM 用にコピー</button></div>
       <div id="rhConcepts" class="rh-concepts"></div>
       <details id="rhDetails" class="rh-transcript" hidden>
-        <summary>Review details</summary>
+        <summary>レビューの詳細</summary>
         <p class="rh-small" id="rhPhase"></p>
         <p class="rh-small" id="rhPair"></p>
-        <div class="rh-listening"><span id="rhMic">Microphone off</span><meter id="rhLevel" min="0" max="0.08" value="0" aria-label="Microphone level"></meter></div>
+        <div class="rh-listening"><span id="rhMic">マイク停止中</span><meter id="rhLevel" min="0" max="0.08" value="0" aria-label="マイク入力レベル"></meter></div>
         <p class="rh-small" id="rhPipeline"></p>
         <div class="rh-cue" id="rhCue"></div>
-        <label class="rh-option" id="rhDemoOption" hidden><input type="checkbox" id="rhDemo"> I completed the on-screen demo (self-reported, not AI-verified).</label>
+        <label class="rh-option" id="rhDemoOption" hidden><input type="checkbox" id="rhDemo"> 画面上のデモを完了しました（自己申告であり、AI は確認していません）。</label>
         <p class="rh-small" id="rhJudged"></p>
         <p class="rh-small" id="rhGate"></p>
         <div id="rhAssessmentDetails" class="rh-small"></div>
         <div class="rh-actions">
-          <button class="control-button" id="rhJudge" disabled>Recheck concepts</button>
-          <button class="control-button" id="rhRetry" hidden>Retry failed audio</button>
+          <button class="control-button" id="rhJudge" disabled>概念を再確認</button>
+          <button class="control-button" id="rhRetry" hidden>失敗した音声を再試行</button>
         </div>
-        <details class="rh-transcript"><summary>Transcript for this slide <span id="rhWords"></span></summary><div id="rhTranscript" class="rh-transcript-text">No speech captured yet.</div></details>
-        <details class="rh-transcript"><summary>Last assessed transcript</summary><div id="rhAssessed" class="rh-transcript-text">No assessment yet.</div></details>
-        <div id="rhPlayback" hidden><audio id="rhAudio" controls preload="none" aria-label="Recorded slide audio"></audio><button class="control-button" id="rhDownloadAudio">Download slide audio</button></div>
+        <details class="rh-transcript"><summary>このスライドの文字起こし <span id="rhWords"></span></summary><div id="rhTranscript" class="rh-transcript-text">発話はまだ取得していません。</div></details>
+        <details class="rh-transcript"><summary>最後に評価した文字起こし</summary><div id="rhAssessed" class="rh-transcript-text">まだ評価していません。</div></details>
+        <div id="rhPlayback" hidden><audio id="rhAudio" controls preload="none" aria-label="録音したスライドの音声"></audio><button class="control-button" id="rhDownloadAudio">スライドの音声をダウンロード</button></div>
       </details>
     </section>
     <section id="rhReview" hidden>
-      <div class="rh-slide-heading"><span class="rh-eyebrow">REHEARSAL REVIEW</span><h3>What needs another pass?</h3></div>
+      <div class="rh-slide-heading"><span class="rh-eyebrow">リハーサルのレビュー</span><h3>もう一度確認する点は？</h3></div>
       <p class="rh-small" id="rhReviewSummary"></p>
       <div id="rhReviewRows"></div>
-      <div class="rh-actions"><button class="control-button" id="rhExport">Download session</button><button class="control-button" id="rhBack">Current slide</button><button class="control-button" id="rhNew">New rehearsal</button></div>
+      <div class="rh-actions"><button class="control-button" id="rhExport">セッションをダウンロード</button><button class="control-button" id="rhBack">現在のスライド</button><button class="control-button" id="rhNew">新しいリハーサル</button></div>
     </section>
   </div>
 `;
@@ -151,8 +152,8 @@ resizer.id = "rhResize";
 resizer.tabIndex = 0;
 resizer.setAttribute("role", "separator");
 resizer.setAttribute("aria-orientation", "vertical");
-resizer.setAttribute("aria-label", "Resize rehearsal panel");
-resizer.title = "Drag to resize · double-click to reset";
+resizer.setAttribute("aria-label", "リハーサルパネルの幅を変更");
+resizer.title = "ドラッグで幅を変更、ダブルクリックで元に戻す";
 panel.prepend(resizer);
 const defaultWidth = 384;
 function setPanelWidth(width: number, save = true) {
@@ -202,13 +203,13 @@ const demo = element<HTMLInputElement>("rhDemo");
 
 function state(id = activeId) {
   const result = states.get(id);
-  if (!result) throw new Error(`Unknown slide ${id}.`);
+  if (!result) throw new Error(`不明なスライドです: ${id}`);
   return result;
 }
 
 function rubric(id = activeId) {
   const result = rubrics.find(slide => slide.id === id);
-  if (!result) throw new Error(`Unknown slide rubric ${id}.`);
+  if (!result) throw new Error(`不明なスライドのルーブリックです: ${id}`);
   return result;
 }
 
@@ -264,13 +265,13 @@ async function api<T>(path: string, data?: Blob | object): Promise<T> {
     signal: AbortSignal.timeout(path.endsWith("transcribe") ? 75_000 : 40_000),
   } : { signal: AbortSignal.timeout(45_000) });
   const result = await response.json();
-  if (!response.ok) throw new Error(result.error ?? `Local service returned HTTP ${response.status}.`);
+  if (!response.ok) throw new Error(result.error ?? `ローカルサービスが HTTP ${response.status} を返しました。`);
   return result as T;
 }
 
 async function checkSetup() {
   startButton.disabled = true;
-  element("rhChecks").textContent = "Checking local setup...";
+  element("rhChecks").textContent = "ローカル設定を確認中...";
   try {
     service = await api<ServiceStatus>("/api/status");
     const container = element("rhChecks");
@@ -278,7 +279,7 @@ async function checkSetup() {
       const row = document.createElement("div");
       row.className = check.ok ? "rh-check rh-ok" : "rh-check rh-problem";
       const title = document.createElement("strong");
-      title.textContent = `${check.ok ? "Ready" : "Fix"}: ${check.name}`;
+      title.textContent = `${check.ok ? "準備完了" : "要対応"}: ${check.name}`;
       const detail = document.createElement("span");
       detail.textContent = check.detail;
       row.append(title, detail);
@@ -286,7 +287,7 @@ async function checkSetup() {
     }));
   } catch {
     service = undefined;
-    element("rhChecks").textContent = "Local companion unavailable. Run npm start in presentation/rehearsal, then open its localhost URL.";
+    element("rhChecks").textContent = "ローカルサーバーに接続できません。presentation/rehearsal で npm start を実行し、localhost の URL を開いてください。";
   }
   render();
 }
@@ -297,7 +298,7 @@ function captureBoundary(slideId: string, active: boolean) {
   return new Promise<void>((resolve, reject) => {
     const timeout = setTimeout(() => {
       boundaries.delete(id);
-      reject(new Error("Microphone did not flush its final audio. The last segment may be incomplete."));
+      reject(new Error("マイクから最後の音声を取得できませんでした。末尾の区間が不完全な可能性があります。"));
     }, 3000);
     boundaries.set(id, () => { clearTimeout(timeout); resolve(); });
     worklet!.port.postMessage({ type: "boundary", id, slideId, active });
@@ -306,7 +307,7 @@ function captureBoundary(slideId: string, active: boolean) {
 
 async function openMicrophone() {
   if (!navigator.mediaDevices?.getUserMedia || !window.AudioWorkletNode) {
-    throw new Error("Use a current Chrome or Edge browser on localhost for local microphone capture.");
+    throw new Error("ローカルのマイク録音には、localhost で最新の Chrome または Edge を使ってください。");
   }
   try {
     stream = await navigator.mediaDevices.getUserMedia({
@@ -315,7 +316,7 @@ async function openMicrophone() {
     audioContext = new AudioContext({ sampleRate: 16_000 });
     await audioContext.resume();
     if (audioContext.sampleRate !== 16_000 || audioContext.state !== "running") {
-      throw new Error("This browser could not start 16 kHz audio. Try Chrome or Edge.");
+      throw new Error("このブラウザーでは16 kHzの音声を開始できません。Chrome または Edge を試してください。");
     }
     await audioContext.audioWorklet.addModule("/rehearsal/worklet.js");
     worklet = new AudioWorkletNode(audioContext, "rehearsal-capture");
@@ -340,20 +341,20 @@ async function openMicrophone() {
     stream.getAudioTracks()[0].addEventListener("ended", () => {
       if (mode === "running") void action(async () => {
         await pause();
-        throw new Error("Microphone disconnected. Reconnect it, then Resume.");
+        throw new Error("マイクが切断されました。再接続してから再開してください。");
       });
     });
     audioContext.onstatechange = () => {
       if (audioContext?.state === "suspended" && mode === "running") void action(async () => {
         await pause();
-        throw new Error("Browser suspended audio capture. Rehearsal paused; Resume to reconnect.");
+        throw new Error("ブラウザーが録音を停止したため、リハーサルを一時停止しました。再開して再接続してください。");
       });
     };
     await captureBoundary(activeId, true);
   } catch (error) {
     await closeMicrophone();
     if (error instanceof DOMException && error.name === "NotAllowedError") {
-      throw new Error("Microphone permission denied. Allow the microphone for this localhost page, then retry.");
+      throw new Error("マイクの使用が拒否されました。この localhost ページにマイクを許可して再試行してください。");
     }
     throw error;
   }
@@ -370,7 +371,7 @@ async function closeMicrophone() {
   speechLevel = 0;
 }
 
-// Provisional words for the ticker only; final clips replace them and are what gets judged.
+// 途中の文字起こしは速報表示専用。確定したクリップで置き換え、その内容を評価する。
 function receivePartial(message: { slideId: string; seq: number; samples: Float32Array; sampleRate: number; peak: number }) {
   if (previewTask || message.peak < 0.003 || message.samples.length < message.sampleRate / 2) return;
   const wav = encodeWav(message.samples, message.sampleRate);
@@ -390,11 +391,11 @@ function peekAudio() {
 }
 
 function receiveAudio(message: { slideId: string; seq: number; samples: Float32Array; sampleRate: number; peak: number; capturedAt: number }) {
-  if (!states.has(message.slideId)) return setError("Captured audio has an unknown slide ID.");
+  if (!states.has(message.slideId)) return setError("取得した音声のスライド ID が不明です。");
   const wav = encodeWav(message.samples, message.sampleRate);
   const slideState = state(message.slideId);
   if (keepAudio.checked) slideState.audio.push(wav);
-  // Skip only clips where no 100 ms window had speech-like energy.
+  // 100 ms のどの区間にも発話相当の強度がなかったクリップだけを省略する。
   if (message.peak < 0.003) {
     if (preview && preview.seq <= message.seq) preview = undefined;
     transcribedSeq = Math.max(transcribedSeq, message.seq);
@@ -406,7 +407,7 @@ function receiveAudio(message: { slideId: string; seq: number; samples: Float32A
   render();
   if (audioQueue.length > 10 && mode === "running") void action(async () => {
     await pause();
-    throw new Error("Local transcription cannot keep up. Rehearsal paused so queued audio can finish.");
+    throw new Error("ローカルの文字起こしが追い付かないため、待機中の音声処理を終えるまで一時停止しました。");
   });
 }
 
@@ -419,7 +420,7 @@ function pumpTranscription() {
       await previewTask;
       try {
         const result = await api<{ text: string }>("/api/transcribe", chunk.wav);
-        if (typeof result.text !== "string") throw new Error("Local Whisper returned an invalid transcript.");
+        if (typeof result.text !== "string") throw new Error("ローカルの Whisper が不正な文字起こしを返しました。");
         if (errorText === slideState.transcriptionError) errorText = "";
         if (!failedAudio.some(failed => failed.slideId === chunk.slideId)) slideState.transcriptionError = undefined;
         transcribedSeq = Math.max(transcribedSeq, chunk.seq);
@@ -432,7 +433,7 @@ function pumpTranscription() {
         }
       } catch (error) {
         failedAudio.push(chunk);
-        slideState.transcriptionError = error instanceof Error ? error.message : "Transcription failed.";
+        slideState.transcriptionError = error instanceof Error ? error.message : "文字起こしに失敗しました。";
         setError(slideState.transcriptionError);
         if (mode === "running") void action(pause);
       }
@@ -482,7 +483,7 @@ function queueJudge(id: string, trigger: JudgeTrigger = "interval") {
         target.judgeError = undefined;
         judgedCalls++;
       } catch (error) {
-        target.judgeError = error instanceof Error ? error.message : "Decision-1 unavailable.";
+        target.judgeError = error instanceof Error ? error.message : "Decision-1 を利用できません。";
         setError(target.judgeError);
       }
       judging = undefined;
@@ -493,8 +494,8 @@ function queueJudge(id: string, trigger: JudgeTrigger = "interval") {
 }
 
 async function start() {
-  if (!consent.checked) throw new Error("Consent to transcript judging before starting.");
-  if (!service?.ready) throw new Error("Resolve the setup checks before starting.");
+  if (!consent.checked) throw new Error("開始前に文字起こしの評価に同意してください。");
+  if (!service?.ready) throw new Error("開始前にセットアップの問題を解決してください。");
   reviewId = undefined;
   await openMicrophone();
   startedAt ??= new Date().toISOString();
@@ -556,19 +557,19 @@ function renderClock() {
   element("rhTalkLeft").textContent = clock(talkLeft);
   element("rhTalkLeft").classList.toggle("rh-over", talkLeft < 0);
   const overspill = element("rhOverspill");
-  overspill.textContent = Math.abs(drift) < 1000 ? "On time" : drift > 0 ? `${clock(-drift)} over` : `${clock(-drift)} ahead`;
+  overspill.textContent = Math.abs(drift) < 1000 ? "予定どおり" : drift > 0 ? `${clock(-drift)} 超過` : `${clock(-drift)} 前倒し`;
   overspill.classList.toggle("rh-over", drift >= 1000);
-  element("rhMode").textContent = mode === "running" ? (remaining < 0 ? "Over budget" : "Live") :
-    ({ idle: "Ready", paused: "Paused", finishing: "Finishing...", finished: "Finished" })[mode];
+  element("rhMode").textContent = mode === "running" ? (remaining < 0 ? "時間超過" : "実行中") :
+    ({ idle: "準備完了", paused: "一時停止", finishing: "終了処理中...", finished: "終了" })[mode];
   element("rhMic").textContent = mode === "running" ?
-    (Date.now() - lastSpeechAt < 6000 ? "Listening locally" : "Listening - waiting for speech") : "Microphone off";
+    (Date.now() - lastSpeechAt < 6000 ? "ローカルで録音中" : "録音中・発話待ち") : "マイク停止中";
   element<HTMLMeterElement>("rhLevel").value = mode === "running" ? speechLevel : 0;
 }
 
 function renderConcepts(slide: SlideRubric, slideState: SlideState) {
   const statusLabels = {
-    not_covered: "Not yet", mentioned: "Mentioned", explained: "Landed",
-    contradicted: "Correct this", uncertain: "Unclear",
+    not_covered: "未説明", mentioned: "言及のみ", explained: "伝達済み",
+    contradicted: "要訂正", uncertain: "不明瞭",
   };
   element("rhConcepts").replaceChildren(...slide.concepts.map(concept => {
     const decision = slideState.decisions.find(item => item.conceptId === concept.id);
@@ -582,8 +583,8 @@ function renderConcepts(slide: SlideRubric, slideState: SlideState) {
     label.title = concept.criterion;
     const status = document.createElement("span");
     status.className = "rh-coverage";
-    status.textContent = decision ? (trusted ? statusLabels[decision.coverage] : "Not sure yet") :
-      (mode === "running" ? "Listening" : slideState.utterances.length ? "More context" : "Not yet");
+    status.textContent = decision ? (trusted ? statusLabels[decision.coverage] : "判定保留") :
+      (mode === "running" ? "録音中" : slideState.utterances.length ? "追加の説明が必要" : "未説明");
     heading.append(label, status);
     row.appendChild(heading);
     const hint = document.createElement("p");
@@ -599,12 +600,12 @@ function renderConcepts(slide: SlideRubric, slideState: SlideState) {
         const name = document.createElement("span");
         name.textContent = qualityDimensions[key].label;
         const score = document.createElement("strong");
-        score.textContent = quality.rating === null ? "Unclear" : `${quality.rating.toFixed(1)}/4`;
+        score.textContent = quality.rating === null ? "不明瞭" : `${quality.rating.toFixed(1)}/4`;
         item.append(name, score);
         const tentative = quality.range[1] - quality.range[0] >= 2;
-        item.title = quality.rating === null ? "No intelligible explanation of this concept to assess." :
-          `Probability-weighted score; the scorer's central 80% of grades spans ${quality.range[0]}–${quality.range[1]}/4` +
-          (tentative ? " (the scorer is unsure between these grades)." : ".");
+        item.title = quality.rating === null ? "この概念について評価できる明瞭な説明がありません。" :
+          `確率で重み付けしたスコア。評価器の評点の中央80%は ${quality.range[0]}〜${quality.range[1]}/4` +
+          (tentative ? "（評価器はこの範囲の評点で迷っています）。" : "。");
         scores.appendChild(item);
       }
       row.appendChild(scores);
@@ -620,10 +621,10 @@ function renderConcepts(slide: SlideRubric, slideState: SlideState) {
     key, ...decision.quality[key],
   }))).filter(item => item.rating !== null && item.rating < 2.5 && item.range[1] - item.range[0] <= 1)
     .sort((left, right) => left.rating! - right.rating!)[0];
-  element("rhCue").textContent = contradiction ? `Clarify this: ${cue}` :
-    cue ? `Next idea: ${cue}` : improvement ?
+  element("rhCue").textContent = contradiction ? `明確にする点: ${cue}` :
+    cue ? `次の概念: ${cue}` : improvement ?
       `${improvement.concept.label}: ${qualityDimensions[improvement.key].cue}` :
-      "All spoken objectives clearly covered. Leave space for the transition.";
+      "すべての目標を明確に説明できました。次のスライドへの移行に余裕を残してください。";
 }
 
 function renderActivity() {
@@ -635,7 +636,7 @@ function renderActivity() {
   const provisional = Math.min(previewWords.length, shown.length);
   const heard = element("rhHeardText");
   if (!shown.length) {
-    heard.textContent = mode === "running" ? "Listening for speech…" : "No speech captured on this slide";
+    heard.textContent = mode === "running" ? "発話を待っています..." : "このスライドの発話は未取得です";
   } else {
     const live = document.createElement("span");
     live.className = "rh-provisional";
@@ -644,20 +645,20 @@ function renderActivity() {
       shown.slice(0, shown.length - provisional).join(" "), live);
   }
   element("rhHeardDot").className = "rh-dot" + (transcriptionTask ? " rh-busy" : mode === "running" ? " rh-on" : "");
-  element("rhHeard").title = transcriptionTask ? "Transcribing locally…" : "Latest words heard on this slide";
+  element("rhHeard").title = transcriptionTask ? "ローカルで文字起こし中..." : "このスライドで直近に取得した発話";
   const sending = judging?.slideId === id;
   element("rhJudgeDot").className = "rh-dot" + (sending ? " rh-busy rh-send" : slideState.judgeError ? " rh-fail" : "");
   element("rhJudgeText").textContent = sending ?
-    `Sending ${judging!.words} words to Decision-1… ${Math.floor((Date.now() - judging!.since) / 1000)}s` :
-    slideState.judgeError ? "Decision-1 check failed" :
-      slideState.judgedAt ? `Decision-1 scored ${wordCount(slideState.assessedTranscript)} words · ${Math.max(0, Math.round((Date.now() - slideState.judgedAt) / 1000))}s ago` :
-        judging ? "Decision-1 busy with another slide" : "Decision-1: no check yet";
+    `Decision-1 に ${judging!.words} 語を送信中... ${Math.floor((Date.now() - judging!.since) / 1000)}秒` :
+    slideState.judgeError ? "Decision-1 の確認が失敗" :
+      slideState.judgedAt ? `Decision-1 が ${wordCount(slideState.assessedTranscript)} 語を採点・${Math.max(0, Math.round((Date.now() - slideState.judgedAt) / 1000))}秒前` :
+        judging ? "Decision-1 は別スライドを処理中" : "Decision-1: 未確認";
   const next = element("rhJudgeNext");
   next.hidden = mode !== "running" || id !== activeId || sending;
   if (!next.hidden) {
     const needed = judgingPolicy.newWords - judgeReadiness(transcript(id), slideState.attemptedWords, "interval").newWords;
     const seconds = Math.max(0, Math.ceil((judgingPolicy.intervalMs - (Date.now() - lastJudgeAt)) / 1000));
-    next.textContent = needed > 0 ? `next: ${needed} more word${needed === 1 ? "" : "s"}` : `next in ${seconds}s`;
+    next.textContent = needed > 0 ? `次はあと ${needed} 語` : `次は ${seconds}秒後`;
   }
 }
 
@@ -667,26 +668,26 @@ function render() {
   const slide = rubric(id);
   const slideState = state(id);
   const started = mode !== "idle";
-  element("rehearsalButton").textContent = mode === "running" ? "Recording" : mode === "paused" ? "Rehearsal paused" : "Rehearse";
+  element("rehearsalButton").textContent = mode === "running" ? "録音中" : mode === "paused" ? "一時停止中" : "リハーサル";
   element("rehearsalButton").dataset.recording = String(mode === "running");
-  element("rehearsalButton").title = mode === "running" ? "Microphone recording locally. Open rehearsal to pause or finish." : "Open rehearsal coach";
+  element("rehearsalButton").title = mode === "running" ? "ローカルで録音中。リハーサルを開いて一時停止または終了できます。" : "リハーサルコーチを開く";
   element("rhSetup").hidden = started;
   element("rhLive").hidden = !started;
   startButton.hidden = mode !== "idle";
   startButton.disabled = actionBusy || !service?.ready || !consent.checked;
   pauseButton.hidden = !["running", "paused"].includes(mode);
-  pauseButton.textContent = mode === "paused" ? "Resume" : "Pause";
+  pauseButton.textContent = mode === "paused" ? "再開" : "一時停止";
   pauseButton.disabled = actionBusy;
   stopButton.hidden = !["running", "paused", "finishing"].includes(mode);
   stopButton.disabled = actionBusy || mode === "finishing";
   element("rhError").hidden = !errorText;
   element("rhError").textContent = errorText;
-  element("rhPhase").textContent = `${rubrics.indexOf(slide) + 1} / ${rubrics.length} · ${slide.phase}${reviewId ? " · REVIEW" : ""}`;
+  element("rhPhase").textContent = `${rubrics.indexOf(slide) + 1} / ${rubrics.length}・${phaseLabels[slide.phase]}${reviewId ? "・レビュー" : ""}`;
   element("rhTitle").textContent = slide.title;
   const partners = slide.pair ? rubrics.filter(item => item.pair === slide.pair && item.id !== slide.id) : [];
-  element("rhPair").textContent = partners.length ? "Linked: " + partners.map(partner => {
+  element("rhPair").textContent = partners.length ? "対応: " + partners.map(partner => {
     const partnerState = state(partner.id);
-    return `${partner.title} (${partnerState.decisions.filter(explained).length}/${partner.concepts.length} explained)`;
+    return `${partner.title} (${partnerState.decisions.filter(explained).length}/${partner.concepts.length} 説明済み)`;
   }).join("; ") : "";
   renderConcepts(slide, slideState);
   element("rhDetails").hidden = !["paused", "finished"].includes(mode);
@@ -698,29 +699,29 @@ function render() {
   const readiness = judgeReadiness(currentTranscript, slideState.attemptedWords, "interval");
   const upToDate = slideState.revision > 0 && slideState.judgedRevision === slideState.revision;
   element("rhStatus").textContent = !started ? "" : slideState.judgeError || slideState.transcriptionError ?
-    "Feedback unavailable" : judgeTask ? "Checking..." : transcriptionTask && mode !== "running" ?
-      "Finishing transcript..." : upToDate ? "Up to date" :
-        mode === "running" ? "Listening..." : words < judgingPolicy.finalWords ? "More speech needed" : "Feedback pending";
-  element("rhJudged").textContent = slideState.judgeError ? `${slideState.judgeError} Previous feedback, if any, is stale.` :
+    "フィードバック取得不可" : judgeTask ? "確認中..." : transcriptionTask && mode !== "running" ?
+      "文字起こしを完了中..." : upToDate ? "最新" :
+        mode === "running" ? "録音中..." : words < judgingPolicy.finalWords ? "追加の発話が必要" : "フィードバック待ち";
+  element("rhJudged").textContent = slideState.judgeError ? `${slideState.judgeError} 以前のフィードバックがあれば古い状態です。` :
     slideState.judgedAt ?
-      `Check ${slideState.checks} assessed ${submittedWords}/${words} words · ${new Date(slideState.judgedAt).toLocaleTimeString()} · ${slideState.latencyMs} ms` +
-      (slideState.judgedRevision < slideState.revision ? " · New speech not yet assessed." : " · All captured speech assessed.") :
-      "No assessment yet.";
+      `確認${slideState.checks}回目: ${submittedWords}/${words} 語を評価・${new Date(slideState.judgedAt).toLocaleTimeString("ja-JP")}・${slideState.latencyMs} ms` +
+      (slideState.judgedRevision < slideState.revision ? "・新しい発話はまだ未評価。" : "・取得した全発話を評価済み。") :
+      "まだ評価していません。";
   element("rhGate").textContent = words < judgingPolicy.finalWords ?
-    `Too little speech to assess (${words}/${judgingPolicy.finalWords} words for a final check).` :
-    `Automatic checks need ${judgingPolicy.newWords} new words; ${readiness.newWords} new words available. Final slide checks use any new speech once there are ${judgingPolicy.finalWords} words in total.`;
+    `評価には発話が足りません（最終確認に必要な ${judgingPolicy.finalWords} 語に対して ${words} 語）。` :
+    `自動確認には新たに ${judgingPolicy.newWords} 語が必要。現在は ${readiness.newWords} 語増えています。スライド終了時は合計 ${judgingPolicy.finalWords} 語以上あれば、少量の追加発話も評価します。`;
   element("rhCopy").hidden = !started || !slideState.utterances.length;
-  element("rhTranscript").textContent = currentTranscript || "No speech captured yet.";
-  element("rhAssessed").textContent = slideState.assessedTranscript || "No assessment yet.";
-  element("rhWords").textContent = `(${words} words)`;
+  element("rhTranscript").textContent = currentTranscript || "発話はまだ取得していません。";
+  element("rhAssessed").textContent = slideState.assessedTranscript || "まだ評価していません。";
+  element("rhWords").textContent = `(${words} 語)`;
   element("rhAssessmentDetails").replaceChildren(...slideState.decisions.map(decision => {
     const section = document.createElement("p");
     const concept = slide.concepts.find(concept => concept.id === decision.conceptId)!;
-    section.textContent = `${concept.label}: ${labels[decision.coverage]}. Coverage-label probability ${Math.round(decision.confidence * 100)}% (not a presentation score). ` +
+    section.textContent = `${concept.label}: ${labels[decision.coverage]}。説明状態のラベルの確率 ${Math.round(decision.confidence * 100)}%（発表のスコアではありません）。` +
       qualityKeys.map(key => {
         const quality = decision.quality[key];
-        return quality.rating === null ? `${qualityDimensions[key].label}: no explanation to assess.` :
-          `${qualityDimensions[key].label}: ${quality.rating.toFixed(1)}/4; grade probabilities 1–4: ${quality.probabilities.map(probability => `${Math.round(probability * 100)}%`).join(", ")}.`;
+        return quality.rating === null ? `${qualityDimensions[key].label}: 評価する説明がありません。` :
+          `${qualityDimensions[key].label}: ${quality.rating.toFixed(1)}/4、評点1〜4の確率: ${quality.probabilities.map(probability => `${Math.round(probability * 100)}%`).join(", ")}。`;
       }).join(" ");
     return section;
   }));
@@ -728,9 +729,9 @@ function render() {
   element("rhRetry").hidden = failedAudio.length === 0;
   element<HTMLButtonElement>("rhRetry").disabled = Boolean(transcriptionTask);
   element<HTMLButtonElement>("rhNew").disabled = Boolean(transcriptionTask || judgeTask);
-  element("rhPipeline").textContent = `${transcriptionTask ? `Transcribing locally (${audioQueue.length + 1} queued)` : "Transcription idle"} · ` +
-    `${judgeTask ? "Checking concepts" : `${judgedCalls} checks complete`}` +
-    (failedAudio.length ? ` · ${failedAudio.length} audio segments need retry` : "");
+  element("rhPipeline").textContent = `${transcriptionTask ? `ローカルで文字起こし中（${audioQueue.length + 1}件待機）` : "文字起こし待機中"}・` +
+    `${judgeTask ? "概念を確認中" : `${judgedCalls}回の確認が完了`}` +
+    (failedAudio.length ? `・音声${failedAudio.length}区間の再試行が必要` : "");
   const playable = ["paused", "finished"].includes(mode) && slideState.audio.length > 0;
   element("rhPlayback").hidden = !playable;
   if (playable && element("rhPlayback").dataset.slide !== id) {
@@ -753,8 +754,8 @@ function renderReview() {
   const objectives = visited.reduce((sum, slide) => sum + slide.concepts.length, 0);
   const stale = visited.filter(slide => (wordCount(transcript(slide.id)) >= judgingPolicy.finalWords && state(slide.id).judgedRevision < state(slide.id).revision) ||
     state(slide.id).judgeError || state(slide.id).transcriptionError);
-  element("rhReviewSummary").textContent = `${visited.length}/${rubrics.length} slides visited · ${clearly}/${objectives} objectives clearly explained. ` +
-    `${stale.length} slides have incomplete or failed feedback. Download before closing this tab.`;
+  element("rhReviewSummary").textContent = `${visited.length}/${rubrics.length}枚を表示・${clearly}/${objectives}項目を明確に説明。` +
+    `${stale.length}枚のフィードバックが未完了または失敗しています。タブを閉じる前にダウンロードしてください。`;
   element("rhReviewRows").replaceChildren(...rubrics.map(slide => {
     const target = state(slide.id);
     const button = document.createElement("button");
@@ -764,13 +765,13 @@ function renderReview() {
     label.textContent = `${rubrics.indexOf(slide) + 1}. ${slide.title}`;
     const detail = document.createElement("span");
     const over = target.elapsed > budget(slide.id);
-    detail.textContent = !target.visited ? "Not visited" :
-      `${clock(target.elapsed)} / ${clock(budget(slide.id))}${over ? " · OVER" : ""} · ` +
-      `${target.decisions.filter(explained).length}/${slide.concepts.length} explained` +
-      (!target.utterances.length ? " · No speech captured" : "") +
-      (target.utterances.length && wordCount(transcript(slide.id)) < judgingPolicy.finalWords ? " · Too brief to assess" : "") +
-      (target.judgeError || target.transcriptionError ? " · Feedback incomplete" : "") +
-      (slide.phase === "demo" ? ` · Demo ${target.demoCompleted ? "self-confirmed" : "not confirmed"}` : "");
+    detail.textContent = !target.visited ? "未表示" :
+      `${clock(target.elapsed)} / ${clock(budget(slide.id))}${over ? "・超過" : ""}・` +
+      `${target.decisions.filter(explained).length}/${slide.concepts.length}項目を説明` +
+      (!target.utterances.length ? "・発話未取得" : "") +
+      (target.utterances.length && wordCount(transcript(slide.id)) < judgingPolicy.finalWords ? "・発話が短すぎて評価不可" : "") +
+      (target.judgeError || target.transcriptionError ? "・フィードバック未完了" : "") +
+      (slide.phase === "demo" ? `・デモ${target.demoCompleted ? "自己確認済み" : "未確認"}` : "");
     button.append(label, detail);
     button.addEventListener("click", () => {
       reviewId = slide.id;
@@ -822,7 +823,7 @@ element("rhRetry").addEventListener("click", () => {
 element("rhBack").addEventListener("click", () => { reviewId = undefined; render(); });
 element("rhNew").addEventListener("click", () => {
   if (mode !== "finished" || transcriptionTask || judgeTask) return;
-  if (!window.confirm("Discard this rehearsal and start fresh? Download the session and any audio you want to keep first.")) return;
+  if (!window.confirm("このリハーサルを破棄して最初から開始しますか。残すセッションと音声は先にダウンロードしてください。")) return;
   for (const slide of rubrics) states.set(slide.id, emptyState());
   if (recordingUrl) URL.revokeObjectURL(recordingUrl);
   recordingUrl = undefined;
@@ -845,16 +846,16 @@ function llmBundle(id: string) {
   const full = transcript(id);
   const json = (value: unknown) => "```json\n" + JSON.stringify(value, null, 2) + "\n```";
   return [
-    `# Rehearsal feedback: slide ${rubrics.indexOf(slide) + 1} "${slide.title}" (${slide.phase})`,
-    "Explain why Decision-1 gave these coverage and quality scores, quoting the transcript, and suggest how to say it better.",
-    `## Full transcript captured on this slide (${wordCount(full)} words)`,
-    full || "(none)",
-    target.assessedTranscript === full ? "The last assessment used this full transcript." :
-      `The last assessment used ${wordCount(target.assessedTranscript)} of these words; later speech was not yet assessed.`,
-    "## Exact Decision-1 request (last check)",
-    target.lastRequest ? json(target.lastRequest) : "(no assessment yet)",
-    "## Decision-1 response (last check)",
-    target.lastResponse ? json(target.lastResponse) : "(no assessment yet)",
+    `# リハーサルのフィードバック: スライド${rubrics.indexOf(slide) + 1}「${slide.title}」（${phaseLabels[slide.phase]}）`,
+    "文字起こしを引用し、Decision-1 がこの説明状態と品質スコアを付けた理由を説明して、より良い話し方を提案してください。",
+    `## このスライドで取得した文字起こし全文（${wordCount(full)} 語）`,
+    full || "（なし）",
+    target.assessedTranscript === full ? "最後の評価はこの全文を使用しました。" :
+      `最後の評価はこのうち ${wordCount(target.assessedTranscript)} 語を使用しました。その後の発話はまだ未評価です。`,
+    "## 実際の Decision-1 リクエスト（最後の確認）",
+    target.lastRequest ? json(target.lastRequest) : "（まだ評価していません）",
+    "## Decision-1 レスポンス（最後の確認）",
+    target.lastResponse ? json(target.lastResponse) : "（まだ評価していません）",
   ].join("\n\n");
 }
 element("rhCopy").addEventListener("click", async () => {
@@ -863,12 +864,12 @@ element("rhCopy").addEventListener("click", async () => {
   const button = element<HTMLButtonElement>("rhCopy");
   try {
     await navigator.clipboard.writeText(text);
-    button.textContent = "Copied";
+    button.textContent = "コピー済み";
   } catch {
     download(new Blob([text], { type: "text/markdown" }), `rehearsal-${id}.md`);
-    button.textContent = "Downloaded";
+    button.textContent = "ダウンロード済み";
   }
-  setTimeout(() => { button.textContent = "Copy for LLM"; }, 1500);
+  setTimeout(() => { button.textContent = "LLM 用にコピー"; }, 1500);
 });
 element("rhDownloadAudio").addEventListener("click", () => {
   const id = reviewId ?? activeId;
@@ -877,9 +878,9 @@ element("rhDownloadAudio").addEventListener("click", () => {
 element("rhExport").addEventListener("click", () => {
   const report = {
     schemaVersion: 3, startedAt, exportedAt: new Date().toISOString(), judgingPolicy,
-    qualityMethod: "Native ordered score on four anchored levels; zero-based API scores shifted to 1–4.",
+    qualityMethod: "4段階の基準を持つネイティブな順序付きスコア。0始まりの API スコアを1〜4へ移す。",
     endpoint: service?.endpoint, deployment: service?.deployment,
-    scope: "Spoken concept coverage only; not audience understanding or verified screen actions.",
+    scope: "発話による概念の説明のみ。聴衆の理解や画面操作の実行は確認しない。",
     failedAudioSegments: failedAudio.map(chunk => ({ slideId: chunk.slideId, capturedAt: chunk.capturedAt })),
     slides: rubrics.map(slide => {
       const target = state(slide.id);

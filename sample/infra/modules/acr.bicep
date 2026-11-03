@@ -1,45 +1,43 @@
-// Azure Container Registry for hosted agents that use docker:.
-// Wires the registry as a connection on the Foundry project so the
-// project's managed identity can pull images.
+// docker: を使うホスト型エージェント用の Azure Container Registry。
+// Foundry プロジェクトのマネージド ID がイメージを取得できるよう、レジストリを接続として設定する。
 //
-// Premium SKU is intentional: Foundry recommends Premium so the registry
-// can support content trust and geo-replication if the user enables them
-// post-provision.
+// Premium SKU は意図的な選択。プロビジョニング後にコンテンツの信頼と geo レプリケーションを
+// 有効にできるよう、Foundry は Premium を推奨する。
 
-// Parameters
+// パラメーター
 
-@description('Azure region.')
+@description('Azure リージョン。')
 param location string
 
-@description('Tags applied to all resources.')
+@description('すべてのリソースに適用するタグ。')
 param tags object = {}
 
-@description('Registry name. 5-50 alphanumeric chars.')
+@description('レジストリ名。英数字で5〜50文字。')
 @minLength(5)
 @maxLength(50)
 param name string
 
-@description('Name of the existing Foundry CognitiveServices account that hosts the project receiving the ACR connection.')
+@description('ACR 接続を設定するプロジェクトをホストする、既存の Foundry CognitiveServices アカウント名。')
 param foundryAccountName string
 
-@description('Name of the existing Foundry project receiving the ACR connection.')
+@description('ACR 接続を設定する既存の Foundry プロジェクト名。')
 param foundryProjectName string
 
-@description('Principal id of the Foundry project managed identity; receives AcrPull and is the connection credential identity.')
+@description('Foundry プロジェクトのマネージド ID のプリンシパル ID。AcrPull を付与し、接続の認証 ID に使う。')
 param foundryProjectPrincipalId string
 
-@description('When true, the registry disables public network access to stay inside the isolation boundary.')
+@description('true ならレジストリの公開ネットワークアクセスを無効にし、分離境界内に保つ。')
 param enableNetworkIsolation bool = false
 
-// Variables
+// 変数
 
-// Built-in role definition ids. See: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles
+// 組み込みロール定義 ID: https://learn.microsoft.com/azure/role-based-access-control/built-in-roles
 var acrPullRoleId = subscriptionResourceId(
   'Microsoft.Authorization/roleDefinitions',
   '7f951dda-4ed3-4680-a7ca-43fe172d538d'
 )
 
-// Resources
+// リソース
 
 resource registry 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
   name: name
@@ -53,17 +51,16 @@ resource registry 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
   }
   properties: {
     adminUserEnabled: false
-    // Disable public access when network isolation is enabled so the registry
-    // stays inside the VNet boundary. Docker-backed agents in isolated projects
-    // must pull via the private endpoint; public access would leave a dependency
-    // outside the isolation perimeter and can break pulls in locked-down egress.
+    // ネットワーク分離時は公開アクセスを無効にし、レジストリを VNet 境界内に保つ。
+    // 分離したプロジェクトの Docker エージェントはプライベートエンドポイントで取得する。
+    // 公開アクセスでは依存先が分離境界の外に残り、送信制限下で取得に失敗する場合がある。
     publicNetworkAccess: enableNetworkIsolation ? 'Disabled' : 'Enabled'
     zoneRedundancy: 'Disabled'
   }
 }
 
-// Grant the Foundry project's managed identity AcrPull on this registry so the
-// hosted agent can pull images using the project identity.
+// ホスト型エージェントがプロジェクトの ID でイメージを取得できるよう、
+// Foundry プロジェクトのマネージド ID にこのレジストリの AcrPull を付与する。
 resource foundryAcrPull 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(registry.id, foundryProjectPrincipalId, acrPullRoleId)
   scope: registry
@@ -74,24 +71,24 @@ resource foundryAcrPull 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   }
 }
 
-// Existing parent references so the connection can be nested under the
-// project. Pinned to 2025-04-01-preview: GA 2025-06-01 fails to resolve the
-// projects/connections ContainerRegistry sub-resource (MissingApiVersionParameter).
+// 接続をプロジェクト配下に置くための既存親リソースの参照。
+// GA 2025-06-01 では projects/connections の ContainerRegistry サブリソースを解決できないため、
+// 2025-04-01-preview に固定する（MissingApiVersionParameter）。
 resource foundryAccount 'Microsoft.CognitiveServices/accounts@2025-04-01-preview' existing = {
   name: foundryAccountName
 
   resource project 'projects' existing = {
     name: foundryProjectName
 
-    // Project-scoped connection so Foundry can resolve the registry by name.
+    // Foundry が名前でレジストリを解決できるよう、接続をプロジェクトスコープにする。
     resource acrConnection 'connections' = {
       name: '${name}-conn'
       properties: {
         category: 'ContainerRegistry'
         target: registry.properties.loginServer
         authType: 'ManagedIdentity'
-        // RegistryIdentity auth requires both the identity client id (the
-        // project principal) and the registry resource id.
+        // RegistryIdentity 認証には ID のクライアント ID（プロジェクトのプリンシパル）と
+        // レジストリのリソース ID の両方が必要。
         credentials: {
           clientId: foundryProjectPrincipalId
           resourceId: registry.id
@@ -108,7 +105,7 @@ resource foundryAccount 'Microsoft.CognitiveServices/accounts@2025-04-01-preview
   }
 }
 
-// Outputs
+// 出力
 
 output loginServer string = registry.properties.loginServer
 output resourceId string = registry.id

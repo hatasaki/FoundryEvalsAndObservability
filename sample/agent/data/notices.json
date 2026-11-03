@@ -1,37 +1,37 @@
 [
   {
     "id": "notice:nova-graduate-exception",
-    "title": "Nova Learning graduate programme purchasing exception",
+    "title": "Nova Learning の新卒者向けプログラムの購入例外",
     "issued": "2026-10-04",
     "synthetic": true,
-    "content": "From: People Director. Effective October 4 through November 4, 2026 inclusive. For Nova Learning Portal licences specifically for the new graduate programme, one supplier quotation and Head of Learning spending approval replace the normal quotation and spending-approval route, regardless of amount. The Head of Learning approval must be obtained by November 4, 2026 inclusive and before commitment. This notice is not approval of an individual purchase. It does not apply to leadership programmes, other employee groups, other suppliers, hardware or in-person courses. It does not waive Training Lead suitability approval or the software security-review requirement."
+    "content": "発行者: 人事責任者。有効期間は2026年10月4日から11月4日まで（両端の日付を含む）。新卒者向けプログラム専用の Nova Learning Portal ライセンスについては、金額にかかわらず、通常の見積書と支出承認の経路を取引先の見積書1件と学習統括責任者の支出承認に置き換える。学習統括責任者の承認は2026年11月4日までに、かつ支出を確約する前に得なければならない。この通知は個別の購入を承認するものではない。リーダーシッププログラム、他の従業員グループ、他の取引先、ハードウェア、対面講座には適用しない。研修責任者の適合性承認や、ソフトウェアのセキュリティ審査要件は免除しない。"
   },
   {
     "id": "notice:brightpath-leadership-exception",
-    "title": "BrightPath September leadership workshop exception",
+    "title": "BrightPath の9月のリーダーシップ研修の購入例外",
     "issued": "2026-09-01",
     "synthetic": true,
-    "content": "From: People Director. Effective September 1 through September 30, 2026 inclusive. For the BrightPath in-person Leadership Essentials workshop for new people managers, one supplier quotation and Head of Learning spending approval replace the normal quotation and spending-approval route, regardless of amount. Approval must be obtained by September 30 inclusive and before commitment. This notice does not approve any individual purchase and does not waive Training Lead suitability approval. It covers no online services or other suppliers, courses or programmes. After September 30, use the normal purchasing route."
+    "content": "発行者: 人事責任者。有効期間は2026年9月1日から9月30日まで（両端の日付を含む）。新任管理職向けの BrightPath の対面研修 Leadership Essentials については、金額にかかわらず、通常の見積書と支出承認の経路を取引先の見積書1件と学習統括責任者の支出承認に置き換える。承認は9月30日までに、かつ支出を確約する前に得なければならない。この通知は個別の購入を承認せず、研修責任者の適合性承認も免除しない。オンラインサービス、他の取引先、他の講座やプログラムは対象外である。9月30日を過ぎたら通常の購入経路を使う。"
   },
   {
     "id": "notice:designcloud-public-clearance",
-    "title": "DesignCloud Studio security clearance: public marketing assets",
+    "title": "DesignCloud Studio のセキュリティ許可: 公開済みのマーケティング素材",
     "issued": "2026-10-01",
     "synthetic": true,
-    "content": "From: Security Team. DesignCloud Studio is cleared from October 1 through December 31, 2026 inclusive for producing marketing graphics using public templates and already-public marketing assets only. Business email addresses for account login are permitted. This clearance does not permit customer files, customer contact lists, employee datasets or confidential business documents. It is not clearance for every DesignCloud use. It satisfies only the security-review requirement within its stated scope and dates; normal quotations and spending approval are still required."
+    "content": "発行者: セキュリティチーム。DesignCloud Studio は2026年10月1日から12月31日まで（両端の日付を含む）、公開テンプレートと既に公開されているマーケティング素材だけを使ったマーケティング画像の制作について許可されている。アカウントへのログインに業務用メールアドレスを使うことは認める。顧客ファイル、顧客連絡先リスト、従業員データセット、機密業務文書の利用は認めない。DesignCloud の全ての用途を許可するものではない。明示した範囲と日付においてセキュリティ審査の要件だけを満たし、通常の見積書と支出承認は引き続き必要である。"
   },
   {
     "id": "notice:designcloud-customer-pilot",
-    "title": "DesignCloud Studio customer-file pilot: September only",
+    "title": "DesignCloud Studio の顧客ファイル試行: 9月限定",
     "issued": "2026-09-01",
     "synthetic": true,
-    "content": "From: Security Team. A limited DesignCloud Studio pilot may use customer campaign files from September 1 through September 30, 2026 inclusive. This permission expires after September 30 and is not automatically renewed. A different clearance for public marketing assets does not extend this customer-file permission. This notice satisfies only the security-review requirement during the pilot and does not grant spending approval."
+    "content": "発行者: セキュリティチーム。DesignCloud Studio の限定試行では、2026年9月1日から9月30日まで（両端の日付を含む）顧客のキャンペーンファイルを利用できる。この許可は9月30日を過ぎると失効し、自動更新されない。公開済みマーケティング素材への別の許可があっても、この顧客ファイルの許可は延長されない。この通知は試行期間中のセキュリティ審査要件だけを満たし、支出承認を与えるものではない。"
   },
   {
     "id": "notice:nova-portal-clearance",
-    "title": "Nova Learning Portal security clearance: standard employee training",
+    "title": "Nova Learning Portal のセキュリティ許可: 標準的な従業員研修",
     "issued": "2026-09-01",
     "synthetic": true,
-    "content": "From: Security Team. Nova Learning Portal is cleared from September 1 through December 31, 2026 inclusive for standard employee training using the provider's public course content. Employee names, business email addresses and course-completion records are permitted. Uploads of customer files, employee performance reviews or other confidential documents are not permitted. The security clearance covers graduate and leadership training within that data scope; it is not limited to the purchasing exception's graduate programme. It satisfies only the security-review requirement and grants neither Training Lead suitability approval nor spending approval."
+    "content": "発行者: セキュリティチーム。Nova Learning Portal は2026年9月1日から12月31日まで（両端の日付を含む）、提供者の公開講座コンテンツを使った標準的な従業員研修について許可されている。従業員名、業務用メールアドレス、講座修了記録の利用は認める。顧客ファイル、従業員の業績評価、その他の機密文書のアップロードは認めない。このセキュリティ許可は、そのデータ範囲内の新卒者研修とリーダーシップ研修を対象とし、購入例外の新卒者向けプログラムだけに限定されない。セキュリティ審査要件だけを満たし、研修責任者の適合性承認も支出承認も与えない。"
   }
 ]

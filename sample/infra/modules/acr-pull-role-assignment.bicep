@@ -1,12 +1,12 @@
 targetScope = 'resourceGroup'
 
-@description('Name of the Azure Container Registry.')
+@description('Azure Container Registry の名前。')
 param registryName string
 
-@description('Principal receiving AcrPull on the registry.')
+@description('レジストリの AcrPull を付与するプリンシパル。')
 param principalId string
 
-@description('AcrPull role definition resource ID.')
+@description('AcrPull ロール定義のリソース ID。')
 param roleDefinitionId string
 
 resource registry 'Microsoft.ContainerRegistry/registries@2023-07-01' existing = {

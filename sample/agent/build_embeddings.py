@@ -1,8 +1,8 @@
-"""Embed the policies for hybrid search in knowledge_base_retrieve.
+"""knowledge_base_retrieve のハイブリッド検索用にポリシーの埋め込みを生成する。
 
-Run from sample/ after any change to agent/data/policies.json (needs FOUNDRY_PROJECT_ENDPOINT):
+agent/data/policies.json の変更後、sample/ から実行する（FOUNDRY_PROJECT_ENDPOINT が必要）:
     python agent/build_embeddings.py
-Check, without network access, that the stored embeddings match the policies (used in CI):
+保存済み埋め込みとポリシーの一致を、ネットワークに接続せず確認する（CI でも使用）:
     python agent/build_embeddings.py --check
 """
 
@@ -15,7 +15,7 @@ import tools
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--check", action="store_true", help="Fail if embeddings are stale.")
+    parser.add_argument("--check", action="store_true", help="埋め込みが古い場合は失敗する。")
     args = parser.parse_args()
     policies = tools.read_documents("policies.json")
 
@@ -24,9 +24,10 @@ def main() -> None:
         stale = tools.stale_policies(policies, stored)
         if stale:
             sys.exit(
-                f"Stale or missing embeddings for {stale}.\nRun: python agent/build_embeddings.py"
+                f"{stale} の埋め込みが古いか、存在しません。\n"
+                "実行: python agent/build_embeddings.py"
             )
-        print(f"Embeddings match all {len(policies)} policies.")
+        print(f"全{len(policies)}件のポリシーと埋め込みが一致しています。")
         return
 
     vectors = tools.embed([tools.policy_text(p) for p in policies])
@@ -39,7 +40,7 @@ def main() -> None:
         },
     }
     tools.EMBEDDINGS.write_text(json.dumps(stored, separators=(",", ":")) + "\n")
-    print(f"Wrote {tools.EMBEDDINGS.name} ({len(policies)} policies).")
+    print(f"{tools.EMBEDDINGS.name} を書き込みました（ポリシー{len(policies)}件）。")
 
 
 if __name__ == "__main__":

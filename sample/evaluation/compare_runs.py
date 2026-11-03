@@ -1,25 +1,25 @@
-"""Compare evaluation runs question by question: what did a change actually fix or break?
+"""評価実行を質問ごとに比較する。変更で実際に改善した点と悪化した点は何か。
 
-Give one or more runs of the old version (A) and of the new version (B). Several runs per side
-is better: answers vary, so a question only counts as fixed if it failed in every A run and
-passed in every B run. Each run is either an exported results file (.jsonl, downloaded from
-the run in Foundry) or a run in your project, written as EVAL_ID:RUN_ID.
+旧バージョン（A）と新バージョン（B）の実行を、それぞれ1件以上指定する。回答は変動するため、
+複数回の実行が望ましい。A の全実行で失敗し、B の全実行で合格した質問だけを改善と数える。
+各実行には、Foundry からエクスポートした結果ファイル（.jsonl）、またはプロジェクトの
+EVAL_ID:RUN_ID を指定する。
 
-Run from sample/:
+sample/ から実行する:
 
-    # 1. Find the runs (needs FOUNDRY_PROJECT_ENDPOINT, as for evaluate.py):
+    # 1. 実行を探す（evaluate.py と同様、FOUNDRY_PROJECT_ENDPOINT が必要）:
     python evaluation/compare_runs.py --list
 
-    # 2. Compare: two baseline runs against two runs of the new prompt:
+    # 2. ベースライン2回と新しいプロンプト2回を比較する:
     python evaluation/compare_runs.py \\
         --a EVAL_ID:RUN_ID_1 EVAL_ID:RUN_ID_2 \\
         --b EVAL_ID:RUN_ID_3 EVAL_ID:RUN_ID_4
 
-    # Exported files work the same way, with no Azure access needed:
+    # エクスポート済みファイルでも同様に比較できる。Azure へのアクセスは不要:
     python evaluation/compare_runs.py --a old-1.jsonl old-2.jsonl --b new-1.jsonl new-2.jsonl
 
-It prints the questions B fixed, the ones it broke, the flaky ones (different results within
-a side), and the question text of the fixed ones: good candidates to ask live in a demo.
+B で改善した質問、悪化した質問、結果が不安定な質問（同じ側の実行間で結果が異なるもの）を
+表示する。改善した質問の本文も表示するため、ライブデモの質問候補を選べる。
 """
 
 import argparse
@@ -43,7 +43,7 @@ def openai_client():
     endpoint = os.environ.get("FOUNDRY_PROJECT_ENDPOINT", "").strip()
     if not endpoint.startswith("https://"):
         sys.exit(
-            "FOUNDRY_PROJECT_ENDPOINT is not set. From sample/, run:\n"
+            "FOUNDRY_PROJECT_ENDPOINT が未設定です。sample/ から次を実行してください:\n"
             '  export FOUNDRY_PROJECT_ENDPOINT="$(azd env get-value FOUNDRY_PROJECT_ENDPOINT)"'
         )
     project = AIProjectClient(endpoint=endpoint, credential=DefaultAzureCredential())
@@ -53,13 +53,15 @@ def openai_client():
 def rows_from_run(client, ref: str) -> list[dict]:
     eval_id, _, run_id = ref.partition(":")
     if not run_id:
-        sys.exit(f"{ref!r}: write a run as EVAL_ID:RUN_ID (see --list), or give a .jsonl file.")
+        sys.exit(
+            f"{ref!r}: EVAL_ID:RUN_ID（--list で確認）、または .jsonl ファイルを指定してください。"
+        )
     items = client.evals.runs.output_items.list(run_id, eval_id=eval_id, limit=100)
     return [item.model_dump(warnings=False) for item in items]
 
 
 def load(refs: list[str], client_box: list) -> list[dict[str, tuple[bool | None, str]]]:
-    """One {question name: (passed, question text)} per run; None when the judge didn't score."""
+    """実行ごとに {質問名: (合否, 質問文)} を返す。評価器が採点していない場合は None。"""
     runs = []
     for ref in refs:
         if ref.endswith(".jsonl"):
@@ -80,7 +82,7 @@ def load(refs: list[str], client_box: list) -> list[dict[str, tuple[bool | None,
 
 def list_runs() -> None:
     client = openai_client()
-    print(f"{'Run (pass to --a / --b)':<75} {'Created':<17} Passed")
+    print(f"{'実行（--a / --b に指定）':<75} {'作成日時':<17} 合格件数")
     for evaluation in client.evals.list(limit=20, order="desc"):
         for run in client.evals.runs.list(evaluation.id, limit=10, order="desc"):
             counts = run.result_counts
@@ -93,15 +95,17 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument("--list", action="store_true", help="List recent runs and exit.")
-    parser.add_argument("--a", nargs="+", default=[], help="Runs of the old version.")
-    parser.add_argument("--b", nargs="+", default=[], help="Runs of the new version.")
+    parser.add_argument("--list", action="store_true", help="最近の実行を一覧して終了する。")
+    parser.add_argument("--a", nargs="+", default=[], help="旧バージョンの実行。")
+    parser.add_argument("--b", nargs="+", default=[], help="新バージョンの実行。")
     args = parser.parse_args()
     if args.list:
         list_runs()
         return
     if not args.a or not args.b:
-        parser.error("give at least one run for --a and one for --b (or use --list)")
+        parser.error(
+            "--a と --b にそれぞれ1件以上の実行を指定してください（または --list を使用）。"
+        )
 
     box: list = []
     a_runs, b_runs = load(args.a, box), load(args.b, box)
@@ -125,24 +129,23 @@ def main() -> None:
 
     def score(runs):
         results = [p for run in runs for p, _ in run.values() if p is not None]
-        return f"{sum(results)}/{len(results)} passed"
+        return f"{sum(results)}/{len(results)} 件合格"
 
-    print(f"A ({len(a_runs)} run(s)): {score(a_runs)}    B ({len(b_runs)} run(s)): {score(b_runs)}")
-    print(f"Judge: {JUDGE}. A question counts only if it gave the same result in every run.")
+    print(f"A ({len(a_runs)} 回): {score(a_runs)}    B ({len(b_runs)} 回): {score(b_runs)}")
+    print(f"評価器: {JUDGE}。各側の全実行で結果が一致した質問だけを改善・悪化に数えます。")
     if len(a_runs) == 1 or len(b_runs) == 1:
         print(
-            "Note: with only one run on a side, 'fixed' and 'broken' can't be told apart from "
-            "run-to-run noise.\nGive each side two or more runs; noisy questions then show as "
-            "flaky."
+            "注意: 片側が1回だけでは、改善・悪化を実行間のノイズと区別できません。\n"
+            "各側を2回以上実行すると、結果が変動する質問は不安定として表示されます。"
         )
     print()
-    for title, group in (("Fixed by B", fixed), ("Broken by B", broken), ("Flaky", flaky)):
+    for title, group in (("B で改善", fixed), ("B で悪化", broken), ("不安定", flaky)):
         print(f"{title} ({len(group)}):")
         for name in group:
             print(f"  {name}   A {marks(a_runs, name)}  B {marks(b_runs, name)}")
         print()
     if fixed:
-        print("Demo candidates (failed in every A run, passed in every B run):")
+        print("デモの質問候補（A の全実行で失敗し、B の全実行で合格）:")
         for name in fixed:
             print(f"  {name}\n    {text.get(name, '')}")
 

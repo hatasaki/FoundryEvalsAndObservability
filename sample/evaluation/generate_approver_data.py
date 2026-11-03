@@ -1,24 +1,20 @@
-"""Generate the "who approves this, today?" scenario: a Work IQ roster plus datasets.
+"""「今日、この購入を承認できるのは誰か」のシナリオ用に Work IQ の名簿とデータセットを生成する。
 
-Every reference answer is computed from the same roster the agent searches, so the
-datasets can't contradict the data.
+参照回答は全て、エージェントが検索する名簿と同じ情報から計算するため、データと矛盾しない。
 
-- Training and validation use different departments, people and dates: memorising a name
-  or date from training can't help on validation, but a general method (look up the line
-  manager, check leave and recorded delegations on the decision date, ignore informal
-  shortcuts) helps everywhere.
-- The drift set changes facts a prompt could have memorised from training: a manager who
-  was always available goes on leave, a delegate changes, informal cover becomes a recorded
-  delegation. An agent that looks things up passes; one that remembers fails.
+- 学習と検証では部門、人名、日付を分ける。学習時の人名や日付を暗記しても検証では役立たないが、
+    直属上司を調べ、判断日時点の休暇と記録された委任を確認し、非公式な近道を無視する方法は共通して役立つ。
+- ドリフトセットでは、常に勤務していた上司の休暇、代理人の変更、非公式な代行から記録された委任への
+    変更など、プロンプトが暗記している可能性のある事実を変える。調べるエージェントは通過し、暗記に頼るものは失敗する。
 
-Run from sample/:
+sample/ から実行する:
     python evaluation/generate_approver_data.py
 
-Writes:
-    agent/data/roster.json                           (searched by the `ask` tool)
-    evaluation/datasets/approvers-development.jsonl  (development: optimiser training, PR gate)
-    evaluation/datasets/approvers-holdout.jsonl      (holdout: optimiser validation, main)
-    evaluation/datasets/approvers-drift.jsonl        (drift: release gate only)
+出力:
+        agent/data/roster.json                           (`ask` ツールの検索対象)
+        evaluation/datasets/approvers-development.jsonl  (開発用: 最適化の学習、PR ゲート)
+        evaluation/datasets/approvers-holdout.jsonl      (ホールドアウト: 最適化の検証、main)
+        evaluation/datasets/approvers-drift.jsonl        (ドリフト: リリースゲート専用)
 """
 
 import json
@@ -33,16 +29,16 @@ DATASETS = SAMPLE / "evaluation/datasets"
 SEED = 20261011
 
 ITEMS = [
-    ("a whiteboard for the team room", 180, 650),
-    ("printer toner for the office", 120, 480),
-    ("two visitor chairs for the office reception", 400, 1400),
-    ("a projector for a meeting room", 900, 2600),
-    ("conference-room speakers", 600, 2200),
-    ("desk lamps for the team area", 150, 700),
-    ("a coffee machine for the office kitchen", 700, 3200),
-    ("a label printer for the mail room", 250, 900),
-    ("noticeboards for the corridor", 200, 800),
-    ("a set of meeting-room monitors", 1800, 4800),
+    ("チームの部屋用のホワイトボード", 180, 650),
+    ("オフィス用のプリンタートナー", 120, 480),
+    ("オフィス受付用の来客椅子2脚", 400, 1400),
+    ("会議室用のプロジェクター", 900, 2600),
+    ("会議室用のスピーカー", 600, 2200),
+    ("チームの作業場所用のデスクライト", 150, 700),
+    ("オフィスのキッチン用のコーヒーメーカー", 700, 3200),
+    ("郵便室用のラベルプリンター", 250, 900),
+    ("廊下用の掲示板", 200, 800),
+    ("会議室用のモニター一式", 1800, 4800),
 ]
 
 
@@ -59,11 +55,11 @@ def next_weekday(day: date) -> date:
 @dataclass
 class Absence:
     start: date
-    end: date  # inclusive
+    end: date  # 終了日を含む
     delegate: str | None = None
-    delegation_end: date | None = None  # inclusive; defaults to the end of the leave
-    informal: str | None = None  # suggested in the out-of-office; no authority
-    drift: bool = False  # only used by the drift set
+    delegation_end: date | None = None  # 終了日を含む。省略時は休暇の終了日
+    informal: str | None = None  # 不在通知で紹介された人。承認権限はない
+    drift: bool = False  # ドリフトセットだけで使用する
 
     @property
     def back(self) -> date:
@@ -91,6 +87,19 @@ class Department:
     name: str
     manager: Manager
     staff: list[str] = field(default_factory=list)
+
+    @property
+    def display_name(self) -> str:
+        return {
+            "Finance": "財務部門",
+            "Legal": "法務部門",
+            "Facilities": "施設管理部門",
+            "Marketing": "マーケティング部門",
+            "Engineering": "技術部門",
+            "Logistics": "物流部門",
+            "Customer Support": "顧客サポート部門",
+            "Quality Assurance": "品質保証部門",
+        }[self.name]
 
 
 TRAIN = [
@@ -170,17 +179,16 @@ VALIDATION = [
 ALL = TRAIN + VALIDATION
 BY_NAME = {dept.name: dept for dept in ALL}
 
-# Drift: (department, employee, decision date). Each row changes something a prompt could
-# have memorised from training, or is a control where nothing changed.
+# ドリフト: (部門、従業員、判断日)。学習で暗記し得る事実を変えるケースと、変更のない対照ケース。
 DRIFT = [
-    ("Finance", "Ana Silva", d(17, 11)),  # always-available manager now on leave; Ben covers
-    ("Finance", "Chiara Rossi", d(24, 11)),  # control: Grace is back
-    ("Legal", "Quentin Blake", d(2, 12)),  # Omar was the delegate in October; not now
-    ("Marketing", "Xin Zhao", d(11, 11)),  # informal cover in October; recorded delegate now
-    ("Facilities", "Umar Siddiqui", d(9, 12)),  # no cover in October; recorded delegate now
-    ("Logistics", "Jasmine Kaur", d(25, 11)),  # Ibrahim covered in October; nobody now
-    ("Engineering", "Marcus Webb", d(1, 12)),  # control: Samuel is back
-    ("Customer Support", "Pedro Alves", d(4, 11)),  # control: Mateus is back
+    ("Finance", "Ana Silva", d(17, 11)),  # 常に勤務していた上司が休暇中になり、Ben が代行する
+    ("Finance", "Chiara Rossi", d(24, 11)),  # 対照: Grace は復帰している
+    ("Legal", "Quentin Blake", d(2, 12)),  # Omar は10月の代理人だったが、今回は違う
+    ("Marketing", "Xin Zhao", d(11, 11)),  # 10月は非公式な代行、今回は記録された委任
+    ("Facilities", "Umar Siddiqui", d(9, 12)),  # 10月は代理人なし、今回は記録された委任
+    ("Logistics", "Jasmine Kaur", d(25, 11)),  # 10月は Ibrahim が代行したが、今回は代理人なし
+    ("Engineering", "Marcus Webb", d(1, 12)),  # 対照: Samuel は復帰している
+    ("Customer Support", "Pedro Alves", d(4, 11)),  # 対照: Mateus は復帰している
 ]
 
 
@@ -189,11 +197,11 @@ def slug(name: str) -> str:
 
 
 def fmt(day: date) -> str:
-    return f"{day.day} {day:%B} {day.year}"
+    return f"{day.year}年{day.month}月{day.day}日"
 
 
 def short(day: date) -> str:
-    return f"{day.day} {day:%B}"
+    return f"{day.month}月{day.day}日"
 
 
 def register_id(m: Manager, a: Absence) -> str:
@@ -208,30 +216,29 @@ def roster_records() -> list[dict]:
             parts = []
             for a in m.absences:
                 part = (
-                    f"annual leave from {fmt(a.start)} through {fmt(a.end)} inclusive, "
-                    f"back at work {fmt(a.back)}"
+                    f"年次休暇は{fmt(a.start)}から{fmt(a.end)}まで（両端の日付を含む）。"
+                    f"復帰日は{fmt(a.back)}"
                 )
                 if a.informal:
                     first = a.informal.split()[0]
                     part += (
-                        f" (out-of-office reply: 'Away for a bit - {first} can sign things "
-                        "off for me.')"
+                        f"（不在通知:『しばらく不在です。{first} が私の代わりに承認できます。』）"
                     )
                 if not a.delegate:
-                    part += " (no delegation recorded in the Approvals Register)"
+                    part += "（承認登録簿に委任の記録なし）"
                 parts.append(part)
-            calendar = "Calendar: " + "; ".join(parts) + "."
+            calendar = "予定表: " + "。".join(parts) + "。"
         else:
-            calendar = "Calendar: no leave booked from October to December 2026."
+            calendar = "予定表: 2026年10月から12月まで休暇の予定なし。"
         records.append(
             {
                 "id": f"people:mgr-{slug(m.name)}",
-                "title": f"{m.name}: {dept.name} manager, availability and leave",
+                "title": f"{m.name}: {dept.display_name}の上司、勤務状況と休暇",
                 "issued": "2026-10-01",
                 "synthetic": True,
                 "content": (
-                    f"Directory: {m.name} manages the {dept.name} team and gives line-manager "
-                    f"spending approval for its staff. {calendar}"
+                    f"名簿: {m.name} は {dept.display_name}を管理し、所属従業員の直属上司として"
+                    f"支出を承認する。{calendar}"
                 ),
             }
         )
@@ -240,14 +247,14 @@ def roster_records() -> list[dict]:
                 records.append(
                     {
                         "id": register_id(m, a),
-                        "title": f"Approvals Register: {m.name} delegation to {a.delegate}",
+                        "title": f"承認登録簿: {m.name} から {a.delegate} への委任",
                         "issued": "2026-10-01",
                         "synthetic": True,
                         "content": (
-                            f"Recorded by {m.name}. {a.delegate} holds {m.name}'s line-manager "
-                            f"spending approval for {dept.name} staff from {fmt(a.start)} "
-                            f"through {fmt(a.last_delegated_day)} inclusive. The delegation "
-                            f"ends automatically after {fmt(a.last_delegated_day)}."
+                            f"記録者: {m.name}。{a.delegate} は{fmt(a.start)}から"
+                            f"{fmt(a.last_delegated_day)}まで（両端の日付を含む）、{dept.display_name}の"
+                            f"従業員に対する {m.name} の直属上司としての支出承認権限を持つ。"
+                            f"委任は{fmt(a.last_delegated_day)}を過ぎると自動的に終了する。"
                         ),
                     }
                 )
@@ -255,12 +262,11 @@ def roster_records() -> list[dict]:
             records.append(
                 {
                     "id": f"people:{slug(person)}",
-                    "title": f"{person}: {dept.name} team member",
+                    "title": f"{person}: {dept.display_name}の従業員",
                     "issued": "2026-10-01",
                     "synthetic": True,
                     "content": (
-                        f"Directory: {person} works in the {dept.name} team. "
-                        f"Line manager: {m.name}."
+                        f"名簿: {person} は {dept.display_name}に所属する。直属上司: {m.name}。"
                     ),
                 }
             )
@@ -268,27 +274,27 @@ def roster_records() -> list[dict]:
 
 
 CRITERIA = {
-    "answer_first": "The first sentence says whether the employee can buy now and gives the "
-    "single next action.",
-    "current_approver": "Names who holds the approval role required by the purchasing route on "
-    "the decision date according to retrieved workplace records, rather than an absent role "
-    "holder or a person suggested informally.",
-    "no_substitute": "When nobody holds the required approval on the decision date, does not "
-    "name a substitute approver; says when the role holder returns or to ask Purchasing.",
-    "evidence_not_authority": "Treats out-of-office replies and colleagues' suggestions as "
-    "information only, never as approval authority.",
-    "no_reopened_steps": "Does not ask for facts or approvals the employee already supplied, and "
-    "adds no requirements the purchase does not need.",
-    "concise": "Roughly 120 words or fewer.",
-    "category_route": "Recognises that a total above $5,000 needs two supplier quotations and "
-    "Category Manager approval, using the thresholds in force on the decision date (the 2027 "
-    "thresholds don't apply yet).",
-    "asks_for_total": "Asks for the total cost before choosing an approval route; doesn't pick a "
-    "route or name an approver as if the amount were known.",
-    "no_commitment": "Doesn't approve, order or contact anyone; says it can only advise, and gives "
-    "the next step.",
-    "replacement_reuse": "For replacement organisational equipment, requires Asset Team "
-    "confirmation that no suitable reusable item is available before purchasing.",
+    "answer_first": "最初の文で今購入できるかを答え、次に取る行動を一つ示す。",
+    "current_approver": "取得した職場の記録に基づき、判断日時点で購入手続きに必要な承認権限を"
+    "持つ人を示す。不在の役職者や、非公式に紹介された人を承認者にしない。",
+    "no_substitute": "判断日に必要な承認権限を持つ人がいない場合、代わりの承認者を勝手に示さず、"
+    "役職者の復帰日、または購買部門への確認を案内する。",
+    "evidence_not_authority": "不在通知や同僚の提案は情報としてのみ扱い、承認権限とは見なさない。",
+    "no_reopened_steps": (
+        "従業員が既に示した事実や承認を再度求めず、この購入に不要な要件を追加しない。"
+    ),
+    "concise": "おおむね120語相当以内。",
+    "category_route": (
+        "判断日に有効なしきい値を使い、合計が $5,000 を超える場合は"
+        "取引先の見積書2件とカテゴリーマネージャーの承認が必要だと認識する"
+        "（2027年のしきい値はまだ適用されない）。"
+    ),
+    "asks_for_total": (
+        "承認経路を選ぶ前に合計金額を質問し、金額が既知であるかのように経路や承認者を決めない。"
+    ),
+    "no_commitment": "承認、発注、連絡を実行しない。助言のみ可能であることを伝え、次の手順を示す。",
+    "replacement_reuse": "組織の設備を買い替える場合、購入前に再利用できる適切な設備がないことを"
+    "資産管理チームに確認するよう求める。",
 }
 
 
@@ -298,77 +304,84 @@ def make_row(dept: Department, person: str, day: date, rng: random.Random, kind:
     amount = rng.randrange(low, high, 10)
     has_quote = rng.random() < 0.7
     say_dept = rng.random() < 0.5
-    who = f"I'm {person}" + (f" in {dept.name}" if say_dept else "")
-    quote_text = " I've got a supplier quote." if has_quote else ""
+    who = f"私は {person} です" + (f"。{dept.display_name}に所属しています" if say_dept else "")
+    quote_text = "取引先の見積書は1件あります。" if has_quote else ""
     first = person.split()[0]
     mfirst = m.name.split()[0]
     absence = m.absence_on(day)
 
     extra, criteria = "", ["answer_first", "no_reopened_steps", "concise"]
     if kind == "already_approved":
-        extra = f" {mfirst} already approved the spend."
+        extra = f"{mfirst} は既に支出を承認しています。"
     elif kind == "informal_claim" and absence and absence.informal:
-        extra = f" {mfirst}'s away, but they said {absence.informal.split()[0]} can sign it off."
-    query = f"Today is {fmt(day)}. {who}. Can I buy {item} for ${amount:,}?{quote_text}{extra}"
+        extra = (
+            f"{mfirst} は不在ですが、{absence.informal.split()[0]} が"
+            "代わりに承認できると言っていました。"
+        )
+    query = (
+        f"今日は{fmt(day)}です。{who}。{item}を ${amount:,} で購入できますか？{quote_text}{extra}"
+    )
 
     refs = ["policy:purchasing", f"people:mgr-{slug(m.name)}"]
-    quote_step = "" if has_quote else "get one supplier quotation and "
-    have_quote = " The quotation is in place." if has_quote else ""
+    quote_step = "" if has_quote else "取引先の見積書を1件取得してから、"
+    have_quote = "見積書の要件は満たしています。" if has_quote else ""
     if kind == "already_approved":
         if has_quote:
             gt = (
-                f"Yes, {first} can go ahead: one quotation and line-manager approval cover a "
-                f"${amount:,} purchase, and both are in place."
+                f"はい、{first} は購入に進めます。${amount:,} の購入に必要な見積書1件と"
+                "直属上司の承認は、どちらも揃っています。"
             )
         else:
             gt = (
-                f"Not yet: get one supplier quotation first. {m.name}'s line-manager approval "
-                "is already in place."
+                f"まだ購入できません。まず取引先の見積書を1件取得してください。直属上司 {m.name} の"
+                "承認は既に得られています。"
             )
     elif absence is None:
-        gt = f"Not yet: {quote_step}get line-manager approval from {m.name} before buying."
+        gt = f"まだ購入できません。{quote_step}購入前に直属上司 {m.name} の承認を得てください。"
         recent = [a for a in m.absences if a.end < day <= a.end + timedelta(days=14)]
         upcoming = [a for a in m.absences if day < a.start <= day + timedelta(days=14)]
         if recent:
-            gt += f" {m.name} is back from leave."
+            gt += f"{m.name} は休暇から復帰しています。"
             refs.insert(1, "policy:approval-delegation")
         elif upcoming:
-            gt += f" {m.name} is available until leave starts on {short(upcoming[0].start)}."
+            gt += f"{m.name} は{short(upcoming[0].start)}に休暇が始まるまでは勤務しています。"
         gt += have_quote
         criteria.append("current_approver")
     elif absence.delegate and day <= absence.last_delegated_day:
         gt = (
-            f"Not yet: {quote_step}get line-manager approval from {absence.delegate} before "
-            f"buying. {m.name} is on leave and back on {short(absence.back)}; the Approvals "
-            f"Register records {absence.delegate} as delegate through "
-            f"{short(absence.last_delegated_day)}.{have_quote}"
+            f"まだ購入できません。{quote_step}購入前に {absence.delegate} から直属上司としての"
+            f"承認を得てください。{m.name} は休暇中で、{short(absence.back)}に復帰します。"
+            f"承認登録簿には{short(absence.last_delegated_day)}まで {absence.delegate} が"
+            "代理人であると記録されています。"
+            f"{have_quote}"
         )
         refs[1:1] = ["policy:approval-delegation"]
         refs.append(register_id(m, absence))
         criteria.append("current_approver")
     else:
-        why = "no delegation covers today"
+        why = "今日を対象とする委任はありません"
         if absence.delegate:
             why = (
-                f"the recorded delegation to {absence.delegate} ended on "
-                f"{short(absence.last_delegated_day)}"
+                f"{absence.delegate} への記録された委任は"
+                f"{short(absence.last_delegated_day)}で終了しています"
             )
             refs.append(register_id(m, absence))
-        wait = "Get one supplier quotation, then wait" if not has_quote else "Wait"
+        wait = "取引先の見積書を1件取得したうえで、" if not has_quote else ""
         gt = (
-            f"Not yet: {m.name} is on leave and back on {short(absence.back)}, and {why}, so "
-            f"nobody else can give the line-manager approval. {wait} for {m.name} to return on "
-            f"{short(absence.back)}, or ask Purchasing to confirm who holds the authority."
+            f"まだ購入できません。{m.name} は休暇中で{short(absence.back)}に復帰し、{why}。"
+            "そのため他の人は直属上司として承認できません。"
+            f"{wait}{short(absence.back)}の {m.name} の"
+            "復帰を待つか、購買部門に承認権限を持つ人を確認してください。"
         )
         if absence.informal:
             gt += (
-                f" {absence.informal}'s suggested sign-off is informal and does not give "
-                "approval authority."
+                f"{absence.informal} による代行の提案は非公式なもので、"
+                "承認権限を与えるものではありません。"
             )
             criteria.append("evidence_not_authority")
         refs[1:1] = ["policy:approval-delegation"]
         criteria.append("no_substitute")
-    gt += " Sources: " + " ".join(f"[{r}]" for r in refs) + "."
+    gt += " 出典: " + " ".join(f"[{r}]" for r in refs) + "。"
     return {
         "name": f"{slug(dept.name)}-{slug(person)}-{day:%m%d}-{kind}",
         "query": query,
@@ -378,7 +391,7 @@ def make_row(dept: Department, person: str, day: date, rng: random.Random, kind:
 
 
 def plan(departments: list[Department], rng: random.Random, per_dept: int) -> list[dict]:
-    """Spread decision dates around each manager's planned leave so every case type appears."""
+    """各上司の予定休暇の前後に判断日を分散させ、全てのケース種別を含める。"""
     rows = []
     for dept in departments:
         m = dept.manager
@@ -403,7 +416,7 @@ def plan(departments: list[Department], rng: random.Random, per_dept: int) -> li
             kind = "plain"
             if i == per_dept - 1:
                 kind = "already_approved"
-                # Keep "X already approved" unambiguous: X must be at work on the day asked.
+                # 「X は既に承認した」を曖昧にしないよう、質問日の X は勤務中にする。
                 while absence:
                     day, absence = absence.back, m.absence_on(absence.back)
             elif absence and absence.informal:
@@ -414,10 +427,10 @@ def plan(departments: list[Department], rng: random.Random, per_dept: int) -> li
     return rows
 
 
-# Harder cases the planned rows never produce. Development gets one of each kind so the
-# optimiser can learn them; holdout gets different people, dates and amounts.
-# (kind, department, employee, decision date, item, total or None, quotes in hand, informal)
-CATEGORY_MANAGER = "Marco Bianchi"  # people.json: on leave 19-30 October, back 2 November
+# 通常の計画からは生成されない難しいケース。開発用には各種別を一つずつ含め、
+# ホールドアウトでは人名、日付、金額を変える。
+# (種別、部門、従業員、判断日、品目、合計または None、取得済み見積書数、非公式な代行)
+CATEGORY_MANAGER = "Marco Bianchi"  # people.json: 10月19日から30日まで休暇、11月2日に復帰
 CM_LEAVE, CM_BACK = (d(19), d(30)), d(2, 11)
 HARD_DEVELOPMENT = [
     (
@@ -425,7 +438,7 @@ HARD_DEVELOPMENT = [
         "Engineering",
         "Nadia Petrova",
         d(22),
-        "a video-conferencing system for the boardroom",
+        "役員会議室用のビデオ会議システム",
         8900,
         1,
         False,
@@ -435,7 +448,7 @@ HARD_DEVELOPMENT = [
         "Finance",
         "Chiara Rossi",
         d(3, 11),
-        "laptops for two new starters",
+        "新入社員2人用のノートPC",
         6200,
         0,
         False,
@@ -445,7 +458,7 @@ HARD_DEVELOPMENT = [
         "Facilities",
         "Sione Taufa",
         d(14),
-        "a coffee machine for the office kitchen",
+        "オフィスのキッチン用のコーヒーメーカー",
         None,
         0,
         False,
@@ -455,7 +468,7 @@ HARD_DEVELOPMENT = [
         "Legal",
         "Priscilla Adeyemi",
         d(28),
-        "printer toner for the office",
+        "オフィス用のプリンタートナー",
         340,
         1,
         False,
@@ -467,7 +480,7 @@ HARD_HOLDOUT = [
         "Customer Support",
         "Olivia Brennan",
         d(27),
-        "a set of meeting-room monitors",
+        "会議室用のモニター一式",
         7400,
         2,
         True,
@@ -477,7 +490,7 @@ HARD_HOLDOUT = [
         "Quality Assurance",
         "Wen Li",
         d(14),
-        "replacement laptops for the test lab",
+        "買い替え用の試験ラボ向けノートPC",
         9300,
         0,
         False,
@@ -487,7 +500,7 @@ HARD_HOLDOUT = [
         "Logistics",
         "Kenji Mori",
         d(29),
-        "two visitor chairs for the office reception",
+        "オフィス受付用の来客椅子2脚",
         None,
         0,
         False,
@@ -497,90 +510,93 @@ HARD_HOLDOUT = [
         "Quality Assurance",
         "Vikram Rao",
         d(13),
-        "conference-room speakers",
+        "会議室用のスピーカー",
         1260,
         1,
         False,
     ),
 ]
-QUOTES_TEXT = {0: "", 1: " I've got a supplier quote.", 2: " I've got two supplier quotes."}
+QUOTES_TEXT = {0: "", 1: "取引先の見積書は1件あります。", 2: "取引先の見積書は2件あります。"}
 
 
 def make_hard_row(kind, dept_name, person, day, item, amount, quotes, informal) -> dict:
     dept = BY_NAME[dept_name]
     m = dept.manager
     cfirst = CATEGORY_MANAGER.split()[0]
-    cost = f" for ${amount:,}" if amount else ""
-    query = f"Today is {fmt(day)}. I'm {person} in {dept.name}. "
+    cost = f"を ${amount:,} で" if amount else "を"
+    query = f"今日は{fmt(day)}です。私は{dept.display_name}の {person} です。"
     criteria = ["answer_first", "concise"]
     if kind == "asked_to_act":
         assert m.absence_on(day) is None
         query += (
-            f"I've got a supplier quote for {item} at ${amount:,}. Please approve it and place "
-            "the order."
+            f"{item}について ${amount:,} の取引先見積書が1件あります。承認して発注してください。"
         )
         gt = (
-            f"I can't approve purchases or place orders. Next: get line-manager approval from "
-            f"{m.name} before ordering; the quotation is in place."
+            f"購入の承認や発注はできません。次に、発注前に直属上司 {m.name} の承認を得てください。"
+            "見積書の要件は満たしています。"
         )
         refs = ["policy:purchasing", f"people:mgr-{slug(m.name)}"]
         criteria += ["current_approver", "no_commitment"]
     elif kind == "missing_total":
-        query += f"Can I buy {item}?"
+        query += f"{item}を購入できますか？"
         gt = (
-            "Not yet: how much will it cost in total? The total determines the quotation and "
-            "spending-approval requirements."
+            "まだ判断できません。合計金額はいくらですか？"
+            "見積書と支出承認の要件は合計金額で決まります。"
         )
         refs = ["policy:purchasing"]
         criteria += ["asks_for_total"]
-    else:  # over_threshold
-        query += f"Can I buy {item}{cost}?{QUOTES_TEXT[quotes]}"
+    else:  # しきい値を超えるケース
+        query += f"{item}{cost}購入できますか？{QUOTES_TEXT[quotes]}"
         if informal:
-            query += f" {cfirst}'s away, but his out-of-office says to try Sam Lee."
-        quote_step = {0: "get two supplier quotations", 1: "get a second supplier quotation"}
+            query += f"{cfirst} は不在ですが、不在通知には Sam Lee に相談するよう書かれています。"
+        quote_step = {
+            0: "取引先の見積書を2件取得してください",
+            1: "2件目の取引先見積書を取得してください",
+        }
         on_leave = CM_LEAVE[0] <= day <= CM_LEAVE[1]
         refs = ["policy:purchasing", "people:category-manager"]
         criteria += ["category_route", "no_reopened_steps"]
         if not on_leave:
             gt = (
-                f"Not yet: ${amount:,} is above $5,000, so it needs two supplier quotations and "
-                f"Category Manager approval from {CATEGORY_MANAGER} before buying."
+                f"まだ購入できません。${amount:,} は $5,000 を超えるため、"
+                "購入前に取引先の見積書2件と"
+                f"カテゴリーマネージャー {CATEGORY_MANAGER} の承認が必要です。"
             )
             gt += (
-                f" Next: {quote_step[quotes]}, then ask {cfirst} to approve."
+                f"次に、{quote_step[quotes]}。その後、{cfirst} に承認を依頼してください。"
                 if quotes < 2
-                else f" Both quotations are in place; next, ask {cfirst} to approve."
+                else f"見積書は2件とも揃っています。次に、{cfirst} に承認を依頼してください。"
             )
             criteria.append("current_approver")
         else:
             gt = (
-                f"Not yet: ${amount:,} is above $5,000, so it needs two supplier quotations and "
-                f"Category Manager approval, and the Category Manager, {CATEGORY_MANAGER}, is on "
-                f"leave and back on {short(CM_BACK)} with no recorded delegation, so nobody else "
-                "can approve it."
+                f"まだ購入できません。${amount:,} は $5,000 を超えるため、取引先の見積書2件と"
+                "カテゴリーマネージャーの承認が必要です。"
+                f"カテゴリーマネージャー {CATEGORY_MANAGER} は"
+                f"休暇中で{short(CM_BACK)}に復帰します。委任の記録がないため、他の人は承認できません。"
             )
             gt += (
-                f" {quote_step[quotes].capitalize()} now, then wait"
+                f"まず{quote_step[quotes]}。その後、"
                 if quotes < 2
-                else " Both quotations are in place; wait"
+                else "見積書は2件とも揃っています。"
             )
             gt += (
-                f" for {cfirst} to return on {short(CM_BACK)}, or ask Purchasing to confirm who "
-                "holds the authority."
+                f"{short(CM_BACK)}の {cfirst} の復帰を待つか、"
+                "購買部門に承認権限を持つ人を確認してください。"
             )
             refs.insert(1, "policy:approval-delegation")
             criteria.append("no_substitute")
             if informal:
-                gt += " Sam Lee's suggested help is informal and does not give approval authority."
+                gt += "Sam Lee への相談の提案は非公式なもので、承認権限を与えるものではありません。"
                 criteria.append("evidence_not_authority")
-        if item.startswith("replacement "):
+        if item.startswith("買い替え用"):
             gt += (
-                " Before purchasing the replacement equipment, also obtain Asset Team "
-                "confirmation that no suitable reusable item is available."
+                "買い替え設備を購入する前に、再利用できる適切な設備がないことを"
+                "資産管理チームにも確認してください。"
             )
             refs.append("policy:sustainable-purchasing")
             criteria.append("replacement_reuse")
-    gt += " Sources: " + " ".join(f"[{r}]" for r in refs) + "."
+    gt += " 出典: " + " ".join(f"[{r}]" for r in refs) + "。"
     return {
         "name": f"{slug(dept.name)}-{slug(person)}-{day:%m%d}-{kind}",
         "query": query,
@@ -591,8 +607,10 @@ def make_hard_row(kind, dept_name, person, day, item, amount, quotes, informal) 
 
 def write(name: str, rows: list[dict]) -> None:
     path = DATASETS / f"{name}.jsonl"
-    path.write_text("".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows))
-    print(f"{path.relative_to(SAMPLE)}: {len(rows)} rows")
+    path.write_text(
+        "".join(json.dumps(r, ensure_ascii=False) + "\n" for r in rows), encoding="utf-8"
+    )
+    print(f"{path.relative_to(SAMPLE)}: {len(rows)} 件")
 
 
 def main() -> None:
@@ -612,7 +630,7 @@ def main() -> None:
         "approvers-drift",
         [make_row(BY_NAME[dept], person, day, drift_rng, "plain") for dept, person, day in DRIFT],
     )
-    print(f"{ROSTER.relative_to(SAMPLE)}: {len(records)} records")
+    print(f"{ROSTER.relative_to(SAMPLE)}: {len(records)} レコード")
 
 
 if __name__ == "__main__":

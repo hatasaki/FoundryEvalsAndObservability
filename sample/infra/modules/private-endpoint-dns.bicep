@@ -1,34 +1,32 @@
-// Account private endpoint + the three AI private DNS zones for a
-// network-secured Foundry account. Dependent stores stay platform-managed, so
-// only the account itself gets a private endpoint here (no Search / Storage /
-// Cosmos endpoints).
+// ネットワークで保護した Foundry アカウントのプライベートエンドポイントと3つの AI 用 DNS ゾーン。
+// 依存ストアはプラットフォーム管理のままなので、ここではアカウント自体にだけ
+// プライベートエンドポイントを付ける。Search、Storage、Cosmos のエンドポイントは作らない。
 //
-// DNS zones are created and linked to the VNet by default. When
-// dnsZonesResourceGroup is set, the zones are referenced from that resource
-// group (in dnsZonesSubscription, defaulting to this subscription) instead of
-// being created.
+// 既定では DNS ゾーンを作り、VNet にリンクする。dnsZonesResourceGroup を指定すると、
+// 新規作成せず、そのリソースグループ内のゾーンを参照する。
+// サブスクリプションは dnsZonesSubscription を使い、空なら現在のものを使う。
 
 targetScope = 'resourceGroup'
 
-@description('Name of the Foundry (AIServices) account to bind the private endpoint to.')
+@description('プライベートエンドポイントを接続する Foundry（AIServices）アカウント名。')
 param aiAccountName string
 
-@description('Azure region of the customer VNet.')
+@description('顧客 VNet の Azure リージョン。')
 param location string
 
-@description('ARM resource id of the customer VNet.')
+@description('顧客 VNet の ARM リソース ID。')
 param vnetId string
 
-@description('ARM resource id of the private-endpoint subnet.')
+@description('プライベートエンドポイント用サブネットの ARM リソース ID。')
 param peSubnetId string
 
-@description('Suffix for unique resource/link names.')
+@description('リソース・リンク名を一意にする接尾辞。')
 param suffix string
 
-@description('Resource group holding existing private DNS zones. Empty creates and links new zones.')
+@description('既存のプライベート DNS ゾーンがあるリソースグループ。空なら新しいゾーンを作り、リンクする。')
 param dnsZonesResourceGroup string = ''
 
-@description('Subscription holding existing private DNS zones. Empty defaults to this subscription.')
+@description('既存のプライベート DNS ゾーンがあるサブスクリプション。空なら現在のものを使う。')
 param dnsZonesSubscription string = ''
 
 var aiServicesDnsZoneName = 'privatelink.services.ai.azure.com'
@@ -43,7 +41,7 @@ resource aiAccount 'Microsoft.CognitiveServices/accounts@2025-06-01' existing = 
   scope: resourceGroup()
 }
 
-// Account private endpoint in the PE subnet, targeting the 'account' group.
+// PE サブネット内に、account グループを対象とするアカウントのプライベートエンドポイントを作る。
 resource aiAccountPrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-01' = {
   name: '${aiAccountName}-private-endpoint'
   location: location
@@ -65,7 +63,7 @@ resource aiAccountPrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-05-01
   }
 }
 
-// ---- Private DNS zones: create-and-link, or reference existing ----
+// ---- プライベート DNS ゾーン: 作成してリンク、または既存参照 ----
 
 resource aiServicesZone 'Microsoft.Network/privateDnsZones@2020-06-01' = if (!useExistingZones) {
   name: aiServicesDnsZoneName
@@ -97,7 +95,7 @@ resource existingCognitiveServicesZone 'Microsoft.Network/privateDnsZones@2020-0
 }
 var cognitiveServicesZoneId = useExistingZones ? existingCognitiveServicesZone.id : cognitiveServicesZone.id
 
-// ---- VNet links (only when we create the zones) ----
+// ---- VNet リンク（ゾーンを新規作成する場合のみ） ----
 
 resource aiServicesLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = if (!useExistingZones) {
   parent: aiServicesZone
@@ -133,7 +131,7 @@ resource cognitiveServicesLink 'Microsoft.Network/privateDnsZones/virtualNetwork
   }
 }
 
-// ---- DNS zone group binds the three zones to the account endpoint ----
+// ---- DNS ゾーングループで3つのゾーンをアカウントのエンドポイントに関連付ける ----
 
 resource aiAccountDnsGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-05-01' = {
   parent: aiAccountPrivateEndpoint

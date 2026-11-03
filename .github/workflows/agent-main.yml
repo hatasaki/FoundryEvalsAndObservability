@@ -1,4 +1,4 @@
-name: Agent promotion
+name: エージェントの昇格
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: Evaluate only, promote main, or explicitly create a baseline
+        description: 評価のみ、main の昇格、または明示的なベースライン作成
         type: choice
         options:
           - holdout
@@ -23,7 +23,7 @@ permissions:
   contents: read
   pull-requests: read
 
-# Hold dev stable across both evaluations and approval; newer main candidates wait.
+# 2つの評価と承認の間は dev を固定する。新しい main の候補は待機する。
 concurrency:
   group: purchasing-promotion-${{ github.ref }}
   cancel-in-progress: false
@@ -31,7 +31,7 @@ concurrency:
 
 jobs:
   target:
-    name: ${{ github.ref == 'refs/heads/main' && 'Prepare dev run' || 'Prepare check run' }}
+    name: ${{ github.ref == 'refs/heads/main' && 'dev 実行を準備' || '確認用の実行を準備' }}
     runs-on: ubuntu-latest
     outputs:
       agent_name: ${{ steps.target.outputs.agent_name }}
@@ -41,7 +41,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-      - name: Resolve isolated target
+      - name: 分離した対象を特定
         id: target
         env:
           GH_TOKEN: ${{ github.token }}
@@ -49,10 +49,10 @@ jobs:
         run: |
           case "$MODE" in
             holdout|release|baseline-holdout|baseline-drift) ;;
-            *) echo "::error::Unknown promotion mode: $MODE"; exit 1 ;;
+            *) echo "::error::不明な昇格モードです: $MODE"; exit 1 ;;
           esac
           if [ "$MODE" = "release" ] && [ "$GITHUB_REF" != "refs/heads/main" ]; then
-            echo "::error::Only main can be promoted. Use holdout for a PR branch."
+            echo "::error::昇格できるのは main だけです。PR ブランチには holdout を使ってください。"
             exit 1
           fi
           if [ "$GITHUB_REF" = "refs/heads/main" ]; then
@@ -69,13 +69,13 @@ jobs:
           echo "agent_name=$agent" >> "$GITHUB_OUTPUT"
           echo "mode=$MODE" >> "$GITHUB_OUTPUT"
           if [ "$MODE" = "release" ] && [ ! -e sample/evaluation/baselines/approvers-drift.json ]; then
-            echo "::error::No drift baseline. Run mode=baseline-drift, then commit its artifact (see PLAYBOOK.md)."
+            echo "::error::ドリフトのベースラインがありません。mode=baseline-drift を実行し、成果物をコミットしてください（PLAYBOOK.md 参照）。"
             exit 1
           fi
-          echo "Mode: $MODE; agent: $agent; revision: $GITHUB_SHA"
+          echo "モード: $MODE、エージェント: $agent、リビジョン: $GITHUB_SHA"
 
   holdout:
-    name: Holdout gate
+    name: ホールドアウトのゲート
     needs: target
     if: needs.target.outputs.mode != 'baseline-drift'
     uses: ./.github/workflows/_agent-eval.yml
@@ -90,7 +90,7 @@ jobs:
       write_baseline: ${{ needs.target.outputs.mode == 'baseline-holdout' }}
 
   drift:
-    name: Drift gate
+    name: ドリフトのゲート
     needs: [target, holdout, approval]
     if: >-
       ${{ !cancelled() && (needs.target.outputs.mode == 'baseline-drift' ||
@@ -110,32 +110,32 @@ jobs:
       write_baseline: ${{ needs.target.outputs.mode == 'baseline-drift' }}
 
   approval:
-    name: Review dev before drift
+    name: ドリフト前に dev をレビュー
     needs: [target, holdout]
     if: needs.target.outputs.mode == 'release'
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - name: Record approval
-        run: echo "Approved dev revision $GITHUB_SHA for drift testing."
+      - name: 承認を記録
+        run: echo "dev リビジョン $GITHUB_SHA のドリフト検査を承認しました。"
 
   release_approval:
-    name: Approve release
+    name: リリースを承認
     needs: [target, drift]
     if: needs.target.outputs.mode == 'release'
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - name: Record release approval
-        run: echo "Approved revision $GITHUB_SHA for release."
+      - name: リリース承認を記録
+        run: echo "リビジョン $GITHUB_SHA のリリースを承認しました。"
 
   release:
-    name: Deploy approved release
+    name: 承認済みリリースをデプロイ
     needs: [target, release_approval]
     if: needs.target.outputs.mode == 'release'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # Existing Azure federation trusts demo; both production reviews precede deployment.
+    # 既存の Azure フェデレーションは demo を信頼する。production の2回のレビューはデプロイ前。
     environment: demo
     permissions:
       contents: read
@@ -161,27 +161,27 @@ jobs:
       - uses: Azure/setup-azd@0b7e3a35ab00f2eee7080c845eb39c3f0ebfa553 # v2.4.0
         with:
           version: "1.35.0"
-      - name: Install pinned Foundry extensions
+      - name: 固定バージョンの Foundry 拡張機能をインストール
         run: |
           azd extension install azure.ai.agents --version 1.0.0-beta.13
           azd extension install azure.ai.projects --version 1.0.0-beta.8
           azd extension install azure.ai.connections --version 1.0.0-beta.9
-      - name: Check configuration
+      - name: 設定を確認
         run: |
           for key in AZURE_CLIENT_ID AZURE_TENANT_ID AZURE_SUBSCRIPTION_ID \
             AZURE_ENV_NAME AZURE_LOCATION AZURE_AI_PROJECT_ID FOUNDRY_PROJECT_ENDPOINT; do
             if [ -z "$(printenv "$key")" ]; then
-              echo "::error::Missing GitHub variable: $key"
+              echo "::error::GitHub 変数がありません: $key"
               exit 1
             fi
           done
-      - name: Sign in with OIDC
+      - name: OIDC でログイン
         uses: Azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           client-id: ${{ env.AZURE_CLIENT_ID }}
           tenant-id: ${{ env.AZURE_TENANT_ID }}
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
-      - name: Configure existing project
+      - name: 既存プロジェクトを設定
         run: |
           azd config set auth.useAzCliAuth true
           azd env new "$AZURE_ENV_NAME" --subscription "$AZURE_SUBSCRIPTION_ID" \
@@ -190,9 +190,9 @@ jobs:
           azd env set AZURE_AI_PROJECT_ID "$AZURE_AI_PROJECT_ID"
           azd env set FOUNDRY_PROJECT_ENDPOINT "$FOUNDRY_PROJECT_ENDPOINT"
           azd env set AGENT_NAME "$AGENT_NAME"
-      - name: Deploy approved revision
+      - name: 承認済みリビジョンをデプロイ
         run: |
-          # Resolve both names in this runner's checkout before native azd validation.
+          # ネイティブな azd 検証の前に、このランナーのチェックアウトで両方の名前を解決する。
           yq -i '.services.purchasing-advice-demo.name = strenv(AGENT_NAME) |
             .services.purchasing-advice-demo.env.AGENT_NAME = strenv(AGENT_NAME)' azure.yaml
           azd deploy purchasing-advice-demo --no-prompt
@@ -201,12 +201,12 @@ jobs:
           actual = json.load(sys.stdin)["name"]
           expected = os.environ["AGENT_NAME"]
           if actual != expected:
-              raise SystemExit(f"Agent name mismatch: deployed {actual}, expected {expected}")
-          print(f"Verified release target: {actual}")
+              raise SystemExit(f"エージェント名が不一致です: デプロイ済み {actual}、期待値 {expected}")
+          print(f"確認したリリース対象: {actual}")
           '
           {
-            echo "## Released"
-            echo "Revision: \`${GITHUB_SHA}\`"
-            echo "Agent: \`${AGENT_NAME}\`"
-            echo "Passed holdout, received dev review, passed drift and received release approval."
+            echo "## リリース完了"
+            echo "リビジョン: \`${GITHUB_SHA}\`"
+            echo "エージェント: \`${AGENT_NAME}\`"
+            echo "ホールドアウト合格、dev レビュー、ドリフト合格、リリース承認を完了しました。"
           } >> "$GITHUB_STEP_SUMMARY"

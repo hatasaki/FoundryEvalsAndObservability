@@ -11,7 +11,7 @@ export default defineConfig({
     baseURL: "http://127.0.0.1:4173",
     viewport: { width: 1440, height: 900 },
     launchOptions: {
-      channel: "chrome",
+      channel: process.env.PLAYWRIGHT_CHANNEL ?? "chrome",
       args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"],
     },
     permissions: ["microphone"],

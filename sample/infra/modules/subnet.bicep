@@ -1,19 +1,18 @@
-// Single subnet on an existing VNet. Kept as its own module so the parent can
-// place subnets in the VNet's resource group (which may differ from the
-// deployment RG) and serialize subnet writes via module dependsOn.
+// 既存 VNet 内の単一サブネット。親が VNet のリソースグループ（デプロイ先と異なる場合もある）に
+// サブネットを配置し、モジュールの dependsOn で書き込みを直列化できるよう別モジュールにする。
 
 targetScope = 'resourceGroup'
 
-@description('Name of the virtual network the subnet belongs to.')
+@description('サブネットが所属する仮想ネットワーク名。')
 param vnetName string
 
-@description('Name of the subnet to create.')
+@description('作成するサブネット名。')
 param subnetName string
 
-@description('CIDR for the subnet.')
+@description('サブネットの CIDR。')
 param addressPrefix string
 
-@description('Subnet delegations (e.g. Microsoft.App/environments for the agent subnet).')
+@description('サブネットの委任（例: エージェント用の Microsoft.App/environments）。')
 param delegations array = []
 
 resource subnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' = {

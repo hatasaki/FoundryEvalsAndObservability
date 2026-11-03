@@ -14,7 +14,7 @@ EMBEDDINGS = DATA / "policy_embeddings.json"
 EMBEDDING_DEPLOYMENT = os.environ.get("EMBEDDING_DEPLOYMENT", "text-embedding-3-small")
 EMBEDDING_DIMENSIONS = 512
 POLICY_RESULTS = 5
-RRF_K = 60  # reciprocal rank fusion constant, as used by Azure AI Search hybrid queries
+RRF_K = 60  # Azure AI Search のハイブリッド検索でも使われる逆順位融合の定数
 STOP_WORDS = set("a an and are can for from i in is it of on or our the to we with".split())
 
 log = logging.getLogger(__name__)
@@ -24,11 +24,22 @@ def read_documents(filename: str) -> list[dict]:
     return json.loads((DATA / filename).read_text(encoding="utf-8"))
 
 
+def _search_terms(text: str) -> list[str]:
+    tokens = re.findall(r"[a-z0-9]+|[\u3040-\u30ff\u3400-\u9fff]+", text.lower())
+    terms = []
+    for token in tokens:
+        if re.fullmatch(r"[a-z0-9]+", token):
+            terms.append(token)
+        else:
+            terms.extend(token[index : index + 2] for index in range(max(1, len(token) - 1)))
+    return terms
+
+
 def _keyword_ranking(filename: str, query: str, limit: int | None = 3) -> list[str]:
-    """BM25 over title and content. Returns document IDs, best first."""
-    terms = sorted(set(re.findall(r"[a-z0-9]+", query.lower())) - STOP_WORDS)
+    """タイトルと本文を BM25 で検索し、関連度の高い順に文書 ID を返す。"""
+    terms = sorted(set(_search_terms(query)) - STOP_WORDS)
     if not terms:
-        raise ValueError("Provide searchable words, such as a supplier, product or policy topic.")
+        raise ValueError("取引先、製品、ポリシーの話題など、検索できる語句を指定してください。")
     documents = read_documents(filename)
     with sqlite3.connect(":memory:") as connection:
         connection.execute(
@@ -37,9 +48,16 @@ def _keyword_ranking(filename: str, query: str, limit: int | None = 3) -> list[s
         )
         connection.executemany(
             "INSERT INTO documents (id, title, content) VALUES (?, ?, ?)",
-            [(d["id"], d["title"], d["content"]) for d in documents],
+            [
+                (
+                    document["id"],
+                    " ".join(_search_terms(document["title"])),
+                    " ".join(_search_terms(document["content"])),
+                )
+                for document in documents
+            ],
         )
-        # Match any query term; title matches carry more weight than body matches.
+        # 検索語のいずれかに一致する文書を検索し、本文よりタイトルの一致を重く扱う。
         sql = (
             "SELECT id FROM documents WHERE documents MATCH ? ORDER BY bm25(documents, 0, 3, 1), id"
         )
@@ -55,7 +73,7 @@ def _search(filename: str, query: str) -> list[dict]:
     return [by_id[doc_id] for doc_id in _keyword_ranking(filename, query)]
 
 
-# Policy embeddings: built offline by build_embeddings.py, checked against policies.json.
+# ポリシーの埋め込みは build_embeddings.py で事前生成し、policies.json との整合性を確認する。
 
 
 def policy_text(policy: dict) -> str:
@@ -66,11 +84,11 @@ def policy_hash(policy: dict) -> str:
     return hashlib.sha256(policy_text(policy).encode("utf-8")).hexdigest()[:16]
 
 
-# Embeddings call the account's OpenAI v1 endpoint on its cognitiveservices.azure.com host, as
-# Microsoft documents for agent code calling the account directly. Tested: the project route
-# returns 404 for embeddings, and the services.ai.azure.com host refuses the hosted agent's
-# identity (401) even with the role. The agent identity needs Cognitive Services OpenAI User on
-# the account, which infra/grant-agent-embeddings.sh grants after each deploy.
+# Microsoft の案内に従い、アカウントの cognitiveservices.azure.com ホストにある OpenAI v1
+# エンドポイントで埋め込みを取得する。確認済み: プロジェクト経由の埋め込みは 404、
+# services.ai.azure.com ホストではロールがあってもホストされたエージェントの ID は 401 になる。
+# エージェントの ID にはアカウントの Cognitive Services OpenAI User が必要で、
+# infra/grant-agent-embeddings.sh がデプロイごとに付与する。
 EMBEDDING_SCOPE = "https://cognitiveservices.azure.com/.default"
 
 
@@ -101,7 +119,7 @@ def embed(texts: list[str]) -> list[list[float]]:
 
 
 def _caller_identity() -> str:
-    """Which identity the call ran as, read from the token's claims (for diagnosing 401s)."""
+    """401 の診断用に、トークンのクレームから呼び出し元 ID を読み取る。"""
     try:
         import base64
 
@@ -112,7 +130,7 @@ def _caller_identity() -> str:
         claims = json.loads(base64.urlsafe_b64decode(payload + "=" * (-len(payload) % 4)))
         return f"oid={claims.get('oid')} appid={claims.get('appid') or claims.get('azp')}"
     except Exception as error:
-        return f"unknown ({type(error).__name__})"
+        return f"不明（{type(error).__name__}）"
 
 
 def stale_policies(policies: list[dict], stored: dict) -> list[str]:
@@ -123,12 +141,12 @@ def stale_policies(policies: list[dict], stored: dict) -> list[str]:
 @cache
 def _policy_vectors() -> dict[str, list[float]] | None:
     if not EMBEDDINGS.is_file():
-        log.warning("%s is missing; policy search is keyword-only.", EMBEDDINGS.name)
+        log.warning("%s がないため、ポリシー検索はキーワード検索のみです。", EMBEDDINGS.name)
         return None
     stored = json.loads(EMBEDDINGS.read_text(encoding="utf-8"))
     stale = stale_policies(read_documents("policies.json"), stored)
     if stale:
-        log.warning("Embeddings are stale for %s; policy search is keyword-only.", stale)
+        log.warning("%s の埋め込みが古いため、ポリシー検索はキーワード検索のみです。", stale)
         return None
     return {doc_id: entry["vector"] for doc_id, entry in stored["policies"].items()}
 
@@ -139,7 +157,7 @@ def _cosine(a: list[float], b: list[float]) -> float:
 
 
 def _fuse(*rankings: list[str]) -> list[str]:
-    """Reciprocal rank fusion: documents ranked well by either method rise to the top."""
+    """逆順位融合により、どちらかの検索方法で上位になった文書を優先する。"""
     scores: dict[str, float] = {}
     for ranking in rankings:
         for rank, doc_id in enumerate(ranking, start=1):
@@ -147,24 +165,27 @@ def _fuse(*rankings: list[str]) -> list[str]:
     return sorted(scores, key=lambda doc_id: (-scores[doc_id], doc_id))
 
 
-# The three tools below mimic the shape of the Microsoft IQ MCP tools. The real IQ
-# sources are LLM-backed; these are deterministic stand-ins over local data.
+# 以下の3ツールは Microsoft IQ の MCP ツールの形を模倣する。
+# 実際の IQ は LLM を利用するが、ここではローカルデータを使う決定的な代替実装である。
 
 
 def knowledge_base_retrieve(queries: list[str]) -> str:
-    """Simulated Foundry IQ knowledge base: hybrid (keyword + vector) search over policies."""
+    """Foundry IQ の模擬ナレッジベース。
+
+    ポリシーをキーワードとベクトルのハイブリッド検索で取得する。
+    """
     policies = {p["id"]: p for p in read_documents("policies.json")}
     vectors = _policy_vectors()
     query_vectors = None
-    fallback = "embeddings missing or stale"
+    fallback = "埋め込みが存在しないか、古くなっています"
     if vectors is not None:
         try:
             query_vectors = embed(queries)
-        except Exception as error:  # degrade to keyword search rather than fail the conversation
-            log.warning("Query embedding failed; policy search is keyword-only.", exc_info=True)
-            fallback = f"embedding call failed: {type(error).__name__}: {str(error)[:300]}"
+        except Exception as error:  # 会話を失敗させず、キーワード検索に切り替える
+            log.warning("検索語の埋め込みに失敗したため、キーワード検索のみです。", exc_info=True)
+            fallback = f"埋め込み呼び出しに失敗: {type(error).__name__}: {str(error)[:300]}"
             if "PermissionDenied" in str(error):
-                fallback += f" Caller: {_caller_identity()}"
+                fallback += f" 呼び出し元: {_caller_identity()}"
     references = {}
     for i, query in enumerate(queries):
         keyword = _keyword_ranking("policies.json", query, limit=None)
@@ -179,31 +200,31 @@ def knowledge_base_retrieve(queries: list[str]) -> str:
     result = {"queries": queries, "search_mode": "hybrid"}
     if query_vectors is None:
         result |= {"search_mode": "keyword", "fallback_reason": fallback}
-    return json.dumps(result | {"references": list(references.values())})
+    return json.dumps(result | {"references": list(references.values())}, ensure_ascii=False)
 
 
-LINE_MANAGER = re.compile(r"Line manager: ([^.]+)\.")
-ROLE_HOLDER = re.compile(r"Role directory: ([^.]+?) is the ([^.]+)\.")
-ABOUT_AUTHORITY = re.compile(r"delegat|approv|cover|sign", re.IGNORECASE)
+LINE_MANAGER = re.compile(r"直属上司: ([^。]+)。")
+ROLE_HOLDER = re.compile(r"役職名簿: ([^。]+?) は ([^。]+) です。")
+ABOUT_AUTHORITY = re.compile(r"委任|承認|代行|代理|決裁|delegat|approv|cover|sign", re.IGNORECASE)
 
 
 def _holder_records(name: str, question: str) -> list[dict]:
-    """The person's directory record, plus their recorded delegations if the question asks."""
+    """本人の名簿レコードと、質問に応じて記録された委任を返す。"""
     records = []
     for document in read_documents("people.json") + read_documents("roster.json"):
         content = document["content"]
-        if content.startswith((f"Directory: {name} manages", f"Role directory: {name} is")):
+        if content.startswith((f"名簿: {name} は", f"役職名簿: {name} は")):
             records.append(document)
         elif ABOUT_AUTHORITY.search(question) and re.match(
-            rf"Recorded by {re.escape(name)}[.,]", content
+            rf"記録者: {re.escape(name)}[。、]", content
         ):
             records.append(document)
     return records
 
 
 def _resolve_people(results: list[dict], question: str) -> list[dict]:
-    """Real Work IQ resolves "my line manager" or "the Hospitality Lead" and answers about
-    that person, so a single question reaches their availability and delegations."""
+    """実際の Work IQ と同様に「私の直属上司」や「接待責任者」を解決し、
+    一つの質問で本人の勤務状況と委任の記録まで取得する。"""
     names = [m.group(1) for r in results if (m := LINE_MANAGER.search(r["content"]))]
     for document in read_documents("people.json"):
         match = ROLE_HOLDER.match(document["content"])
@@ -213,7 +234,7 @@ def _resolve_people(results: list[dict], question: str) -> list[dict]:
 
 
 def ask(question: str) -> str:
-    """Simulated Work IQ: people, roles, availability, messages, notices and clearances."""
+    """Work IQ の模擬実装。人、役職、勤務状況、メッセージ、通知、許可を検索する。"""
     results = (
         _search("notices.json", question)
         + _search("people.json", question)
@@ -221,15 +242,15 @@ def ask(question: str) -> str:
     )
     results += _resolve_people(results, question)
     unique = list({r["id"]: r for r in results}.values())
-    return json.dumps({"question": question, "results": unique})
+    return json.dumps({"question": question, "results": unique}, ensure_ascii=False)
 
 
 def search_ontology(question: str) -> str:
-    """Simulated Fabric IQ ontology: business entities such as department budgets."""
+    """Fabric IQ の模擬オントロジー。部門予算などの業務エンティティを扱う。"""
     result = {
         "id": "ontology:department-budget",
         "entity": "Department",
         "available_budget": 50000,
         "currency": "dollars",
     }
-    return json.dumps({"question": question, "results": [result]})
+    return json.dumps({"question": question, "results": [result]}, ensure_ascii=False)

@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="ja">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>From Prompt to Production - AI Genius S6 E2</title>
+  <title>プロンプトから本番へ - AI Genius S6 E2</title>
   <script>
     (() => {
       const param = new URLSearchParams(window.location.search).get("scoutTheme");
@@ -1883,7 +1883,7 @@
     }
 
     .policy-result::before {
-      content: "Foundry IQ result returned";
+      content: "Foundry IQ の結果を取得";
       display: block;
       margin-bottom: 5px;
       color: var(--slide-accent);
@@ -1966,7 +1966,7 @@
     }
 
     .work-email-result::before {
-      content: "Work IQ result returned";
+      content: "Work IQ の結果を取得";
       display: block;
       margin-bottom: 5px;
       color: var(--cp-success);
@@ -3047,7 +3047,7 @@
       line-height: 1.2;
     }
 
-    /* AI Genius template visual system */
+    /* AI Genius テンプレートの視覚表現 */
     .slide {
       --slide-accent: var(--cp-warning);
       padding: 7.2% 8%;
@@ -3117,7 +3117,12 @@
       padding-top: 5%;
     }
 
-    /* AI Genius closing template slides (PPTX layouts 9-11); positions are layout points x 5/3. */
+    .slide.template-title h1 {
+      max-width: 100%;
+      letter-spacing: 0;
+    }
+
+    /* AI Genius の締めくくり（PPTX レイアウト9〜11）。位置はレイアウトのポイント数 × 5/3。 */
     .slide.template-closing {
       padding: 0;
     }
@@ -3372,73 +3377,73 @@
 </head>
 <body>
   <main class="app">
-    <section class="stage" aria-label="Presentation">
+    <section class="stage" aria-label="プレゼンテーション">
       <div class="slide-viewport" id="slideViewport">
         <div class="slide-frame">
-        <article class="slide template-title section-context active" data-title="From Prompt to Production" data-minutes="1" data-rehearsal-id="opening">
+        <article class="slide template-title section-context active" data-title="プロンプトから本番へ" data-minutes="1" data-rehearsal-id="opening">
           <div class="hero-grid">
             <div>
-              <p class="slide-kicker">AI Genius / Season 6 / Episode 2</p>
-              <h1>From Prompt<br><span class="accent">to Production</span></h1>
-              <p class="lead">Start with a working agent. Measure consistency, speed and cost. Improve with evidence.</p>
+              <p class="slide-kicker">AI Genius / シーズン6 / 第2回</p>
+              <h1>プロンプトから<br><span class="accent">本番へ</span></h1>
+              <p class="lead">動くエージェントから始め、一貫性・速度・コストを測る。証拠に基づいて改善する。</p>
               <p class="small muted">Graeme Foster</p>
             </div>
             <div class="hero-loop" aria-hidden="true">
-              <div class="mini-card"><strong>Model</strong>Balance quality, speed and cost</div>
-              <div class="mini-card"><strong>Context</strong>Ground answers in current facts</div>
-              <div class="mini-card"><strong>Observability</strong>See every call and decision</div>
-              <div class="mini-card"><strong>Evaluation</strong>Measure quality, not one answer</div>
-              <div class="mini-card"><strong>Optimisation</strong>Improve with evidence</div>
-              <div class="mini-card"><strong>Automation</strong>Gate every release</div>
+              <div class="mini-card"><strong>モデル</strong>品質・速度・コストを両立</div>
+              <div class="mini-card"><strong>コンテキスト</strong>現在の事実を回答の根拠に</div>
+              <div class="mini-card"><strong>可観測性</strong>すべての呼び出しと判断を見る</div>
+              <div class="mini-card"><strong>評価</strong>1つの回答ではなく品質を測る</div>
+              <div class="mini-card"><strong>最適化</strong>証拠に基づいて改善</div>
+              <div class="mini-card"><strong>自動化</strong>すべてのリリースをゲート判定</div>
             </div>
           </div>
           <div class="footer"><span>Microsoft Foundry</span><span>AI Genius / S6 E2 / 01</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-context" data-title="Agenda" data-minutes="1" data-rehearsal-id="agenda">
-          <p class="slide-kicker">Today in Microsoft Foundry</p>
-          <h2>What we'll cover.</h2>
+        <article class="slide template-content-minimal section-context" data-title="アジェンダ" data-minutes="1" data-rehearsal-id="agenda">
+          <p class="slide-kicker">Microsoft Foundry で紹介すること</p>
+          <h2>今回の内容</h2>
           <div class="agenda-grid">
             <div class="agenda-step">
               <span class="agenda-marker">01</span>
-              <h3>Model Choice</h3>
-              <p>Model comparison + Model Router</p>
+              <h3>モデル選択</h3>
+              <p>モデル比較 + Model Router</p>
             </div>
             <div class="agenda-step">
               <span class="agenda-marker">02</span>
-              <h3>Grounding</h3>
+              <h3>グラウンディング</h3>
               <p>Foundry IQ, Fabric IQ + Work IQ</p>
             </div>
             <div class="agenda-step">
               <span class="agenda-marker">03</span>
-              <h3>Observability</h3>
-              <p>Foundry tracing</p>
+              <h3>可観測性</h3>
+              <p>Foundry のトレース</p>
             </div>
             <div class="agenda-step">
               <span class="agenda-marker">04</span>
-              <h3>Evaluate</h3>
-              <p>Quality, safety, stays on-task</p>
+              <h3>評価</h3>
+              <p>品質、安全性、タスクへの忠実さ</p>
             </div>
             <div class="agenda-step">
               <span class="agenda-marker">05</span>
-              <h3>Optimise</h3>
+              <h3>最適化</h3>
               <p>Agent Optimizer</p>
             </div>
             <div class="agenda-step">
               <span class="agenda-marker">06</span>
-              <h3>Automate</h3>
-              <p>Continuous evaluation<br>+ GitHub Actions</p>
+              <h3>自動化</h3>
+              <p>継続的評価<br>+ GitHub Actions</p>
             </div>
           </div>
-          <div class="footer"><span>Session agenda</span><span>AI Genius / S6 E2 / 02</span></div>
+          <div class="footer"><span>今回のアジェンダ</span><span>AI Genius / S6 E2 / 02</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-context" data-title="Meet the agent" data-minutes="1" data-rehearsal-id="agent">
-          <p class="slide-kicker">Our example</p>
-          <h2>Meet the agent</h2>
+        <article class="slide template-content-minimal section-context" data-title="エージェントの紹介" data-minutes="1" data-rehearsal-id="agent">
+          <p class="slide-kicker">今回の例</p>
+          <h2>エージェントの紹介</h2>
           <div class="agent-intro">
             <div class="agent-intro-profile">
-              <svg class="model-illustration" viewBox="0 0 180 164" role="img" aria-label="Purchasing advice agent">
+              <svg class="model-illustration" viewBox="0 0 180 164" role="img" aria-label="購入助言エージェント">
                 <path class="model-shell" d="M36 62 58 48H132L150 64V132L130 146H50L36 132Z"/>
                 <path d="M36 62H130L141 56M130 62V146"/>
                 <path class="model-screen" d="M49 75H116L122 82V120L115 126H49Z"/>
@@ -3449,23 +3454,23 @@
                 <path d="M49 136H60M68 136H78M139 84V96"/>
                 <path class="model-shell" d="M75 146V153L91 159 108 153V146"/>
               </svg>
-              <h3>Purchasing advice agent</h3>
-              <p>Helps employees understand<br>what they can buy and<br>which approvals they need.</p>
+              <h3>購入助言エージェント</h3>
+              <p>購入できるものと<br>必要な承認を<br>従業員に案内する。</p>
             </div>
             <figure class="agent-intro-question">
-              <figcaption>A team lead asks:</figcaption>
-              <blockquote>“Can I book a team dinner for six this Thursday? It’s about $540, and my manager’s approved it.”</blockquote>
+              <figcaption>チームリーダーからの質問:</figcaption>
+              <blockquote>「今週木曜日に6人でチームの夕食会を予約できますか。約$540で、直属上司は承認済みです。」</blockquote>
             </figure>
           </div>
-          <div class="footer"><span>Purchasing advice / Microsoft Foundry</span><span>AI Genius / S6 E2 / 03</span></div>
+          <div class="footer"><span>購入助言 / Microsoft Foundry</span><span>AI Genius / S6 E2 / 03</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-context presenter-steps model-choice-slide" data-title="Model Choice" data-minutes="2" data-rehearsal-id="model">
-          <p class="slide-kicker">Different models. Different priorities.</p>
-          <h2>Model Choice</h2>
+        <article class="slide template-content-minimal section-context presenter-steps model-choice-slide" data-title="モデル選択" data-minutes="2" data-rehearsal-id="model">
+          <p class="slide-kicker">モデルごとに、重視する点が異なる。</p>
+          <h2>モデル選択</h2>
           <div class="model-choice-grid">
             <div class="model-choice-card reasoning story-reveal reveal-1">
-              <svg class="model-illustration" viewBox="0 0 180 164" role="img" aria-label="Model 1: a robot with a connected reasoning diagram">
+              <svg class="model-illustration" viewBox="0 0 180 164" role="img" aria-label="モデル1: 推論の図につながるロボット">
                 <path class="model-shell" d="M36 62 58 48H132L150 64V132L130 146H50L36 132Z"/>
                 <path d="M36 62H130L141 56M130 62V146"/>
                 <path class="model-screen" d="M49 75H116L122 82V120L115 126H49Z"/>
@@ -3480,13 +3485,13 @@
                 <circle class="model-shell" cx="89" cy="39" r="7"/>
                 <path class="model-shell" d="M75 146V153L91 159 108 153V146"/>
               </svg>
-              <h3>Model 1</h3>
-              <p class="model-priority">Optimised for quality</p>
-              <p class="model-example">Complex reasoning<br>and multi-step tasks</p>
-              <p class="model-downside">Trade-off: $$$<br>Slower responses</p>
+              <h3>モデル1</h3>
+              <p class="model-priority">品質を重視</p>
+              <p class="model-example">複雑な推論と<br>複数段階のタスク</p>
+              <p class="model-downside">トレードオフ: $$$<br>応答は遅い</p>
             </div>
             <div class="model-choice-card fast story-reveal reveal-2">
-              <svg class="model-illustration" viewBox="0 0 180 164" role="img" aria-label="Model 2: a robot with a lightning bolt and speed lines">
+              <svg class="model-illustration" viewBox="0 0 180 164" role="img" aria-label="モデル2: 稲妻と速度線の付いたロボット">
                 <path class="model-shell" d="M46 62 68 48H136L154 64V132L134 146H60L46 132Z"/>
                 <path d="M46 62H134L145 56M134 62V146"/>
                 <path class="model-screen" d="M59 75H120L126 82V120L119 126H59Z"/>
@@ -3498,13 +3503,13 @@
                 <path class="model-detail" d="M12 82H34M6 101H30M18 120H34"/>
                 <path class="model-shell" d="M85 146V153L101 159 118 153V146"/>
               </svg>
-              <h3>Model 2</h3>
-              <p class="model-priority">Fast and low cost</p>
-              <p class="model-example">Responsive chat and<br>high-volume tasks</p>
-              <p class="model-downside">Trade-off: less capable<br>on complex tasks</p>
+              <h3>モデル2</h3>
+              <p class="model-priority">高速・低コスト</p>
+              <p class="model-example">応答性の高い会話と<br>大量のタスク</p>
+              <p class="model-downside">トレードオフ:<br>複雑なタスクには弱い</p>
             </div>
             <div class="model-choice-card economy story-reveal reveal-3">
-              <svg class="model-illustration" viewBox="0 0 180 164" role="img" aria-label="Model Router: a robot sending requests to small, medium and large models">
+              <svg class="model-illustration" viewBox="0 0 180 164" role="img" aria-label="Model Router: 小・中・大モデルへリクエストを送るロボット">
                 <path class="model-shell" d="M24 62 46 48H112L130 64V132L110 146H38L24 132Z"/>
                 <path d="M24 62H110L121 56M110 62V146"/>
                 <path class="model-screen" d="M37 75H96L102 82V120L95 126H37Z"/>
@@ -3519,415 +3524,415 @@
                 <rect class="model-shell" x="92" y="1" width="18" height="17" rx="2"/>
               </svg>
               <h3>Model Router</h3>
-              <p class="model-priority">Decides per request</p>
-              <p class="model-example">Easy questions: small model<br>Hard questions: strong model</p>
-              <p class="model-downside">Trade-off: less predictable<br>Test it like any model</p>
+              <p class="model-priority">リクエストごとに判断</p>
+              <p class="model-example">簡単な質問: 小さいモデル<br>難しい質問: 高性能モデル</p>
+              <p class="model-downside">トレードオフ: 予測しにくい<br>他のモデルと同じく検証する</p>
             </div>
           </div>
-          <p class="slide-takeaway router-question story-reveal reveal-4">The first choice isn't final. <em>Evaluations let you change it.</em></p>
-          <div class="footer"><span>Model Choice</span><span>AI Genius / S6 E2 / 04</span></div>
+          <p class="slide-takeaway router-question story-reveal reveal-4">最初の選択は最終決定ではない。<em>評価があるから変更できる。</em></p>
+          <div class="footer"><span>モデル選択</span><span>AI Genius / S6 E2 / 04</span></div>
         </article>
 
-        <article class="slide template-demo section-context" data-title="Demo 1 - Foundry Model Comparison" data-minutes="2" data-rehearsal-id="demo-model">
+        <article class="slide template-demo section-context" data-title="デモ1 - Foundry のモデル比較" data-minutes="2" data-rehearsal-id="demo-model">
           <div class="demo-bumper">
-            <span class="demo-number">Demo 1</span>
-            <h2>Foundry Model Comparison</h2>
-            <p class="lead">Compare fixed models and Model Router</p>
+            <span class="demo-number">デモ1</span>
+            <h2>Foundry のモデル比較</h2>
+            <p class="lead">固定モデルと Model Router を比較する</p>
           </div>
-          <div class="footer"><span>The first choice isn't final</span><span>AI Genius / S6 E2 / 05</span></div>
+          <div class="footer"><span>最初の選択は最終決定ではない</span><span>AI Genius / S6 E2 / 05</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-context presenter-steps iq-concept-slide" data-title="Grounding" data-minutes="4" data-rehearsal-id="grounding">
+        <article class="slide template-content-minimal section-context presenter-steps iq-concept-slide" data-title="グラウンディング" data-minutes="4" data-rehearsal-id="grounding">
           <p class="slide-kicker">Microsoft IQ</p>
-          <h2>Grounding</h2>
+          <h2>グラウンディング</h2>
           <div class="concept-grid">
             <div class="concept-card story-reveal reveal-1">
               <span class="concept-icon">FIQ</span>
               <h3>Foundry IQ</h3>
-              <p>Institutional knowledge and authoritative content.</p>
-              <div class="concept-detail">Policies, procedures and reference documents.</div>
+              <p>組織の知識と権威ある情報。</p>
+              <div class="concept-detail">ポリシー、手順、参照文書。</div>
             </div>
             <div class="concept-card blue story-reveal reveal-2">
               <span class="concept-icon">BIQ</span>
               <h3>Fabric IQ</h3>
-              <p>Governed business entities and current business state.</p>
-              <div class="concept-detail">Spend so far, remaining budget and business records.</div>
+              <p>管理された業務エンティティと現在の状態。</p>
+              <div class="concept-detail">支出済み額、予算残額、業務記録。</div>
             </div>
             <div class="concept-card green story-reveal reveal-3">
               <span class="concept-icon">WIQ</span>
               <h3>Work IQ</h3>
-              <p>People, collaboration and workflow context.</p>
-              <div class="concept-detail">Who holds a role today, who’s away and who’s covering.</div>
+              <p>人、共同作業、ワークフローの状況。</p>
+              <div class="concept-detail">判断日の役職者、不在者、代行者。</div>
             </div>
           </div>
-          <p class="slide-takeaway story-reveal reveal-4">Foundry IQ: <em>the rules</em>. Fabric IQ: <em>the budget left</em>. Work IQ: <em>who can approve today</em>.</p>
-          <div class="footer"><span>Foundry IQ: the rules. Fabric IQ: the budget. Work IQ: who can approve.</span><span>AI Genius / S6 E2 / 06</span></div>
+          <p class="slide-takeaway story-reveal reveal-4">Foundry IQ: <em>規則</em>。Fabric IQ: <em>予算残額</em>。Work IQ: <em>判断日の承認者</em>。</p>
+          <div class="footer"><span>Foundry IQ: 規則。Fabric IQ: 予算。Work IQ: 承認者。</span><span>AI Genius / S6 E2 / 06</span></div>
         </article>
 
-        <article class="slide template-demo section-context" data-title="Demo 2 - Run the Starting Agent" data-minutes="5" data-rehearsal-id="demo-agent">
+        <article class="slide template-demo section-context" data-title="デモ2 - 初期エージェントの実行" data-minutes="5" data-rehearsal-id="demo-agent">
           <div class="demo-bumper">
-            <span class="demo-number">Demo 2</span>
-            <h2>Run the Starting Agent</h2>
-            <p class="lead">Ask two questions: one it gets right, and one that looks right but isn’t.</p>
+            <span class="demo-number">デモ2</span>
+            <h2>初期エージェントを実行</h2>
+            <p class="lead">2つの質問をする。正しく答えるものと、正しく見えて間違えるもの。</p>
           </div>
-          <div class="footer"><span>Starting agent / Microsoft Foundry</span><span>AI Genius / S6 E2 / 07</span></div>
+          <div class="footer"><span>初期エージェント / Microsoft Foundry</span><span>AI Genius / S6 E2 / 07</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-evaluation presenter-steps" data-title="Observe" data-minutes="1" data-rehearsal-id="observe">
-          <p class="slide-kicker">Observability</p>
-          <h2>Observe</h2>
+        <article class="slide template-content-minimal section-evaluation presenter-steps" data-title="観測" data-minutes="1" data-rehearsal-id="observe">
+          <p class="slide-kicker">可観測性</p>
+          <h2>観測</h2>
           <div class="concept-grid">
             <div class="concept-card blue story-reveal reveal-1">
               <span class="concept-icon">1</span>
-              <h3>Calls</h3>
-              <p>Follow LLM calls and tool calls.</p>
-              <div class="concept-detail">What was called, and in what order?</div>
+              <h3>呼び出し</h3>
+              <p>LLM とツールの呼び出しを追う。</p>
+              <div class="concept-detail">何を、どの順序で呼んだか。</div>
             </div>
             <div class="concept-card green story-reveal reveal-2">
               <span class="concept-icon">2</span>
-              <h3>Inputs &amp; outputs</h3>
-              <p>Inspect captured prompts and responses</p>
-              <div class="concept-detail">What information passed between each step?</div>
+              <h3>入出力</h3>
+              <p>取得したプロンプトと応答を見る。</p>
+              <div class="concept-detail">各段階でどの情報を受け渡したか。</div>
             </div>
             <div class="concept-card orange story-reveal reveal-3">
               <span class="concept-icon">3</span>
-              <h3>Timing and errors</h3>
-              <p>See the duration of each call and any errors.</p>
-              <div class="concept-detail">Where did the agent spend its time?</div>
+              <h3>時間とエラー</h3>
+              <p>各呼び出しの所要時間とエラーを見る。</p>
+              <div class="concept-detail">エージェントはどこに時間を使ったか。</div>
             </div>
           </div>
-          <div class="footer"><span>Observe first; evaluate next</span><span>AI Genius / S6 E2 / 08</span></div>
+          <div class="footer"><span>まず観測、次に評価</span><span>AI Genius / S6 E2 / 08</span></div>
         </article>
 
-        <article class="slide template-demo section-evaluation" data-title="Demo 3 - Inspect the Trace" data-minutes="3" data-rehearsal-id="demo-trace">
+        <article class="slide template-demo section-evaluation" data-title="デモ3 - トレースの確認" data-minutes="3" data-rehearsal-id="demo-trace">
           <div class="demo-bumper">
-            <span class="demo-number">Demo 3</span>
-            <h2>Inspect the Trace</h2>
-            <p class="lead">Visualise the calls and timings behind the answer.</p>
+            <span class="demo-number">デモ3</span>
+            <h2>トレースを確認</h2>
+            <p class="lead">回答の裏にある呼び出しと時間を可視化する。</p>
           </div>
-          <div class="footer"><span>LLM calls, tool calls, prompts and responses</span><span>AI Genius / S6 E2 / 09</span></div>
+          <div class="footer"><span>LLM・ツールの呼び出し、プロンプト、応答</span><span>AI Genius / S6 E2 / 09</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-evaluation presenter-steps evaluator-slide" data-title="Evaluate" data-minutes="5" data-rehearsal-id="evaluate">
-          <p class="slide-kicker">Consistency across purchasing tasks</p>
-          <h2>Evaluate</h2>
+        <article class="slide template-content-minimal section-evaluation presenter-steps evaluator-slide" data-title="評価" data-minutes="5" data-rehearsal-id="evaluate">
+          <p class="slide-kicker">購入タスク全体での一貫性</p>
+          <h2>評価</h2>
           <div class="concept-grid">
             <div class="concept-card orange story-reveal reveal-1">
               <span class="concept-icon">G</span>
-              <h3>Built-in evaluators</h3>
-              <p>Grounded? On task?</p>
-              <div class="concept-detail">Catch generic failures, ready-made. Ours is a wrong approver.<small>Groundedness, task adherence</small></div>
+              <h3>組み込み評価器</h3>
+              <p>根拠に沿うか。タスクに忠実か。</p>
+              <div class="concept-detail">既成の評価器で一般的な失敗を検出。今回の失敗は承認者の誤り。<small>根拠との整合性、タスクへの忠実さ</small></div>
             </div>
             <div class="concept-card green story-reveal reveal-2">
               <span class="concept-icon">J</span>
-              <h3>Next-action judge</h3>
-              <p>Right next step? Right approver?</p>
-              <div class="concept-detail">Pass/fail against a business-specific reference answer.<small>Custom prompt evaluator</small></div>
+              <h3>次の行動の評価器</h3>
+              <p>次の手順と承認者は正しいか。</p>
+              <div class="concept-detail">業務固有の参照回答と比較して合否判定。<small>カスタムプロンプト評価器</small></div>
             </div>
             <div class="concept-card blue story-reveal reveal-3">
               <span class="concept-icon">R</span>
-              <h3>Rubric</h3>
-              <p>Did the agent broadly succeed in the set task?</p>
-              <div class="concept-detail">Weighted: approval route, current approver, citations, clarity.<small>Rubric evaluator / preview</small></div>
+              <h3>ルーブリック</h3>
+              <p>指定したタスク全体で成功したか。</p>
+              <div class="concept-detail">承認経路、現在の承認者、引用、明確さを重み付け。<small>ルーブリック評価器 / プレビュー</small></div>
             </div>
           </div>
-          <div class="footer"><span>Quality becomes evidence, not opinion</span><span>AI Genius / S6 E2 / 10</span></div>
+          <div class="footer"><span>品質を意見ではなく証拠にする</span><span>AI Genius / S6 E2 / 10</span></div>
         </article>
 
-        <article class="slide template-demo section-evaluation" data-title="Demo 4 - Evaluate Across Cases" data-minutes="9" data-rehearsal-id="demo-eval">
+        <article class="slide template-demo section-evaluation" data-title="デモ4 - 複数ケースの評価" data-minutes="9" data-rehearsal-id="demo-eval">
           <div class="demo-bumper">
-            <span class="demo-number">Demo 4</span>
-            <h2>Evaluate Across Cases</h2>
-            <p class="lead">Can the agent handle different purchases, dates and missing information?</p>
+            <span class="demo-number">デモ4</span>
+            <h2>複数ケースで評価</h2>
+            <p class="lead">購入内容、日付、不足情報が変わっても対応できるか。</p>
           </div>
-          <div class="footer"><span>Task-specific evidence decides</span><span>AI Genius / S6 E2 / 11</span></div>
+          <div class="footer"><span>タスク固有の証拠で判断する</span><span>AI Genius / S6 E2 / 11</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-optimisation presenter-steps" data-title="Optimise" data-minutes="3" data-rehearsal-id="optimise">
+        <article class="slide template-content-minimal section-optimisation presenter-steps" data-title="最適化" data-minutes="3" data-rehearsal-id="optimise">
           <p class="slide-kicker">Agent Optimizer</p>
-          <h2>Optimise</h2>
+          <h2>最適化</h2>
           <div class="concept-grid">
             <div class="concept-card story-reveal reveal-1">
               <span class="concept-icon">B</span>
-              <h3>Baseline</h3>
-              <p>Record the starting configuration and evaluation results.</p>
-              <div class="concept-detail">How consistently does the starting agent meet the rubric?</div>
+              <h3>ベースライン</h3>
+              <p>初期設定と評価結果を記録する。</p>
+              <div class="concept-detail">初期エージェントはどれだけ一貫して基準を満たすか。</div>
             </div>
             <div class="concept-card orange story-reveal reveal-2">
               <span class="concept-icon">C</span>
-              <h3>Candidates</h3>
-              <p>Test changes to instructions, tool descriptions and model choice.</p>
-              <div class="concept-detail">Which changes improve the results on the same tests?</div>
+              <h3>候補</h3>
+              <p>指示、ツール説明、モデル選択の変更を試す。</p>
+              <div class="concept-detail">同じテストで結果を改善する変更はどれか。</div>
             </div>
             <div class="concept-card green story-reveal reveal-3">
               <span class="concept-icon">3</span>
-              <h3>Compare</h3>
-              <p>Compare scores and configuration changes.</p>
-              <div class="concept-detail">Is the quality change worth the cost change?</div>
+              <h3>比較</h3>
+              <p>スコアと設定の変更を比較する。</p>
+              <div class="concept-detail">品質の変化はコストの変化に見合うか。</div>
             </div>
           </div>
-          <p class="slide-takeaway story-reveal reveal-4">A higher score isn't permission to ship. <em>Always read the new prompt and tool descriptions.</em></p>
-          <div class="footer"><span>Optimisation is controlled search</span><span>AI Genius / S6 E2 / 12</span></div>
+          <p class="slide-takeaway story-reveal reveal-4">高いスコアは出荷の許可ではない。<em>新しいプロンプトとツール説明を必ず読む。</em></p>
+          <div class="footer"><span>最適化は制御された探索</span><span>AI Genius / S6 E2 / 12</span></div>
         </article>
 
-        <article class="slide template-demo section-optimisation" data-title="Demo 5 - Agent Optimizer" data-minutes="8" data-rehearsal-id="demo-optimise">
+        <article class="slide template-demo section-optimisation" data-title="デモ5 - Agent Optimizer" data-minutes="8" data-rehearsal-id="demo-optimise">
           <div class="demo-bumper">
-            <span class="demo-number">Demo 5</span>
+            <span class="demo-number">デモ5</span>
             <h2>Agent Optimizer</h2>
-            <p class="lead">Can we improve the agent?</p>
+            <p class="lead">エージェントを改善できるか。</p>
           </div>
-          <div class="footer"><span>Compare candidates with the baseline</span><span>AI Genius / S6 E2 / 13</span></div>
+          <div class="footer"><span>候補をベースラインと比較する</span><span>AI Genius / S6 E2 / 13</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-delivery presenter-steps" data-title="Three test sets" data-minutes="4" data-rehearsal-id="test-sets">
-          <p class="slide-kicker">Continuous evaluation and CI/CD</p>
-          <h2>Three test sets, three jobs</h2>
+        <article class="slide template-content-minimal section-delivery presenter-steps" data-title="3つのテストセット" data-minutes="4" data-rehearsal-id="test-sets">
+          <p class="slide-kicker">継続的評価と CI/CD</p>
+          <h2>3つのテストセット、3つの役割</h2>
           <div class="concept-grid">
             <div class="concept-card blue story-reveal reveal-1">
               <span class="concept-icon">D</span>
-              <h3>Development</h3>
-              <p>The optimizer trains on it.</p>
-              <div class="concept-detail">Runs on every pull request, as a small, quick subset.</div>
+              <h3>開発</h3>
+              <p>最適化の学習に使う。</p>
+              <div class="concept-detail">PR ごとに実行する小さく高速なサブセット。</div>
             </div>
             <div class="concept-card green story-reveal reveal-2">
               <span class="concept-icon">H</span>
-              <h3>Holdout</h3>
-              <p>Our optimizer sees it too: it picks its best candidates by using it.</p>
-              <div class="concept-detail">Runs on merge to main.</div>
+              <h3>ホールドアウト</h3>
+              <p>最適化も参照し、最良の候補を選ぶために使う。</p>
+              <div class="concept-detail">main へのマージ時に実行。</div>
             </div>
             <div class="concept-card orange story-reveal reveal-3">
               <span class="concept-icon">Δ</span>
-              <h3>Drift</h3>
-              <p>Neither the optimizer nor development has seen it. The final check before production.</p>
-              <div class="concept-detail">Runs before a candidate is promoted.</div>
+              <h3>ドリフト</h3>
+              <p>最適化も開発も未参照。本番前の最終検査。</p>
+              <div class="concept-detail">候補の昇格前に実行。</div>
             </div>
           </div>
-          <p class="slide-takeaway story-reveal reveal-4">Homework, practice exam, <em>surprise exam</em>.</p>
-          <div class="footer"><span>Homework, practice exam, surprise exam</span><span>AI Genius / S6 E2 / 14</span></div>
+          <p class="slide-takeaway story-reveal reveal-4">宿題、模擬試験、<em>抜き打ち試験</em>。</p>
+          <div class="footer"><span>宿題、模擬試験、抜き打ち試験</span><span>AI Genius / S6 E2 / 14</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-delivery presenter-steps gate-slide" data-title="What the gate checks" data-minutes="2" data-rehearsal-id="gates">
-          <p class="slide-kicker">Release gates for agents</p>
-          <h2>What the gate checks</h2>
+        <article class="slide template-content-minimal section-delivery presenter-steps gate-slide" data-title="ゲートの検査内容" data-minutes="2" data-rehearsal-id="gates">
+          <p class="slide-kicker">エージェントのリリースゲート</p>
+          <h2>ゲートの検査内容</h2>
           <div class="concept-grid">
             <div class="concept-card blue story-reveal reveal-1">
               <span class="concept-icon">1</span>
-              <h3>Facts in the prompt</h3>
-              <p>Did the candidate copy amounts, dates or names into its instructions?</p>
-              <div class="concept-detail">Seconds. No LLM needed.</div>
+              <h3>プロンプト内の事実</h3>
+              <p>候補は金額・日付・人名を指示にコピーしていないか。</p>
+              <div class="concept-detail">数秒。LLM は不要。</div>
             </div>
             <div class="concept-card green story-reveal reveal-2">
               <span class="concept-icon">2</span>
-              <h3>Change vs baseline</h3>
-              <p>Fail on a drop bigger than the noise, not below a fixed number.</p>
-              <div class="concept-detail">Foundry treats changes under 0.03 as noise.</div>
+              <h3>ベースラインとの差</h3>
+              <p>固定値でなく、ノイズを超える低下で失敗にする。</p>
+              <div class="concept-detail">Foundry は0.03未満の変動をノイズと扱う。</div>
             </div>
             <div class="concept-card orange story-reveal reveal-3">
               <span class="concept-icon">3</span>
-              <h3>Must-pass cases</h3>
-              <p>Wrong approver, or obeying an email, blocks the release whatever the average.</p>
-              <div class="concept-detail">Averages hide the failures that matter.</div>
+              <h3>必須合格ケース</h3>
+              <p>承認者の誤りやメール内の指示への追従は、平均に関係なくリリースを阻止。</p>
+              <div class="concept-detail">平均は重大な失敗を隠す。</div>
             </div>
             <div class="concept-card purple story-reveal reveal-4">
               <span class="concept-icon">4</span>
-              <h3>Like for like</h3>
-              <p>Same questions, same judge version as the baseline.</p>
-              <div class="concept-detail">CI refuses to compare scores made differently.</div>
+              <h3>同じ条件で比較</h3>
+              <p>質問と評価器のバージョンをベースラインに揃える。</p>
+              <div class="concept-detail">CI は異なる条件のスコア比較を拒否する。</div>
             </div>
           </div>
-          <div class="footer"><span>Cheapest check first</span><span>AI Genius / S6 E2 / 15</span></div>
+          <div class="footer"><span>安い検査から実行</span><span>AI Genius / S6 E2 / 15</span></div>
         </article>
 
-        <article class="slide template-demo section-delivery" data-title="Demo 6 - Sample CI/CD Pipelines" data-minutes="5" data-rehearsal-id="demo-gates">
+        <article class="slide template-demo section-delivery" data-title="デモ6 - CI/CD パイプラインの例" data-minutes="5" data-rehearsal-id="demo-gates">
           <div class="demo-bumper">
-            <span class="demo-number">Demo 6</span>
-            <h2>Sample CI/CD Pipelines</h2>
-            <p class="lead">PR checks, release gates</p>
+            <span class="demo-number">デモ6</span>
+            <h2>CI/CD パイプラインの例</h2>
+            <p class="lead">PR の検査とリリースゲート</p>
           </div>
-          <div class="footer"><span>Continuous evaluation in CI/CD</span><span>AI Genius / S6 E2 / 16</span></div>
+          <div class="footer"><span>CI/CD での継続的評価</span><span>AI Genius / S6 E2 / 16</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-delivery" data-title="From test cases to production" data-minutes="2" data-rehearsal-id="production">
-          <p class="slide-kicker">The complete delivery process</p>
-          <h2>From test cases to production</h2>
+        <article class="slide template-content-minimal section-delivery" data-title="テストケースから本番へ" data-minutes="2" data-rehearsal-id="production">
+          <p class="slide-kicker">デリバリーの全体像</p>
+          <h2>テストケースから本番へ</h2>
           <div class="delivery-cycle">
           <div class="delivery-flow">
             <section class="delivery-panel">
-              <span class="delivery-phase">Build / pre-launch</span>
-              <h3>Simulation</h3>
-              <p>Explore behaviour before real users arrive.</p>
+              <span class="delivery-phase">構築 / 公開前</span>
+              <h3>シミュレーション</h3>
+              <p>実ユーザーが使う前に動作を調べる。</p>
               <div class="delivery-node">
-                <strong>Holdout and drift datasets</strong>
-                <p>Help prevent overfitting.</p>
+                <strong>ホールドアウトとドリフト</strong>
+                <p>過学習を防ぐ。</p>
               </div>
             </section>
             <section class="delivery-panel">
-              <span class="delivery-phase">Path to production</span>
+              <span class="delivery-phase">本番への道のり</span>
               <ol class="delivery-pipeline">
-                <li><span class="step-number">1</span><strong>Pull request + dev evals</strong></li>
-                <li><span class="step-number">2</span><strong>Merge to main</strong></li>
-                <li><span class="step-number">3</span><strong>Holdout evals</strong></li>
-                <li><span class="step-number">4</span><strong>Drift evals</strong></li>
-                <li><span class="step-number">5</span><strong>Deploy</strong></li>
+                <li><span class="step-number">1</span><strong>PR + 開発評価</strong></li>
+                <li><span class="step-number">2</span><strong>main にマージ</strong></li>
+                <li><span class="step-number">3</span><strong>ホールドアウト評価</strong></li>
+                <li><span class="step-number">4</span><strong>ドリフト評価</strong></li>
+                <li><span class="step-number">5</span><strong>デプロイ</strong></li>
               </ol>
             </section>
             <section class="delivery-panel">
-              <span class="delivery-phase">In production</span>
-              <h3>Agent traces</h3>
-              <p>Sample behaviour on real requests.</p>
+              <span class="delivery-phase">本番での運用</span>
+              <h3>エージェントのトレース</h3>
+              <p>実リクエストの動作をサンプリング。</p>
             </section>
           </div>
-          <div class="delivery-feedback" role="group" aria-label="Improvement loops returning to a new pull request">
-            <span class="delivery-feedback-label">Back to a pull request</span>
-            <div class="delivery-feedback-step"><strong>Optimise</strong><small>Compare candidates</small></div>
-            <div class="delivery-feedback-step"><strong>New evals</strong><small>Improve evals</small></div>
+          <div class="delivery-feedback" role="group" aria-label="新しい PR に戻る改善の循環">
+            <span class="delivery-feedback-label">PR に戻る</span>
+            <div class="delivery-feedback-step"><strong>最適化</strong><small>候補を比較</small></div>
+            <div class="delivery-feedback-step"><strong>新しい評価</strong><small>評価を改善</small></div>
           </div>
           </div>
           <div class="footer"><span>Microsoft Foundry + GitHub Actions</span><span>AI Genius / S6 E2 / 17</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-delivery journey-slide" data-title="One agent, one question" data-minutes="1" data-rehearsal-id="journey">
-          <p class="slide-kicker">One agent, one question</p>
-          <h2>Can I book dinner?</h2>
+        <article class="slide template-content-minimal section-delivery journey-slide" data-title="1つのエージェント、1つの問い" data-minutes="1" data-rehearsal-id="journey">
+          <p class="slide-kicker">1つのエージェント、1つの問い</p>
+          <h2>夕食会を予約できますか。</h2>
           <div class="concept-grid journey-grid">
-            <div class="concept-card blue"><span class="concept-icon">1</span><h3>We chose a model</h3></div>
-            <div class="concept-card orange"><span class="concept-icon">2</span><h3>Gave it organisational context</h3></div>
-            <div class="concept-card green"><span class="concept-icon">3</span><h3>Saw what it did</h3></div>
-            <div class="concept-card blue"><span class="concept-icon">4</span><h3>Measured whether it was right</h3></div>
-            <div class="concept-card orange"><span class="concept-icon">5</span><h3>Optimised from evidence</h3></div>
-            <div class="concept-card green"><span class="concept-icon">6</span><h3>Gated every change</h3></div>
+            <div class="concept-card blue"><span class="concept-icon">1</span><h3>モデルを選んだ</h3></div>
+            <div class="concept-card orange"><span class="concept-icon">2</span><h3>組織のコンテキストを与えた</h3></div>
+            <div class="concept-card green"><span class="concept-icon">3</span><h3>動作を観測した</h3></div>
+            <div class="concept-card blue"><span class="concept-icon">4</span><h3>正しさを測った</h3></div>
+            <div class="concept-card orange"><span class="concept-icon">5</span><h3>証拠から最適化した</h3></div>
+            <div class="concept-card green"><span class="concept-icon">6</span><h3>すべての変更をゲート判定</h3></div>
           </div>
-          <p class="slide-takeaway">Production isn't the end of building an agent. <em>Build the measurement system that lets you keep changing it safely.</em></p>
-          <div class="footer"><span>One agent, one question</span><span>AI Genius / S6 E2 / 18</span></div>
+          <p class="slide-takeaway">本番化はエージェント開発の終わりではない。<em>安全に変更し続けられる測定の仕組みを作る。</em></p>
+          <div class="footer"><span>1つのエージェント、1つの問い</span><span>AI Genius / S6 E2 / 18</span></div>
         </article>
 
-        <article class="slide template-content-minimal section-delivery" data-title="Worth exploring next" data-minutes="1" data-rehearsal-id="next">
-          <p class="slide-kicker">More in Microsoft Foundry</p>
-          <h2>Worth exploring next</h2>
+        <article class="slide template-content-minimal section-delivery" data-title="次に深めたいこと" data-minutes="1" data-rehearsal-id="next">
+          <p class="slide-kicker">Microsoft Foundry でさらにできること</p>
+          <h2>次に深めたいこと</h2>
           <div class="agenda-grid">
             <div class="agenda-step">
               <span class="agenda-marker">01</span>
-              <h3>Human Annotation</h3>
-              <p>Bring domain experts into evaluation</p>
+              <h3>人によるアノテーション</h3>
+              <p>業務の専門家を評価に参加させる</p>
             </div>
             <div class="agenda-step">
               <span class="agenda-marker">02</span>
-              <h3>Synthetic Test Data</h3>
-              <p>Expand the cases you test</p>
+              <h3>合成テストデータ</h3>
+              <p>評価するケースを増やす</p>
             </div>
             <div class="agenda-step">
               <span class="agenda-marker">03</span>
-              <h3>AI Red Teaming</h3>
-              <p>Test adversarial behaviour</p>
+              <h3>AI レッドチーミング</h3>
+              <p>敵対的な振る舞いを検証する</p>
             </div>
             <div class="agenda-step">
               <span class="agenda-marker">04</span>
-              <h3>Guardrails</h3>
-              <p>Protect inputs and tool responses</p>
+              <h3>ガードレール</h3>
+              <p>入力とツール応答を保護する</p>
             </div>
             <div class="agenda-step">
               <span class="agenda-marker">05</span>
-              <h3>Identity &amp; Permissions</h3>
-              <p>Limit what the agent can access</p>
+              <h3>ID と権限</h3>
+              <p>エージェントのアクセス範囲を限定</p>
             </div>
             <div class="agenda-step">
               <span class="agenda-marker">06</span>
-              <h3>Human Approvals</h3>
-              <p>Keep people in control of actions</p>
+              <h3>人による承認</h3>
+              <p>操作の最終判断を人に残す</p>
             </div>
           </div>
-          <div class="footer"><span>Further exploration</span><span>AI Genius / S6 E2 / 19</span></div>
+          <div class="footer"><span>さらに深めるために</span><span>AI Genius / S6 E2 / 19</span></div>
         </article>
 
-        <article class="slide template-qa section-delivery" data-title="Build measure improve repeat" data-minutes="1" data-rehearsal-id="close">
+        <article class="slide template-qa section-delivery" data-title="作る、測る、改善する、繰り返す" data-minutes="1" data-rehearsal-id="close">
           <div class="demo-bumper">
-            <span class="demo-number">Q&amp;A</span>
-            <h2>Build → Measure → Improve → Repeat</h2>
-            <p class="lead">One working agent. Consistent answers. Measured trade-offs. Repeatable release checks.</p>
+            <span class="demo-number">質疑応答</span>
+            <h2>作る → 測る → 改善 → 繰り返す</h2>
+            <p class="lead">動くエージェント。一貫した回答。測定したトレードオフ。再現可能なリリース検査。</p>
           </div>
           <div class="footer"><span>Graeme Foster</span><span>AI Genius / S6 E2 / 20</span></div>
         </article>
-        <article class="slide template-content-minimal section-delivery" data-title="References" data-minutes="1">
-          <p class="slide-kicker">Further reading</p>
-          <h2>References</h2>
+        <article class="slide template-content-minimal section-delivery" data-title="参考資料" data-minutes="1">
+          <p class="slide-kicker">さらに学ぶために</p>
+          <h2>参考資料</h2>
           <div class="reference-grid">
             <div>
-              <h3>Build</h3>
+              <h3>構築</h3>
               <ul>
                 <li><a href="https://learn.microsoft.com/en-us/agent-framework/" target="_blank" rel="noopener">Microsoft Agent Framework</a><span class="reference-source">Microsoft Learn</span></li>
-                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/how-to/benchmark-model-in-catalog" target="_blank" rel="noopener">Compare models with the model leaderboard</a><span class="reference-source">Microsoft Learn</span></li>
-                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/model-router" target="_blank" rel="noopener">Model router</a><span class="reference-source">Microsoft Learn</span></li>
-                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/what-is-foundry-iq" target="_blank" rel="noopener">What is Foundry IQ?</a><span class="reference-source">Microsoft Learn</span></li>
-                <li><a href="https://learn.microsoft.com/en-us/microsoft-365-copilot/extensibility/work-iq" target="_blank" rel="noopener">Work IQ overview</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/how-to/benchmark-model-in-catalog" target="_blank" rel="noopener">モデルランキングで比較する</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/model-router" target="_blank" rel="noopener">Model Router</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/what-is-foundry-iq" target="_blank" rel="noopener">Foundry IQ とは</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/microsoft-365-copilot/extensibility/work-iq" target="_blank" rel="noopener">Work IQ の概要</a><span class="reference-source">Microsoft Learn</span></li>
               </ul>
             </div>
             <div>
-              <h3>Observe &amp; evaluate</h3>
+              <h3>観測と評価</h3>
               <ul>
-                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/observability/concepts/trace-agent-concept" target="_blank" rel="noopener">Agent tracing overview</a><span class="reference-source">Microsoft Learn</span></li>
-                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/evaluation-evaluators/rubric-evaluators" target="_blank" rel="noopener">Rubric evaluators</a><span class="reference-source">Microsoft Learn</span></li>
-                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/how-to/develop/cloud-evaluation" target="_blank" rel="noopener">Cloud evaluation</a><span class="reference-source">Microsoft Learn</span></li>
-                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/traces-to-dataset" target="_blank" rel="noopener">Turn traces into datasets</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/observability/concepts/trace-agent-concept" target="_blank" rel="noopener">エージェントのトレース概要</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/concepts/evaluation-evaluators/rubric-evaluators" target="_blank" rel="noopener">ルーブリック評価器</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/how-to/develop/cloud-evaluation" target="_blank" rel="noopener">クラウド評価</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/traces-to-dataset" target="_blank" rel="noopener">トレースをデータセットにする</a><span class="reference-source">Microsoft Learn</span></li>
               </ul>
             </div>
             <div>
-              <h3>Optimise</h3>
+              <h3>最適化</h3>
               <ul>
-                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/agent-optimizer-overview" target="_blank" rel="noopener">Agent optimizer overview</a><span class="reference-source">Microsoft Learn</span></li>
-                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/optimize-agent-targets" target="_blank" rel="noopener">Optimize instructions, skills, tools and models</a><span class="reference-source">Microsoft Learn</span></li>
-                <li><a href="https://techcommunity.microsoft.com/blog/azure-ai-foundry-blog/six-lessons-for-reliable-agent-optimizer-gains-on-harder-agents/4551357" target="_blank" rel="noopener">Six lessons for reliable Agent Optimizer gains</a><span class="reference-source">Microsoft Tech Community</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/agent-optimizer-overview" target="_blank" rel="noopener">Agent Optimizer の概要</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/optimize-agent-targets" target="_blank" rel="noopener">指示・スキル・ツール・モデルの最適化</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://techcommunity.microsoft.com/blog/azure-ai-foundry-blog/six-lessons-for-reliable-agent-optimizer-gains-on-harder-agents/4551357" target="_blank" rel="noopener">Agent Optimizer で確実に改善する6つの教訓</a><span class="reference-source">Microsoft Tech Community</span></li>
               </ul>
             </div>
             <div>
-              <h3>Ship</h3>
+              <h3>リリース</h3>
               <ul>
-                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/how-to-monitor-agents-dashboard#set-up-continuous-evaluation" target="_blank" rel="noopener">Continuous evaluation</a><span class="reference-source">Microsoft Learn</span></li>
-                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/how-to/evaluation-github-action" target="_blank" rel="noopener">Foundry evaluation GitHub Action (alternative)</a><span class="reference-source">Microsoft Learn</span></li>
-                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/set-up-ci-cd-cli" target="_blank" rel="noopener">CI/CD for hosted agents with azd</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/how-to-monitor-agents-dashboard#set-up-continuous-evaluation" target="_blank" rel="noopener">継続的評価</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/how-to/evaluation-github-action" target="_blank" rel="noopener">Foundry 評価 GitHub Action（代替手段）</a><span class="reference-source">Microsoft Learn</span></li>
+                <li><a href="https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/set-up-ci-cd-cli" target="_blank" rel="noopener">azd によるホスト型エージェントの CI/CD</a><span class="reference-source">Microsoft Learn</span></li>
               </ul>
             </div>
           </div>
-          <div class="footer"><span>Further reading</span><span>AI Genius / S6 E2 / 21</span></div>
+          <div class="footer"><span>さらに学ぶために</span><span>AI Genius / S6 E2 / 21</span></div>
         </article>
-        <article class="slide template-closing template-closing-qr" data-title="Feedback" data-minutes="1">
-          <p class="closing-label" style="right: 130px; top: 60px;">FY27 AI Genius &nbsp;|&nbsp; Classified as Microsoft Confidential</p>
-          <h2 class="closing-scan">Scan to share your <span class="highlight">feedback</span> of today's session:</h2>
-          <img class="closing-qr" src="assets/qr-feedback.png" alt="QR code for session feedback">
+        <article class="slide template-closing template-closing-qr" data-title="アンケート" data-minutes="1">
+          <p class="closing-label" style="right: 130px; top: 60px;">FY27 AI Genius &nbsp;|&nbsp; Microsoft 社外秘</p>
+          <h2 class="closing-scan">QR コードを読み取り、今回の<span class="highlight">ご感想</span>をお寄せください:</h2>
+          <img class="closing-qr" src="assets/qr-feedback.png" alt="今回のアンケート用 QR コード">
         </article>
-        <article class="slide template-closing template-closing-qr" data-title="Series page" data-minutes="1">
-          <p class="closing-label" style="right: 130px; top: 60px;">FY27 AI Genius &nbsp;|&nbsp; Classified as Microsoft Confidential</p>
-          <h2 class="closing-scan">Scan to share your <span class="highlight">feedback</span> of today's session:</h2>
-          <div class="closing-qr closing-qr-missing" role="img" aria-label="Series page QR code still to be added">Please input the new<br>series page QR code</div>
+        <article class="slide template-closing template-closing-qr" data-title="シリーズページ" data-minutes="1">
+          <p class="closing-label" style="right: 130px; top: 60px;">FY27 AI Genius &nbsp;|&nbsp; Microsoft 社外秘</p>
+          <h2 class="closing-scan">QR コードを読み取り、今回の<span class="highlight">ご感想</span>をお寄せください:</h2>
+          <div class="closing-qr closing-qr-missing" role="img" aria-label="シリーズページの QR コードは未追加">新しいシリーズページの<br>QR コードを追加してください</div>
         </article>
-        <article class="slide template-closing template-closing-badge" data-title="AI Genius badge" data-minutes="1">
-          <img class="closing-badge-image" src="assets/ai-genius-builder-badge.png" alt="Microsoft AI Genius Builder Certified badge">
-          <h2 class="closing-badge-social">An <span class="highlight">exclusive</span> badge to display on your <span class="highlight">social</span>.</h2>
-          <p class="closing-badge-scan">Scan to download the AI Genius 'Certified' badge</p>
-          <img class="closing-badge-qr" src="assets/qr-badge.png" alt="QR code to download the AI Genius Certified badge">
+        <article class="slide template-closing template-closing-badge" data-title="AI Genius バッジ" data-minutes="1">
+          <img class="closing-badge-image" src="assets/ai-genius-builder-badge.png" alt="Microsoft AI Genius Builder 認定バッジ">
+          <h2 class="closing-badge-social"><span class="highlight">SNS</span>で使える<span class="highlight">限定</span>バッジ。</h2>
+          <p class="closing-badge-scan">QR コードから AI Genius の認定バッジをダウンロード</p>
+          <img class="closing-badge-qr" src="assets/qr-badge.png" alt="AI Genius 認定バッジをダウンロードする QR コード">
           <div class="closing-badge-steps">
-            <span class="highlight">Instructions:</span>
+            <span class="highlight">手順:</span>
             <ol>
-              <li>Scan the QR code</li>
-              <li>Download/save the badge</li>
-              <li>Add to your LinkedIn profile as a '<u class="highlight">Post</u>' with your own caption</li>
-              <li>Don't forget to add the <span class="highlight">#MSAIGenius</span> hashtag</li>
+              <li>QR コードを読み取る</li>
+              <li>バッジをダウンロード・保存する</li>
+              <li>自分の説明文を添えて LinkedIn に<u class="highlight">投稿</u>する</li>
+              <li>ハッシュタグ <span class="highlight">#MSAIGenius</span> を付ける</li>
             </ol>
           </div>
-          <p class="closing-label" style="left: 52px; top: 839px;">FY27 AI Genius &nbsp;|&nbsp; Classified as Microsoft Confidential</p>
+          <p class="closing-label" style="left: 52px; top: 839px;">FY27 AI Genius &nbsp;|&nbsp; Microsoft 社外秘</p>
         </article>
-        <article class="slide template-closing template-closing-thanks" data-title="Thank you" data-minutes="1">
-          <p class="closing-label" style="right: 130px; top: 25px;">FY27 AI Genius &nbsp;|&nbsp; Classified as Microsoft Confidential</p>
-          <h2 class="closing-thanks">Thank You</h2>
+        <article class="slide template-closing template-closing-thanks" data-title="ありがとうございました" data-minutes="1">
+          <p class="closing-label" style="right: 130px; top: 25px;">FY27 AI Genius &nbsp;|&nbsp; Microsoft 社外秘</p>
+          <h2 class="closing-thanks">ありがとうございました</h2>
         </article>
         </div>
       </div>
     </section>
 
-    <nav class="controls" aria-label="Presentation controls">
+    <nav class="controls" aria-label="プレゼンテーションの操作">
       <div class="control-group">
-        <button class="control-button" id="prev" aria-label="Previous slide">&larr;</button>
-        <button class="control-button" id="next" aria-label="Next slide">&rarr;</button>
-        <button class="control-button" id="overviewButton">Overview</button>
+        <button class="control-button" id="prev" aria-label="前のスライド">&larr;</button>
+        <button class="control-button" id="next" aria-label="次のスライド">&rarr;</button>
+        <button class="control-button" id="overviewButton">一覧</button>
       </div>
       <div class="progress-wrap">
         <div class="progress" aria-hidden="true"><div class="progress-bar" id="progressBar"></div></div>
@@ -3935,20 +3940,20 @@
       </div>
       <div class="control-group">
         <span class="timer" id="timer">00:00</span>
-        <button class="control-button" id="timerButton">Start</button>
-        <button class="control-button" id="notesButton">Notes</button>
-        <button class="control-button" id="rehearsalButton" aria-expanded="false">Rehearse</button>
-        <button class="control-button" id="fullscreenButton">Full</button>
+        <button class="control-button" id="timerButton">開始</button>
+        <button class="control-button" id="notesButton">ノート</button>
+        <button class="control-button" id="rehearsalButton" aria-expanded="false">リハーサル</button>
+        <button class="control-button" id="fullscreenButton">全画面</button>
       </div>
     </nav>
   </main>
 
   <aside class="notes-panel" id="notesPanel" aria-hidden="true">
-    <div class="notes-spacer" id="notesSpacer" aria-label="Close notes"></div>
+    <div class="notes-spacer" id="notesSpacer" aria-label="ノートを閉じる"></div>
     <div class="notes-content">
-      <button class="control-button" id="closeNotes">Close notes</button>
+      <button class="control-button" id="closeNotes">ノートを閉じる</button>
       <h2 id="notesTitle"></h2>
-      <p><strong>Suggested timing:</strong> <span id="notesTiming"></span> minutes</p>
+      <p><strong>目安時間:</strong> <span id="notesTiming"></span> 分</p>
       <div id="notesBody"></div>
     </div>
   </aside>
@@ -3960,185 +3965,185 @@
   <script>
     const notes = [
       {
-        key: "Microsoft Foundry connects model choice, context, evaluation, optimisation and delivery.",
-        definition: "An agent combines a model, instructions, tools and context to work towards a goal.",
-        transition: "Preview the agenda, starting with model choice.",
-        talk: "Frame the session around a working purchasing agent. The question is how consistently it answers across real tasks, what each successful answer costs and how to improve it. Follow the same implementation through six saved checkpoints, using live questions and traces alongside completed evaluation and optimisation runs.",
-        source: "Session framing."
+        key: "Microsoft Foundry はモデル選択、コンテキスト、評価、最適化、デリバリーを結び付ける。",
+        definition: "エージェントはモデル、指示、ツール、コンテキストを組み合わせ、目標に向けて動作する。",
+        transition: "モデル選択から始まるアジェンダを紹介する。",
+        talk: "動く購入エージェントを中心に進める。実際のタスクでどれだけ一貫して答えるか、正しい回答1件のコストはいくらか、どう改善するかを問う。同じ実装を6つの保存済み段階で追い、ライブの質問とトレース、完了済みの評価・最適化を組み合わせる。",
+        source: "今回の位置付け。"
       },
       {
-        key: "Model Choice, Grounding, Observe, Evaluate, Optimise, Automate.",
-        definition: "These are the six topics we will cover, in presentation order.",
-        transition: "First, meet the agent we'll use throughout the session.",
-        talk: "Introduce the six topics and their corresponding stage folders. One shared agent implementation runs throughout; each stage records configuration, actions and evidence. Observe and Evaluate add visibility and measurement without requiring a different agent.",
-        source: "Session structure."
+        key: "モデル選択、グラウンディング、観測、評価、最適化、自動化。",
+        definition: "今回扱う6つの話題を、発表順に並べたもの。",
+        transition: "まず、全体を通して使うエージェントを紹介する。",
+        talk: "6つの話題と対応する段階のフォルダーを紹介する。全体を通して同じエージェント実装を使い、各段階で設定、操作、証拠を記録する。観測と評価は別のエージェントを必要とせず、可視性と測定を追加する。",
+        source: "今回の構成。"
       },
       {
-        key: "One purchasing advice agent and one question connect the demonstrations.",
-        definition: "The agent helps employees interpret purchasing guidance and identify the approvals they need.",
-        transition: "The first choice is normally which model to use.",
-        talk: "Introduce the team lead and read the dinner question. Leave alcohol out on purpose: the agent should ask about it. The agent advises on purchasing; the employee follows the approval process. This one question carries the whole session: policy (Foundry IQ), who can approve today (Work IQ), and budget (Fabric IQ). Later we expand to different dates, purchase types and incomplete requests when evaluating consistency.",
-        source: "Team dinner scenario (fictional)."
+        key: "1つの購入助言エージェントと1つの問いで、デモをつなぐ。",
+        definition: "エージェントは従業員に購入の指針を説明し、必要な承認を特定する。",
+        transition: "通常、最初の選択は使用するモデル。",
+        talk: "チームリーダーを紹介して夕食会の質問を読む。アルコールの有無は意図的に省き、エージェントに質問させる。エージェントは購入について助言し、従業員が承認手続きに従う。この1問で、ポリシー（Foundry IQ）、判断日の承認者（Work IQ）、予算（Fabric IQ）という全体の流れを示す。後で一貫性を評価する際、異なる日付、購入種別、不足情報を含む依頼へ広げる。",
+        source: "チームの夕食会の架空シナリオ。"
       },
       {
-        key: "The first choice is normally which model to use.",
-        definition: "Speed is how long the user waits; cost is what you pay. Smaller models usually win on both, so they share a card.",
-        transition: "Open the Foundry portal to compare real models and see where Model Router fits.",
-        talk: "Keep this short. Model 1 handles complex reasoning, at higher cost and with slower responses. Model 2 is fast and cheap but less capable on complex tasks; speed and cost usually go together, though not always (batch jobs are cheap but slow). Model Router picks a model per request, sending simple questions to small models and hard ones to strong models; it saves money but is less predictable, so test it like any other model. Land the line at the bottom: the first choice isn't a lock-in; built the right way you can change model later, and evaluations tell you when to.",
-        source: "Session framing."
+        key: "通常、最初の選択は使用するモデル。",
+        definition: "速度はユーザーの待ち時間、コストは支払う費用。小さいモデルは通常どちらにも有利なため、同じ項目にまとめる。",
+        transition: "Foundry ポータルで実際のモデルを比較し、Model Router の位置付けを見る。",
+        talk: "短く説明する。モデル1は複雑な推論に強いが、高コストで応答も遅い。モデル2は高速・低コストだが、複雑なタスクには弱い。速度とコストは通常連動するが、例外もある（バッチ処理は安いが遅い）。Model Router はリクエストごとに選び、簡単な質問を小さいモデルへ、難しい質問を高性能モデルへ送る。費用を抑えられるが予測しにくいため、他のモデルと同じく検証する。下部の要点を伝える。最初の選択に固定されず、適切に作れば後でモデルを変更でき、評価が変更の時期を教えてくれる。",
+        source: "今回の位置付け。"
       },
       {
-        key: "The first model choice isn't a lock-in.",
-        definition: "Built the right way, an agent can change model later; evaluations on the real task tell you whether a change is better.",
-        transition: "Now give the starting agent the organisational context it needs.",
-        talk: "Compare a small fixed-model shortlist and Model Router in Foundry. Record the starting model or routing configuration and explain the choice. Keep later baseline comparisons tied to that exact configuration.",
-        checkpoint: "01-model-choice: save the starting model/configuration and portal comparison evidence. The stage playbook records prerequisites, commands, portal steps and the reset procedure.",
-        source: "Microsoft Foundry model catalog and Model Router demonstration."
+        key: "最初のモデル選択に固定されるわけではない。",
+        definition: "適切に作れば後からモデルを変更でき、実際のタスクの評価で改善かどうかを判断できる。",
+        transition: "初期エージェントに、必要な組織のコンテキストを与える。",
+        talk: "Foundry で少数の固定モデル候補と Model Router を比較する。最初のモデルまたはルーティング設定を記録し、選択理由を説明する。後のベースライン比較も、その正確な設定に対応させる。",
+        checkpoint: "01-model-choice: 初期モデル・設定とポータルの比較証拠を保存する。段階の運用ガイドに前提条件、コマンド、ポータル操作、リセット手順を記録する。",
+        source: "Microsoft Foundry のモデルカタログと Model Router のデモ。"
       },
       {
-        key: "Different sources provide different kinds of organisational context.",
-        definition: "Foundry IQ provides institutional knowledge, Fabric IQ provides governed business entities and state, and Work IQ provides workplace context.",
-        transition: "Let's ask the agent and explore the context available to it.",
-        talk: "Return to the purchasing question and explain the three source types: institutional documents, business records and workplace conversations. Open tools.py: each IQ is a tool shaped like the real MCP tool. Foundry IQ is knowledge_base_retrieve over policies, Work IQ is ask over people, roles, leave, recorded delegations and messages, and Fabric IQ is search_ontology returning one fixed budget. Line to land: Foundry IQ tells you what the rules say, Work IQ tells you who can approve today, and Fabric IQ tells you whether there is budget left. (Our Fabric stand-in always returns the same budget, so it never changes the answer in the demo.) Tim, the Hospitality Lead, is on leave; the Approvals Register records Priya as his delegate. A chat message or an email can tell you who to contact, but never transfers approval authority. Real IQs are LLM-backed agents with generic tool descriptions; domain guidance lives in the knowledge base or ontology. Ours are deterministic local stand-ins, so none is a real IQ connection.",
-        source: "Microsoft IQ concepts and fictional scenario."
+        key: "情報源ごとに、組織のコンテキストの種類が異なる。",
+        definition: "Foundry IQ は組織の知識、Fabric IQ は管理された業務エンティティと状態、Work IQ は職場の状況を提供する。",
+        transition: "エージェントに質問し、利用できるコンテキストを調べる。",
+        talk: "購入の質問に戻り、組織の文書、業務記録、職場の会話という3種類を説明する。tools.py を開く。各 IQ は実際の MCP ツールを模している。Foundry IQ はポリシーを検索する knowledge_base_retrieve、Work IQ は人、役職、休暇、記録済み委任、メッセージを調べる ask、Fabric IQ は固定予算を返す search_ontology。要点は、Foundry IQ が規則、Work IQ が判断日の承認者、Fabric IQ が予算残額を示すこと。（Fabric の代替実装は常に同じ予算を返すので、デモの回答を変えない。）接待責任者 Tim は休暇中で、承認登録簿に Priya が代理人として記録されている。チャットやメールは連絡先を教えることはあっても、承認権限を移さない。実際の IQ は一般的なツール説明を持つ LLM ベースのエージェントで、業務指針はナレッジベースやオントロジーに置く。今回は決定的なローカル代替実装であり、実際の IQ 接続はない。",
+        source: "Microsoft IQ の概念と架空のシナリオ。"
       },
       {
-        key: "Establish the working baseline and preserve its evidence.",
-        definition: "Instructions define the task and boundaries; tool descriptions explain when a source is useful and what it returns.",
-        transition: "Open the trace to inspect how the answer was produced.",
-        talk: "Ask the dinner question first (playbook command). It should ask about alcohol; reply 'Yes, there will be wine.' Hospitality Lead approval is needed, Tim is on leave, and the Approvals Register records Priya as his delegate: Work IQ doing its job. Then ask the second question: Marcus Webb in Engineering, 21 October, a $6,800 video-conferencing system with two quotes. The right answer: above $5,000 the policy needs Category Manager approval, and Marco is away until 2 November with no delegate; Leah Fischer's delegation covers line-manager approval only. It sometimes gets this right and sometimes names Leah. If it's wrong: it used Work IQ, checked leave, found the delegation and cited everything, and still asked the wrong question. If it's right: good answer, but it's one run; how often does it get this right? Either way: one answer isn't evidence; that's what evaluation is for.",
-        checkpoint: "Rehearse the Marcus question three times and note what it says. Whichever way it answers, the line is the same: one answer isn't evidence. If the network fails, show your screenshots, then a failing question from the prepared holdout run in Demo 4.",
-        source: "Demo implementation to be rehearsed."
+        key: "動作するベースラインを確立し、証拠を保全する。",
+        definition: "指示はタスクと境界を定め、ツール説明は情報源の用途と戻り値を説明する。",
+        transition: "トレースを開き、回答がどう作られたかを確認する。",
+        talk: "まず運用ガイドの夕食会の質問をする。アルコールの有無を聞かれたら『はい、ワインも出ます。』と答える。接待責任者の承認が必要で、Tim は休暇中、承認登録簿では Priya が代理人。Work IQ の役割を示せる。次に Engineering の Marcus Webb、10月21日、見積書2件を取得した$6,800のビデオ会議システムの質問をする。正解は、$5,000超にはカテゴリーマネージャーが必要だが、Marco は11月2日まで不在で代理人はいない、というもの。Leah Fischer の委任は直属上司の承認だけを対象にする。正しく答えることも、Leah を挙げることもある。間違った場合は、Work IQ で休暇と委任を調べ、すべて引用してもなお間違った質問をしたと説明する。正しい場合も、1回の良い回答にすぎず、どの程度の頻度で正しく答えるかを問う。どちらでも、1つの回答だけでは証拠にならない。それが評価の目的。",
+        checkpoint: "Marcus の質問を3回リハーサルし、回答を記録する。どちらの回答でも要点は同じ。1つの回答だけでは証拠にならない。ネットワーク障害時はスクリーンショットを示し、デモ4で準備済みホールドアウトの不合格ケースを示す。",
+        source: "リハーサルするデモ実装。"
       },
       {
-        key: "Inspect the calls, inputs and outputs behind the answer.",
-        definition: "A trace records LLM calls, tool calls and timings, with captured prompts and responses.",
-        transition: "Let's follow the run that produced this answer.",
-        talk: "Introduce the three things to inspect: call order, inputs and outputs, and duration. Explain how these let us reconstruct a run. Ask what evidence the audience would look for in the trace.",
-        source: "Microsoft Foundry observability concepts."
+        key: "回答の裏にある呼び出しと入出力を確認する。",
+        definition: "トレースは LLM・ツールの呼び出しと時間、取得したプロンプトと応答を記録する。",
+        transition: "この回答を作った実行を追う。",
+        talk: "確認する3点として、呼び出し順序、入出力、所要時間を紹介する。それらから実行を再構成できることを説明し、トレースでどの証拠を見るかを聴衆に問う。",
+        source: "Microsoft Foundry の可観測性の概念。"
       },
       {
-        key: "Understand how the agent produced the answer and where it spent time.",
-        definition: "Tool-call inputs and outputs show what was requested and returned.",
-        transition: "We've inspected one run. How consistently does the agent handle other purchasing situations?",
-        talk: "Open the saved baseline run and follow the LLM and tool calls, including both context sources when used. Inspect captured prompts, returned evidence, responses and timings. Discuss repeated calls or slow steps only where the trace shows them. Use the request and expected outcome as an evaluation case.",
-        checkpoint: "03-observe: save the trace, call sequence and timing evidence. Keep the same agent configuration as stage 02.",
-        source: "Microsoft Foundry tracing demonstration."
+        key: "回答の作り方と、どこに時間を使ったかを理解する。",
+        definition: "ツールの入出力から、要求内容と返された情報が分かる。",
+        transition: "1回の実行を確認した。他の購入状況にも一貫して対応できるか。",
+        talk: "保存したベースラインの実行を開き、LLM とツールの呼び出しを追う。両方のコンテキスト情報源を使った場合は、その両方を見る。取得したプロンプト、証拠、応答、時間を確認する。繰り返しの呼び出しや遅い段階は、トレースに示された範囲だけで説明する。依頼と期待結果を評価ケースにする。",
+        checkpoint: "03-observe: トレース、呼び出し順序、時間の証拠を保存する。段階02と同じエージェント設定を保つ。",
+        source: "Microsoft Foundry のトレースのデモ。"
       },
       {
-        key: "Built-in evaluators catch generic failures; a wrong approver needs judges of our own.",
-        definition: "A judge is an LLM evaluator. Its reason matters as much as its score.",
-        transition: "Let's measure the starting agent with our two judges across purchasing cases.",
-        talk: "Start with what's built in: Groundedness checks the answer uses only the evidence it was given; task adherence checks it stays on task. Useful, but our failure is a wrong approver, and a generic evaluator can't know who the right approver is. So we run two of our own. The next-action judge is a custom prompt evaluator: pass/fail against a reference answer, and its reason starts with what the tools did, for example 'used the line-manager lookup instead of the required higher-level route'. That reason is what the optimizer learns from: Microsoft's own lesson is that the reflector only sees what the evaluator returns. The rubric scores weighted dimensions such as approval route, current approver and citations. The rubric evaluator is in preview.",
-        source: "Microsoft Learn: rubric evaluators https://learn.microsoft.com/en-us/azure/foundry/concepts/evaluation-evaluators/rubric-evaluators ; Microsoft Foundry blog: Six lessons for reliable Agent Optimizer gains on harder agents https://techcommunity.microsoft.com/blog/azure-ai-foundry-blog/six-lessons-for-reliable-agent-optimizer-gains-on-harder-agents/4551357"
+        key: "組み込み評価器は一般的な失敗を検出し、承認者の誤りには独自の評価器が必要。",
+        definition: "評価器は LLM による判定を行う。判定理由はスコアと同じくらい重要。",
+        transition: "2つの独自評価器で、購入ケース全体の初期エージェントを測る。",
+        talk: "まず組み込みを紹介する。Groundedness は与えられた証拠だけを使うか、task adherence はタスクに忠実かを調べる。有益だが、今回の失敗は承認者の誤りであり、一般的な評価器には正しい承認者が分からない。そのため独自の2つを使う。次行動評価器はカスタムプロンプトで参照回答と合否比較し、判定理由をツールの動作から始める。例は『必要な上位承認の経路でなく直属上司を調べた』。最適化はその理由から学ぶ。Microsoft の教訓は、リフレクターが評価器の返す内容だけを見るというもの。ルーブリックは承認経路、現在の承認者、引用などを重み付けして採点する。ルーブリック評価器はプレビュー。",
+        source: "Microsoft Learn: ルーブリック評価器 https://learn.microsoft.com/en-us/azure/foundry/concepts/evaluation-evaluators/rubric-evaluators ; Microsoft Foundry ブログ: 難しいエージェントで Agent Optimizer の確実な改善を得る6つの教訓 https://techcommunity.microsoft.com/blog/azure-ai-foundry-blog/six-lessons-for-reliable-agent-optimizer-gains-on-harder-agents/4551357"
       },
       {
-        key: "Measure consistency across cases, not just the opening answer.",
-        definition: "Tokens are units of model input and output; response time is the user's end-to-end wait.",
-        transition: "Use these results to set the optimisation goal, then keep the tests fixed.",
-        talk: "Open your prepared holdout run in Foundry: questions with different departments, people and dates from the ones the optimizer trains on. Click a failing question and read the judge's reason: it describes what the tools did, not just that the answer was wrong. Which questions fail varies from run to run; when we built this, the over-$5,000 ones did, sending the employee to their line manager instead of the Category Manager, the same failure as Marcus. Then the story from building it: with our first mock search tool the baseline scored 12 of 18; fixing two tools, not the prompt, took it to 18 of 18, so we wrote harder questions. Finish with your own noise level from the two baseline runs: only trust a change bigger than that.",
-        checkpoint: "Prepared: your holdout evaluation run, open in a tab, with a failing question ready, and your noise level from two baseline runs. Screenshot both as a backup.",
-        source: "Microsoft Foundry model comparison and evaluation demonstration."
+        key: "最初の回答だけでなく、ケース全体の一貫性を測る。",
+        definition: "トークンはモデルの入出力の単位。応答時間はユーザーが開始から終了まで待つ時間。",
+        transition: "結果から最適化の目標を決め、テストは固定する。",
+        talk: "Foundry で準備済みホールドアウトを開く。最適化の学習とは異なる部門、人名、日付の質問がある。不合格の質問を選び、単なる誤答の指摘でなく、ツールの動作を説明する判定理由を読む。失敗する質問は実行ごとに変わる。作成時は$5,000超の質問で、カテゴリーマネージャーでなく直属上司へ案内し、Marcus と同じ失敗が出た。次に作成時の例を話す。最初の模擬検索ではベースラインは18問中12問だった。プロンプトでなく2つのツールを修正すると18問中18問になり、より難しい質問を作った。最後に、2回のベースライン実行で測った自分のノイズ幅を示し、それを超える変更だけを信頼すると説明する。",
+        checkpoint: "準備: ホールドアウト実行をタブで開き、不合格の質問と、2回のベースラインから測ったノイズ幅を用意する。両方を予備のスクリーンショットに残す。",
+        source: "Microsoft Foundry のモデル比較と評価のデモ。"
       },
       {
-        key: "Compare candidate scores and configuration changes with the baseline.",
-        definition: "A baseline is the starting configuration; candidates are alternatives generated and evaluated by Agent Optimizer.",
-        transition: "Let's open the Optimizer run and compare the candidates.",
-        talk: "The optimizer evaluates the baseline, reflects on failed practice questions, proposes a change, tests it on a few training questions, then scores it on the validation set, which influences candidate selection. Microsoft's guidance: changes under 0.03 are noise, 0.03 to 0.10 are moderate. The optimizer can also use per-question criteria, specific checks such as 'asks for the total cost first'; our evaluation runs don't use them, so mention them here, not on the Evaluate slide. Land the takeaway: a higher score isn't permission to ship. First check the gain is bigger than your noise; then always read the new prompt and tool descriptions. Our early mock search needed repair: the score went up by copying facts into the prompt, but that did not fix retrieval.",
-        source: "Microsoft Learn: Agent optimizer overview (score interpretation); Microsoft Foundry blog: Six lessons for reliable Agent Optimizer gains on harder agents."
+        key: "候補のスコアと設定変更をベースラインと比較する。",
+        definition: "ベースラインは初期設定。候補は Agent Optimizer が生成・評価する代替設定。",
+        transition: "最適化の実行を開き、候補を比較する。",
+        talk: "最適化はベースラインを評価し、失敗した練習問題を振り返り、変更を提案し、少数の学習問題で試した後、候補選択に影響する検証セットで採点する。Microsoft の目安では、0.03未満はノイズ、0.03〜0.10は中程度。『最初に総費用を聞く』など、質問ごとの具体的な評価基準も使える。今回の評価実行では使わないため、評価のスライドでなくここで説明する。高いスコアは出荷許可ではないと伝える。まず改善幅をノイズと比較し、新しいプロンプトとツール説明を必ず読む。初期の模擬検索は修正が必要だったが、プロンプトへの事実コピーでスコアが上がっても検索は直らなかった。",
+        source: "Microsoft Learn: Agent Optimizer の概要（スコアの解釈）。Microsoft Foundry ブログ: 難しいエージェントで Agent Optimizer の確実な改善を得る6つの教訓。"
       },
       {
-        key: "Inspect the evidence behind the recommended candidate.",
-        definition: "The optional validation dataset supplies separate evaluation cases within the optimisation run.",
-        transition: "Carry the same evidence into the release process.",
-        talk: "Open the agent's Optimize tab and your prepared run. Every run differs, so read it rather than following a script. First, the score change on the holdout: by Microsoft's scale, under 0.03 is noise and 0.03 to 0.10 is moderate; also count how many questions changed, against your noise level. If the gain is under 0.03, say so: it's noise, and that's a useful result to show. Then View changes on the best candidate, in the instructions and the tool descriptions, and sort what you find: rules worth keeping, such as answer-first wording; copied facts, such as training names and amounts, which in ours were hidden in the tool descriptions; and what's missing, such as a rule for the Demo 4 failure. The score went up; that doesn't mean you ship it.",
-        checkpoint: "Prepared: the Optimize tab on your completed run, with View changes ready on the instructions and the ask tool description. If your run has nothing worth showing, use the candidate saved from ours in sample/evaluation/candidates/optimiser-0.691/: +0.078 on the holdout, three good rules, training names and amounts in its tool descriptions, and no role rule.",
-        source: "Microsoft Learn: Optimize agent instructions, skills, tools, and models; Agent optimizer cost and token usage overview. Checked 24 September 2026."
+        key: "推奨された候補の裏にある証拠を確認する。",
+        definition: "任意の検証データセットは、最適化実行内に別の評価ケースを提供する。",
+        transition: "同じ証拠をリリース手続きへ引き継ぐ。",
+        talk: "エージェントの Optimize タブと準備済み実行を開く。毎回結果が異なるため、台本どおりでなく実際の結果を読む。まずホールドアウトのスコア差を見る。Microsoft の尺度では0.03未満はノイズ、0.03〜0.10は中程度。合否が変わった質問数もノイズ幅と比較する。0.03未満ならノイズだと明言し、それも有益な結果として示す。次に最良候補の View changes で指示とツール説明を見て、結論を先に示すなどの残す規則、学習の人名・金額などのコピー、デモ4の失敗への規則などの不足を分ける。今回のコピーはツール説明に隠れていた。スコアが上がっても出荷を意味しない。",
+        checkpoint: "準備: 完了済み実行の Optimize タブで、指示と ask の説明の View changes を開けるようにする。見せる結果がなければ sample/evaluation/candidates/optimiser-0.691/ の保存済み候補を使う。ホールドアウトは+0.078、良い規則が3つ、ツール説明に学習の人名・金額があり、役職の規則はない。",
+        source: "Microsoft Learn: エージェントの指示・スキル・ツール・モデルの最適化、Agent Optimizer のコストとトークン使用量の概要。2026年9月24日確認。"
       },
       {
-        key: "Drift is the one set neither the optimizer nor development has seen: the final check before production.",
-        definition: "Development data trains the optimizer, holdout data helps it choose candidates, and a drift set is seen by neither the optimizer nor development.",
-        transition: "So what does the gate actually check?",
-        talk: "Homework, practice exam, surprise exam. The optimizer trains on development and picks its best candidate using holdout, so it has seen both, and we look at both often. Drift is the one set neither the optimizer nor development has seen: the final check that the agent handles the variation it will meet in production. Ours asks about the training teams on later dates, when the roster records different leave and cover. Holdout uses different teams, so it can't catch a copied fact like 'Finance: ask Grace'; drift can. An agent that looks things up passes; one that copied training facts into its prompt gives the old answer.",
-        source: "Microsoft Learn: Optimize agent instructions, skills, tools, and models (validation_dataset)."
+        key: "ドリフトは最適化も開発も見ていない唯一のセット。本番前の最終検査。",
+        definition: "開発は最適化の学習、ホールドアウトは候補選択に使う。ドリフトは最適化も開発も参照しない。",
+        transition: "では、ゲートは実際に何を検査するか。",
+        talk: "宿題、模擬試験、抜き打ち試験。最適化は開発で学び、ホールドアウトで最良候補を選ぶため、両方を参照している。人も頻繁に見る。ドリフトだけは最適化も開発も未参照で、本番で出会う変化に対応できるかを最後に確認する。今回は学習と同じチームについて、休暇・代行が変わる後の日付で問う。ホールドアウトは別チームなので『Finance: Grace に依頼』というコピーを検出できないが、ドリフトならできる。検索するエージェントは合格し、学習の事実をプロンプトへコピーしたものは古い回答を返す。",
+        source: "Microsoft Learn: エージェントの指示・スキル・ツール・モデルの最適化（validation_dataset）。"
       },
       {
-        key: "Cheapest check first.",
-        definition: "A release gate is an automated check that can stop a change from being promoted.",
-        transition: "Let's see the gate handle two real pull requests.",
-        talk: "One: a script scans the candidate prompt and tool descriptions for amounts, dates, durations and names that the baseline didn't have. Seconds, no LLM. Two: compare against the stored baseline, not a fixed threshold. LLM-judged scores move between runs; Foundry's own optimizer guidance treats changes under 0.03 as noise, so fail on a bigger drop. Three: some failures block regardless of the average, such as sending someone to the wrong approver or following an instruction in an email. Four: like for like. A score only compares with the baseline if it used the same questions and the same judge; CI checks fingerprints of the dataset and judge definitions and refuses to compare otherwise.",
-        source: "Microsoft Learn: Agent optimizer overview (score interpretation)."
+        key: "安い検査から実行する。",
+        definition: "リリースゲートは、変更の昇格を止められる自動検査。",
+        transition: "2つの実際の PR をゲートが扱う様子を見る。",
+        talk: "1つ目は、ベースラインになかった金額、日付、期間、名前を候補のプロンプトとツール説明から検出するスクリプト。数秒で LLM は不要。2つ目は固定しきい値でなく保存済みベースラインとの比較。LLM のスコアは実行間で動き、Foundry の最適化指針では0.03未満がノイズなので、それを超える低下で失敗にする。3つ目は平均に関係なく阻止する失敗。誤った承認者への案内やメール内の指示への追従など。4つ目は同じ条件。同じ質問と評価器でなければ比較できず、CI はデータセットと評価器定義のフィンガープリントを確認して不一致を拒否する。",
+        source: "Microsoft Learn: Agent Optimizer の概要（スコアの解釈）。"
       },
       {
-        key: "The cheapest check runs first; the evaluation catches what it can't.",
-        definition: "A pull request check runs on every proposed change; it blocks merging only if the branch's ruleset requires it.",
-        transition: "And after release, production keeps feeding the tests.",
-        talk: "Two prepared pull requests. First, the reviewed improvement: the development set passed on the PR; after merge, main evaluated -dev on the holdout, a reviewer inspected it, every drift case passed, then a separate release approval deployed the same commit. Second, the bad prompt: no tools, the same answer every time. The cheap offline checks pass, but the development set fails against the baseline, and because branch protection requires that check, it can't be merged normally. Optionally run the fact check live on the old copied-facts candidate: one second, no model. The gate only asks that a change not fall below the baseline by more than the normal wobble. Admins can still bypass, and every bypass is recorded. If asked about the official Foundry evaluation GitHub Action: it uses the same evaluation API, but only writes a report. It exposes no run ID or pass/fail result, so it can't gate a merge. We kept our run ID and added the gate.",
-        checkpoint: "Prepared: both pull requests and the main promotion run, opened after the optimizer finished. Live (optional): the fact-check command from the playbook. If CI isn't working on the day, use slides 14 and 15 with the live command.",
-        source: "GitHub Actions release-check demonstration; microsoft/ai-agent-evals v3-beta action.py (checked 19 October 2026)."
+        key: "安い検査を先に行い、それで検出できない問題を評価で見つける。",
+        definition: "PR のチェックは提案された変更ごとに実行する。ブランチのルールセットで必須にした場合だけマージを阻止する。",
+        transition: "リリース後も、本番の証拠をテストへ戻し続ける。",
+        talk: "準備済みの2つの PR を示す。まずレビュー済み改善。PR で開発セットに合格し、マージ後は main が -dev をホールドアウトで評価する。レビュー担当者の確認、全ドリフトケースの合格、別のリリース承認を経て、同じコミットをデプロイする。次にツールを使わず毎回同じ回答の悪いプロンプト。安いオフライン検査は合格するが、開発評価はベースライン比較で失敗し、ブランチ保護の必須チェックで通常のマージを阻止する。必要なら過去の事実コピー候補へライブで事実検査を行う。1秒でモデルは不要。ゲートは通常の変動を超えてベースラインより低下しないことを要求する。管理者は迂回できるが、その操作は記録される。公式 Foundry 評価 GitHub Action を聞かれたら、同じ評価 API を使うがレポートだけを書き、実行 ID や合否を出さないためマージをゲート判定できないと説明する。今回は実行 ID を保持してゲートを追加した。",
+        checkpoint: "準備: 最適化完了後、両 PR と main の昇格実行を開く。任意のライブ操作は運用ガイドの事実検査。当日 CI が動かなければ、スライド14・15とライブコマンドを使う。",
+        source: "GitHub Actions のリリース検査デモ。microsoft/ai-agent-evals v3-beta の action.py（2026年10月19日確認）。"
       },
       {
-        key: "Every change takes the same path to production, and production evidence feeds the next change.",
-        definition: "Holdout and drift datasets are kept apart from development, so a score shows whether a change generalises rather than fits the tests it was tuned on.",
-        transition: "Let's step back to where we started: one agent, one question.",
-        talk: "Read it left to right. Before launch, simulation explores behaviour before real users arrive; review generated cases before they become tests, and keep holdout and drift apart from development to help prevent overfitting. Every change then takes the same path: a pull request runs the development evals, it merges to main, holdout evals run, drift evals are the final check, and only then does it deploy. In production, sample real traces and score them with continuous evaluation; live traffic has no reference answers, so use a rubric there. Two things come back through a new pull request: an optimised candidate, which never deploys directly, and new evals made from reviewed, redacted production failures, so the next change has to handle them. Simulation and trace-to-dataset generation are in preview; gates and alerts must be wired explicitly in your workflow.",
-        source: "Microsoft Learn and GitHub Docs, checked 24 September 2026: https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/evaluation-dataset-synthetic ; https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/evaluation-datasets ; https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/traces-to-dataset ; https://learn.microsoft.com/en-us/azure/foundry/concepts/observability ; https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments"
+        key: "すべての変更を同じ経路で本番へ進め、本番の証拠を次の変更へ戻す。",
+        definition: "ホールドアウトとドリフトを開発から分離し、調整に使ったテストへの適合でなく汎化をスコアで確認する。",
+        transition: "出発点の、1つのエージェントと1つの問いに戻る。",
+        talk: "左から右へ読む。公開前は実ユーザーが使う前にシミュレーションで動作を調べる。生成ケースをテストにする前にレビューし、過学習を防ぐためホールドアウトとドリフトを開発から分離する。全変更を同じ経路へ通す。PR の開発評価、main へのマージ、ホールドアウト、最後のドリフトを経て、初めてデプロイする。本番では実トレースをサンプリングして継続的評価する。参照回答がないためルーブリックを使う。新しい PR に戻すものは2つ。直接デプロイしない最適化候補と、レビューして機密情報を除いた本番の失敗から作る新しい評価ケース。次の変更はそれらにも対応する。シミュレーションとトレースからのデータ生成はプレビューで、ゲートとアラートはワークフローへ明示的に組み込む必要がある。",
+        source: "Microsoft Learn と GitHub Docs、2026年9月24日確認: https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/evaluation-dataset-synthetic ; https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/evaluation-datasets ; https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/traces-to-dataset ; https://learn.microsoft.com/en-us/azure/foundry/concepts/observability ; https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments"
       },
       {
-        key: "Production isn't the end of building an agent. Build the measurement system that lets you keep changing it safely.",
-        definition: "No new definition. This slide retells the session as one agent's journey.",
-        transition: "Before questions, a few places to explore next.",
-        talk: "So we started with one fairly ordinary purchasing agent and one question: can I book dinner? We chose a model. We gave the agent the right organisational context. We learnt how to see what it was doing. Then we discovered that seeing isn't the same as knowing it's right, so we evaluated it. Once we could measure it, we could optimise it. And once we could measure every change, we could safely put those checks into the path to production. That's the takeaway: don't treat production as the end of building an agent. Build the measurement system that lets you keep changing it safely.",
-        source: "Session synthesis."
+        key: "本番化はエージェント開発の終わりではない。安全に変更し続けられる測定の仕組みを作る。",
+        definition: "新しい定義はない。1つのエージェントの道のりとして振り返る。",
+        transition: "質疑の前に、次に深めたい分野を紹介する。",
+        talk: "普通の購入エージェントと『夕食会を予約できますか』という1問から始めた。モデルを選び、組織の適切なコンテキストを与え、動作の見方を学んだ。しかし見えることは正しいと分かることではないため評価した。測定できて初めて最適化できた。全変更を測れるようになり、その検査を本番への経路に安全に組み込めた。要点は、本番化をエージェント開発の終わりにしないこと。安全に変更し続けられる測定の仕組みを作る。",
+        source: "今回のまとめ。"
       },
       {
-        key: "Six next steps for extending the purchasing agent.",
-        definition: "Human annotation assesses an answer; human approval authorises an action.",
-        transition: "Return to the complete process, then take questions.",
-        talk: "Spend no more than one minute signposting these topics. Human annotation captures expert assessments: explicitly curate that feedback into better criteria and tests rather than imply automatic learning. Synthetic data expands purchase types, dates and ambiguous requests; review generated cases. AI Red Teaming probes adversarial behaviour, while guardrails such as Prompt Shields help detect malicious instructions in requests and retrieved emails or documents. Identity and permissions limit real enterprise access. Human approval workflows are an extension beyond our advice-only agent: pause before submitting a purchase request and resume after an authorised decision. Human Evaluation, synthetic data generation and the documented long-running hosted-agent approval workflow are in preview; verify availability and agent support before implementation.",
-        source: "Microsoft Learn, checked 24 September 2026: Human Evaluation https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/human-evaluation ; Synthetic Test Data https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/evaluation-dataset-synthetic ; AI Red Teaming https://learn.microsoft.com/en-us/azure/foundry/concepts/ai-red-teaming-agent ; Prompt Shields https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/content-filter-prompt-shields ; Agent Identity https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/agent-identity ; Human Approval https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/add-human-in-the-loop"
+        key: "購入エージェントを拡張する6つの次のステップ。",
+        definition: "人によるアノテーションは回答を評価し、人による承認は操作を許可する。",
+        transition: "全体の手順に戻り、質問を受け付ける。",
+        talk: "1分以内で学習先を紹介する。人のアノテーションで専門家の評価を集め、自動学習を示唆せず、より良い基準とテストへ明示的に整理する。合成データで購入種別、日付、曖昧な依頼を増やし、生成ケースをレビューする。AI レッドチーミングで敵対的な振る舞いを検証し、Prompt Shields などで依頼や取得メール・文書内の悪意ある指示を検出する。ID と権限で企業情報への実アクセスを制限する。人の承認ワークフローは助言だけのエージェントの先の拡張であり、購入申請前に停止し、権限者の判断後に再開する。Human Evaluation、合成データ生成、長時間動くホスト型エージェントの承認ワークフローはプレビュー。実装前に提供状況とエージェントの対応を確認する。",
+        source: "Microsoft Learn、2026年9月24日確認: 人による評価 https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/human-evaluation ; 合成テストデータ https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/evaluation-dataset-synthetic ; AI レッドチーミング https://learn.microsoft.com/en-us/azure/foundry/concepts/ai-red-teaming-agent ; Prompt Shields https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/content-filter-prompt-shields ; エージェント ID https://learn.microsoft.com/en-us/azure/foundry/agents/concepts/agent-identity ; 人による承認 https://learn.microsoft.com/en-us/azure/foundry/agents/how-to/add-human-in-the-loop"
       },
       {
-        key: "Build, measure, improve and repeat.",
-        definition: "No new definition. This slide summarises the complete process.",
-        transition: "Move into questions.",
-        talk: "Close on one working agent, consistent answers, measured trade-offs and repeatable release checks. Return to the six stage playbooks: each records what changed, how it was run and the evidence collected. Discuss what the measured runs demonstrated and which configuration was retained, then take questions.",
-        source: "Session synthesis."
+        key: "作る、測る、改善する、繰り返す。",
+        definition: "新しい定義はない。全体の手順をまとめる。",
+        transition: "質疑へ移る。",
+        talk: "動くエージェント、一貫した回答、測定したトレードオフ、再現可能なリリース検査で締める。6段階の運用ガイドに戻り、各段階の変更、実行方法、収集した証拠を振り返る。測定した実行から分かったことと、残した設定を説明し、質問を受け付ける。",
+        source: "今回のまとめ。"
       },
       {
-        key: "Everything we used is documented.",
-        definition: "No new definition.",
+        key: "使ったものにはすべてドキュメントがある。",
+        definition: "新しい定義はない。",
         transition: "",
-        talk: "Leave this up while people take a photo. The links follow the session: build the agent, observe and evaluate it, optimise it, then ship it with continuous evaluation and CI/CD.",
-        source: "Microsoft Learn and Microsoft Tech Community, links checked 19 October 2026."
+        talk: "撮影できるよう表示したままにする。リンクは今回の順序に対応し、エージェントの構築、観測と評価、最適化、継続的評価と CI/CD でのリリースを紹介する。",
+        source: "Microsoft Learn と Microsoft Tech Community。リンクは2026年10月19日確認。"
       },
       {
-        key: "Ask for feedback while the session is fresh.",
-        definition: "No new definition.",
+        key: "内容を覚えているうちに感想をお願いする。",
+        definition: "新しい定義はない。",
         transition: "",
-        talk: "Leave the QR code up long enough for people to scan it. Feedback shapes the next episodes.",
-        source: "AI Genius template slide."
+        talk: "QR コードを読み取れる時間を確保する。フィードバックは次回以降の内容に役立つ。",
+        source: "AI Genius テンプレートのスライド。"
       },
       {
-        key: "Point people to the rest of the series.",
-        definition: "No new definition.",
+        key: "シリーズの他の回を案内する。",
+        definition: "新しい定義はない。",
         transition: "",
-        talk: "Replace the placeholder with the series page QR code before presenting.",
-        source: "AI Genius template slide."
+        talk: "発表前にプレースホルダーをシリーズページの QR コードへ置き換える。",
+        source: "AI Genius テンプレートのスライド。"
       },
       {
-        key: "Everyone can claim the AI Genius Certified badge.",
-        definition: "No new definition.",
+        key: "全員が AI Genius の認定バッジを取得できる。",
+        definition: "新しい定義はない。",
         transition: "",
-        talk: "Scan, download the badge, post it on LinkedIn with your own caption and add the #MSAIGenius hashtag.",
-        source: "AI Genius template slide."
+        talk: "QR コードを読み取り、バッジをダウンロードし、自分の説明文を添えて LinkedIn に投稿して #MSAIGenius を付ける。",
+        source: "AI Genius テンプレートのスライド。"
       },
       {
-        key: "Thank the audience.",
-        definition: "No new definition.",
+        key: "聴衆にお礼を伝える。",
+        definition: "新しい定義はない。",
         transition: "",
-        talk: "Thank everyone for their time and questions.",
-        source: "AI Genius template slide."
+        talk: "参加と質問への感謝を伝える。",
+        source: "AI Genius テンプレートのスライド。"
       }
     ];
 
@@ -4196,7 +4201,7 @@
       renderStorySteps();
       progressBar.style.width = `${((current + 1) / slides.length) * 100}%`;
       slideCount.textContent = `${current + 1} / ${slides.length}`;
-      document.title = `${current + 1}. ${slides[current].dataset.title} - From Prompt to Production`;
+      document.title = `${current + 1}. ${slides[current].dataset.title} - プロンプトから本番へ`;
       const hash = `#slide-${current + 1}`;
       if (window.location.hash !== hash) {
         window.history.replaceState(null, "", hash);
@@ -4253,16 +4258,16 @@
       notesTitle.textContent = `${current + 1}. ${slides[current].dataset.title}`;
       notesTiming.textContent = slides[current].dataset.minutes;
       notesBody.innerHTML = `
-        <h3>Key message</h3>
+        <h3>要点</h3>
         <p>${note.key}</p>
-        <h3>Plain-English definition</h3>
+        <h3>平易な説明</h3>
         <p>${note.definition}</p>
-        <h3>Talk track</h3>
+        <h3>説明の流れ</h3>
         <p>${note.talk}</p>
-        <h3>Transition</h3>
+        <h3>次へのつなぎ</h3>
         <p>${note.transition}</p>
-        ${note.checkpoint ? `<h3>Demo checkpoint</h3><p>${note.checkpoint}</p>` : ""}
-        <h3>Source note</h3>
+        ${note.checkpoint ? `<h3>デモの確認事項</h3><p>${note.checkpoint}</p>` : ""}
+        <h3>出典</h3>
         <p>${note.source}</p>
       `;
     }
@@ -4277,7 +4282,7 @@
       slides.forEach((slide, index) => {
         const card = document.createElement("button");
         card.className = "overview-card";
-        card.innerHTML = `<strong>Slide ${index + 1}</strong><span>${slide.dataset.title}</span>`;
+        card.innerHTML = `<strong>スライド${index + 1}</strong><span>${slide.dataset.title}</span>`;
         card.addEventListener("click", () => goTo(index));
         overviewGrid.appendChild(card);
       });
@@ -4297,7 +4302,7 @@
       if (timerInterval) {
         clearInterval(timerInterval);
         timerInterval = null;
-        timerButton.textContent = "Resume";
+        timerButton.textContent = "再開";
         return;
       }
 
@@ -4314,7 +4319,7 @@
         const seconds = String(elapsed % 60).padStart(2, "0");
         timer.textContent = `${minutes}:${seconds}`;
       }, 250);
-      timerButton.textContent = "Pause";
+      timerButton.textContent = "一時停止";
     }
 
     async function toggleFullscreen() {
@@ -4334,7 +4339,7 @@
     let rehearsalModule;
     async function toggleRehearsal() {
       if (window.location.protocol === "file:") {
-        window.alert("Rehearsal needs the local companion. From presentation/rehearsal, run npm install and npm start, then open its localhost URL. See PLAYBOOK.md for setup.");
+        window.alert("リハーサルにはローカルサーバーが必要です。presentation/rehearsal で npm ci と npm start を実行し、localhost の URL を開いてください。セットアップは PLAYBOOK.md を参照してください。");
         return;
       }
       try {
@@ -4342,7 +4347,7 @@
         (await rehearsalModule).toggle();
       } catch {
         rehearsalModule = null;
-        window.alert("Rehearsal could not load. Start the local companion from presentation/rehearsal with npm start, then use its localhost URL.");
+        window.alert("リハーサルを読み込めません。presentation/rehearsal で npm start を実行し、localhost の URL を使ってください。");
       }
     }
     document.getElementById("rehearsalButton").addEventListener("click", toggleRehearsal);
@@ -4366,7 +4371,7 @@
       }
       if (event.key === "ArrowRight" || event.key === "PageDown" || event.key === " ") {
         event.preventDefault();
-        // Page keys and toolbar buttons keep direct slide navigation.
+        // ページキーとツールバーは、引き続きスライドを直接切り替える。
         if (event.key === "PageDown" || !stepStory(1)) {
           next();
         }

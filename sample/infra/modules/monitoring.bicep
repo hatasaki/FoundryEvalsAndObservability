@@ -1,22 +1,22 @@
-// Monitoring, evaluator access and the GitHub Actions identity. A module of main.bicep.
+// 監視、評価器のアクセス権、GitHub Actions の ID。main.bicep のモジュール。
 param location string = resourceGroup().location
 param environmentName string
 param accountName string
 param projectName string
-@description('Object ID of the user or service principal submitting evaluations. Empty skips the role.')
+@description('評価を送信するユーザーまたはサービスプリンシパルのオブジェクト ID。空ならロールを付けない。')
 param evaluatorPrincipalId string = ''
 @allowed([
   'User'
   'ServicePrincipal'
 ])
 param evaluatorPrincipalType string = 'User'
-@description('GitHub owner/repository trusted for the demo environment. Empty disables the GitHub identity.')
+@description('demo 環境で信頼する GitHub の owner/repository。空なら GitHub の ID を無効にする。')
 param githubRepository string = ''
-@description('True when the project identity already has Monitoring Reader on Application Insights (Foundry grants it when App Insights is connected in the portal). Azure rejects a duplicate assignment, so this skips it.')
+@description('プロジェクトの ID が Application Insights の Monitoring Reader を取得済みなら true（ポータルで接続すると Foundry が付与する）。Azure は重複割り当てを拒否するため、この値で省略する。')
 param projectTraceReaderExists bool = false
 
 var enableGitHub = !empty(githubRepository)
-@description('Exact OIDC subject GitHub sends, e.g. repo:owner@123/name@456:environment:demo (GitHub now includes owner and repository IDs). Empty uses the classic repo:owner/name form.')
+@description('GitHub が送る正確な OIDC subject。例: repo:owner@123/name@456:environment:demo（所有者とリポジトリの ID を含む）。空なら従来の repo:owner/name 形式を使う。')
 param githubOidcSubject string = ''
 
 var githubSubject = empty(githubOidcSubject) ? 'repo:${githubRepository}:environment:demo' : githubOidcSubject
@@ -47,10 +47,10 @@ resource project 'Microsoft.CognitiveServices/accounts/projects@2025-06-01' exis
   name: projectName
 }
 
-// The judge uses account-level inference; project access or OpenAI-only access is insufficient.
+// 評価器はアカウントレベルの推論を使う。プロジェクトのみ、または OpenAI のみの権限では不足する。
 var inferenceRoleId = subscriptionResourceId(
   'Microsoft.Authorization/roleDefinitions',
-  '53ca6127-db72-4b80-b1b0-d745d6d5456d' // Foundry User (formerly Azure AI User).
+  '53ca6127-db72-4b80-b1b0-d745d6d5456d' // Foundry User（旧 Azure AI User）
 )
 resource evaluatorInference 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(evaluatorPrincipalId)) {
   name: guid(account.id, evaluatorPrincipalId, inferenceRoleId)
@@ -117,7 +117,7 @@ resource insights 'Microsoft.Insights/components@2020-02-02' = {
 
 var monitoringReaderRoleId = subscriptionResourceId(
   'Microsoft.Authorization/roleDefinitions',
-  '43d0d8ad-25c7-4714-9337-8ba259a9fe05' // Monitoring Reader.
+  '43d0d8ad-25c7-4714-9337-8ba259a9fe05' // Monitoring Reader（監視の読み取り権限）
 )
 resource projectTraceReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!projectTraceReaderExists) {
   name: guid(insights.id, project.id, monitoringReaderRoleId)
@@ -129,9 +129,9 @@ resource projectTraceReader 'Microsoft.Authorization/roleAssignments@2022-04-01'
   }
 }
 
-// The project's Application Insights connection is declared in azure.yaml (app-insights,
-// host: azure.ai.connection); the Foundry provider no longer accepts it in Bicep.
-#disable-next-line outputs-should-not-contain-secrets // used by the azure.yaml connection service
+// プロジェクトの Application Insights 接続は azure.yaml（app-insights、host: azure.ai.connection）で定義する。
+// Foundry プロバイダーは Bicep での接続定義を受け付けなくなった。
+#disable-next-line outputs-should-not-contain-secrets // azure.yaml の接続サービスが使う
 output applicationInsightsConnectionString string = insights.properties.ConnectionString
 output applicationInsightsId string = insights.id
 output applicationInsightsAppId string = insights.properties.AppId

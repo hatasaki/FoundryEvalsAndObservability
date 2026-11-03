@@ -16,7 +16,7 @@ const execute = promisify(execFile);
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const endpoint = process.env.DECISION_ENDPOINT ?? "";
 const deployment = process.env.DECISION_DEPLOYMENT ?? "Decision-1";
-const model = process.env.WHISPER_MODEL ?? join(homedir(), ".cache/whisper/ggml-base.en.bin");
+const model = process.env.WHISPER_MODEL ?? join(homedir(), ".cache/whisper/ggml-base.bin");
 const whisper = process.env.WHISPER_BIN ?? "whisper-cli";
 const whisperServerBin = process.env.WHISPER_SERVER_BIN ?? "whisper-server";
 let whisperUrl: string | undefined;
@@ -58,12 +58,12 @@ async function getToken(): Promise<string> {
         "--output", "json",
       ], { timeout: 30_000, maxBuffer: 1_048_576 }));
     } catch {
-      throw new HttpError(401, "Azure sign-in unavailable. Run az login in a terminal, then Check setup.");
+      throw new HttpError(401, "Azure にログインできません。ターミナルで az login を実行し、セットアップ確認を選んでください。");
     }
     const result = JSON.parse(stdout);
     if (typeof result.accessToken !== "string" || !result.accessToken ||
         !Number.isFinite(Number(result.expires_on))) {
-      throw new HttpError(401, "Azure CLI returned an invalid token. Update/sign in to Azure CLI and retry.");
+      throw new HttpError(401, "Azure CLI が不正なトークンを返しました。更新または再ログインして再試行してください。");
     }
     token = { value: result.accessToken, expires: Number(result.expires_on) * 1000 };
     return token.value;
@@ -78,39 +78,39 @@ async function getToken(): Promise<string> {
 async function status(): Promise<ServiceStatus> {
   const checks: ServiceStatus["checks"] = [];
   checks.push({
-    name: "Decision endpoint", ok: endpointIsValid(),
+    name: "Decision 接続先", ok: endpointIsValid(),
     detail: endpointIsValid() ? `${new URL(endpoint).host} / ${deployment}` :
-      "Set DECISION_ENDPOINT to your HTTPS Foundry /providers/microsoft/v1/systemone endpoint.",
+      "DECISION_ENDPOINT に Foundry の HTTPS /providers/microsoft/v1/systemone 接続先を設定してください。",
   });
   try {
     await getToken();
-    checks.push({ name: "Azure sign-in", ok: true, detail: "Azure CLI token ready; kept in this local process." });
+    checks.push({ name: "Azure ログイン", ok: true, detail: "Azure CLI トークンは準備済み。このローカルプロセス内だけで保持します。" });
   } catch (error) {
-    checks.push({ name: "Azure sign-in", ok: false, detail: errorMessage(error) });
+    checks.push({ name: "Azure ログイン", ok: false, detail: errorMessage(error) });
   }
   try {
     await access(model);
-    checks.push({ name: "Whisper model", ok: true, detail: "Local English model found." });
+    checks.push({ name: "Whisper モデル", ok: true, detail: "ローカルのモデルファイルを確認しました。日本語対応の多言語モデルを使用してください。" });
   } catch {
-    checks.push({ name: "Whisper model", ok: false, detail: "Model missing. Set WHISPER_MODEL; see PLAYBOOK.md." });
+    checks.push({ name: "Whisper モデル", ok: false, detail: "モデルがありません。PLAYBOOK.md を参照し、WHISPER_MODEL を設定してください。" });
   }
   for (const [name, command, args] of [
     ...(whisperUrl ? [] : [["Whisper", whisper, ["--help"]] as const]),
-    ["Audio conversion", "ffmpeg", ["-version"]],
+    ["音声変換", "ffmpeg", ["-version"]],
   ] as const) {
     try {
       await execute(command, [...args], { timeout: 10_000, maxBuffer: 1_048_576 });
-      checks.push({ name, ok: true, detail: `${command} available locally.` });
+      checks.push({ name, ok: true, detail: `${command} をローカルで利用できます。` });
     } catch {
-      checks.push({ name, ok: false, detail: `${command} unavailable. Install it; see PLAYBOOK.md.` });
+      checks.push({ name, ok: false, detail: `${command} を利用できません。PLAYBOOK.md を参照してインストールしてください。` });
     }
   }
-  if (whisperUrl) checks.push({ name: "Whisper", ok: true, detail: "Model loaded in local whisper-server." });
+  if (whisperUrl) checks.push({ name: "Whisper", ok: true, detail: "ローカルの whisper-server にモデルを読み込みました。" });
   return { csrf, endpoint, deployment, checks, ready: checks.every(check => check.ok) };
 }
 
 function errorMessage(error: unknown) {
-  return error instanceof Error ? error.message : "Unexpected local service error.";
+  return error instanceof Error ? error.message : "予期しないローカルサービスのエラーです。";
 }
 
 async function body(request: IncomingMessage, limit: number) {
@@ -118,7 +118,7 @@ async function body(request: IncomingMessage, limit: number) {
   let size = 0;
   for await (const chunk of request) {
     size += chunk.length;
-    if (size > limit) throw new HttpError(413, "Request too large.");
+    if (size > limit) throw new HttpError(413, "リクエストが大きすぎます。");
     chunks.push(Buffer.from(chunk));
   }
   return Buffer.concat(chunks);
@@ -132,12 +132,12 @@ export function validateAudio(audio: Buffer) {
       audio.readUInt16LE(34) !== 16 || audio.toString("ascii", 36, 40) !== "data" ||
       audio.readUInt32LE(4) !== audio.length - 8 ||
       audio.readUInt32LE(40) !== audio.length - 44 || (audio.length - 44) % 2 !== 0) {
-    throw new HttpError(400, "Expected mono 16-bit PCM WAV audio.");
+    throw new HttpError(400, "モノラル16ビット PCM WAV の音声が必要です。");
   }
   const rate = audio.readUInt32LE(24);
   if (rate < 16_000 || rate > 96_000 || audio.readUInt32LE(28) !== rate * 2 ||
       audio.readUInt16LE(32) !== 2 || (audio.length - 44) / (rate * 2) > 12) {
-    throw new HttpError(400, "Audio must be at most 12 seconds at 16-96 kHz.");
+    throw new HttpError(400, "音声は16〜96 kHz、12秒以内にしてください。");
   }
   return rate;
 }
@@ -146,16 +146,16 @@ function cleanTranscript(text: string) {
   return text.replace(/\[BLANK_AUDIO\]|\[SILENCE\]/g, "").replace(/\s+/g, " ").trim();
 }
 
-// Keeps the model loaded between clips; falls back to whisper-cli if it cannot start.
+// クリップ間でモデルを保持する。起動できなければ whisper-cli にフォールバックする。
 async function startWhisperServer() {
   const whisperPort = await new Promise<number>((done, fail) => {
     const probe = createNetServer().once("error", fail).listen(0, "127.0.0.1", () => {
       const address = probe.address();
-      probe.close(() => typeof address === "object" && address ? done(address.port) : fail(new Error("No port.")));
+      probe.close(() => typeof address === "object" && address ? done(address.port) : fail(new Error("ポートを取得できません。")));
     });
   });
   const child = spawn(whisperServerBin, [
-    "-m", model, "--host", "127.0.0.1", "--port", String(whisperPort), "-l", "en", "-nt",
+    "-m", model, "--host", "127.0.0.1", "--port", String(whisperPort), "-l", "ja", "-nt",
   ], { stdio: "ignore" });
   whisperChild = child;
   let exited = false;
@@ -193,32 +193,33 @@ async function transcribe(audio: Buffer) {
       form.append("file", new Blob([await readFile(wav)], { type: "audio/wav" }), "audio.wav");
       form.append("response_format", "json");
       form.append("temperature", "0");
+      form.append("language", "ja");
       let result: unknown;
       try {
         const reply = await fetch(whisperUrl, { method: "POST", body: form, signal: AbortSignal.timeout(60_000) });
         if (!reply.ok) throw new Error(`HTTP ${reply.status}`);
         result = await reply.json();
       } catch {
-        throw new HttpError(503, "Local whisper-server failed or timed out; no audio was sent to the cloud.");
+        throw new HttpError(503, "ローカルの whisper-server が失敗またはタイムアウトしました。音声はクラウドに送信していません。");
       }
       if (!result || typeof result !== "object" || !("text" in result) || typeof result.text !== "string") {
-        throw new HttpError(502, "Local Whisper returned an invalid transcript.");
+        throw new HttpError(502, "ローカルの Whisper が不正な文字起こしを返しました。");
       }
       return cleanTranscript(result.text);
     }
     const output = join(directory, "transcript");
     try {
       await execute(whisper, [
-        "-m", model, "-f", wav, "-l", "en", "-oj", "-of", output, "-np", "-nt",
+        "-m", model, "-f", wav, "-l", "ja", "-oj", "-of", output, "-np", "-nt",
       ], { timeout: 60_000, maxBuffer: 4_194_304 });
     } catch {
-      throw new HttpError(503, "Local Whisper failed or timed out. Check the model and WHISPER_BIN; no audio was sent to the cloud.");
+      throw new HttpError(503, "ローカルの Whisper が失敗またはタイムアウトしました。モデルと WHISPER_BIN を確認してください。音声はクラウドに送信していません。");
     }
     const result = JSON.parse(await readFile(`${output}.json`, "utf8"));
     if (!Array.isArray(result.transcription) ||
         !result.transcription.every((segment: unknown) => segment && typeof segment === "object" &&
           "text" in segment && typeof segment.text === "string")) {
-      throw new HttpError(502, "Local Whisper returned an invalid transcript.");
+      throw new HttpError(502, "ローカルの Whisper が不正な文字起こしを返しました。");
     }
     return cleanTranscript(result.transcription.map((segment: { text: string }) => segment.text.trim()).join(" "));
   } finally {
@@ -246,7 +247,7 @@ export const server = createServer(async (request, response) => {
     "object-src 'none'; base-uri 'none'; frame-ancestors 'none'");
   try {
     if (!sameOrigin(request.headers.host, request.headers.origin, port)) {
-      throw new HttpError(403, "Only same-origin localhost requests are allowed.");
+      throw new HttpError(403, "同じオリジンの localhost リクエストだけを許可します。");
     }
     const path = new URL(request.url ?? "/", `http://${request.headers.host}`).pathname;
     if (request.method === "GET") {
@@ -269,25 +270,25 @@ export const server = createServer(async (request, response) => {
         };
         file = [path.slice(1), mime[extname(path).toLowerCase()]];
       }
-      if (!file) throw new HttpError(404, "Not found.");
+      if (!file) throw new HttpError(404, "見つかりません。");
       let content: Buffer;
       try {
         content = await readFile(join(root, file[0]));
       } catch {
-        throw new HttpError(404, "Presentation file not found. Run npm run build.");
+        throw new HttpError(404, "プレゼンのファイルがありません。npm run build を実行してください。");
       }
       response.writeHead(200, { "Content-Type": `${file[1]}; charset=utf-8` });
       return response.end(content);
     }
-    if (request.method !== "POST") throw new HttpError(405, "Method not allowed.");
+    if (request.method !== "POST") throw new HttpError(405, "このメソッドは許可されていません。");
     const supplied = request.headers["x-rehearsal-csrf"];
     if (!request.headers.origin || typeof supplied !== "string" || supplied.length !== csrf.length ||
         !timingSafeEqual(Buffer.from(supplied), Buffer.from(csrf))) {
-      throw new HttpError(403, "Open rehearsal from this local server before making requests.");
+      throw new HttpError(403, "リクエスト前に、このローカルサーバーからリハーサルを開いてください。");
     }
     if (path === "/api/transcribe") {
-      if (request.headers["content-type"] !== "audio/wav") throw new HttpError(415, "Expected audio/wav.");
-      if (transcribing) throw new HttpError(429, "Whisper is busy. Wait and retry.");
+      if (request.headers["content-type"] !== "audio/wav") throw new HttpError(415, "audio/wav が必要です。");
+      if (transcribing) throw new HttpError(429, "Whisper は処理中です。待ってから再試行してください。");
       transcribing = true;
       try {
         const audio = await body(request, 2_400_044);
@@ -297,25 +298,25 @@ export const server = createServer(async (request, response) => {
       }
     }
     if (path === "/api/judge") {
-      if (request.headers["content-type"] !== "application/json") throw new HttpError(415, "Expected application/json.");
-      if (!endpointIsValid()) throw new HttpError(503, "Configure DECISION_ENDPOINT before judging.");
-      if (judging) throw new HttpError(429, "Decision-1 is busy. Wait and retry.");
+      if (request.headers["content-type"] !== "application/json") throw new HttpError(415, "application/json が必要です。");
+      if (!endpointIsValid()) throw new HttpError(503, "採点前に DECISION_ENDPOINT を設定してください。");
+      if (judging) throw new HttpError(429, "Decision-1 は処理中です。待ってから再試行してください。");
       let input: unknown;
       try {
         input = JSON.parse((await body(request, 524_288)).toString("utf8"));
       } catch (error) {
         if (error instanceof HttpError) throw error;
-        throw new HttpError(400, "Invalid JSON request.");
+        throw new HttpError(400, "不正な JSON リクエストです。");
       }
       if (!input || typeof input !== "object" || !("slideId" in input) ||
           !("transcript" in input) || typeof input.transcript !== "string" ||
           !input.transcript.trim() || input.transcript.length > 40_000) {
-        throw new HttpError(400, "Supply a slide ID and 1-40,000 characters of transcript.");
+        throw new HttpError(400, "スライド ID と1〜40,000文字の文字起こしを指定してください。");
       }
       const slide = rubrics.find(item => item.id === input.slideId);
-      if (!slide) throw new HttpError(400, "Unknown slide.");
+      if (!slide) throw new HttpError(400, "不明なスライドです。");
       if (wordCount(input.transcript) < judgingPolicy.finalWords) {
-        throw new HttpError(400, `At least ${judgingPolicy.finalWords} spoken words are needed before judging.`);
+        throw new HttpError(400, `採点前に少なくとも ${judgingPolicy.finalWords} 語の発話が必要です。`);
       }
       judging = true;
       const theory: Record<string, string> = {};
@@ -337,12 +338,12 @@ export const server = createServer(async (request, response) => {
         if (!result.ok) {
           if (result.status === 401) token = undefined;
           const hint = ({
-            401: "Run az login and retry.",
-            403: "Your signed-in identity needs inference access; no roles have been changed.",
-            404: "Check DECISION_ENDPOINT and DECISION_DEPLOYMENT.",
-            429: "Rate limited; pause and retry shortly.",
-          } as Record<number, string>)[result.status] ?? "Check the endpoint and deployment configuration.";
-          throw new HttpError(502, `Decision-1 returned HTTP ${result.status}. ${hint}`);
+            401: "az login を実行して再試行してください。",
+            403: "ログイン中の ID に推論権限が必要です。ロールは変更していません。",
+            404: "DECISION_ENDPOINT と DECISION_DEPLOYMENT を確認してください。",
+            429: "レート制限です。一時停止してから再試行してください。",
+          } as Record<number, string>)[result.status] ?? "接続先とデプロイの設定を確認してください。";
+          throw new HttpError(502, `Decision-1 が HTTP ${result.status} を返しました。${hint}`);
         }
         const received = await result.json();
         const decisions = readDecisions(received, slide);
@@ -353,13 +354,13 @@ export const server = createServer(async (request, response) => {
         judging = false;
       }
     }
-    throw new HttpError(404, "Not found.");
+    throw new HttpError(404, "見つかりません。");
   } catch (error) {
     const code = error instanceof HttpError ? error.status : 500;
     const message = error instanceof HttpError ? error.message :
-      "Local request failed. Check the server terminal and retry.";
+      "ローカルリクエストが失敗しました。サーバーのターミナルを確認して再試行してください。";
     if (!(error instanceof HttpError)) {
-      console.error(error instanceof Error ? `${error.name}: ${error.message}` : "Unexpected local request failure.");
+      console.error(error instanceof Error ? `${error.name}: ${error.message}` : "予期しないローカルリクエストの失敗です。");
     }
     if (!response.headersSent) json(response, code, { error: message });
     else response.end();
@@ -370,10 +371,10 @@ server.requestTimeout = 90_000;
 server.headersTimeout = 10_000;
 if (import.meta.main) {
   if (!Number.isInteger(port) || port < 1024 || port > 65535) {
-    throw new Error("REHEARSAL_PORT must be an integer from 1024 to 65535.");
+    throw new Error("REHEARSAL_PORT は1024〜65535の整数にしてください。");
   }
   server.on("error", error => {
-    console.error(`Rehearsal server: ${error.message}`);
+    console.error(`リハーサルサーバー: ${error.message}`);
     process.exitCode = 1;
   });
   for (const signal of ["SIGINT", "SIGTERM"] as const) {
@@ -381,9 +382,9 @@ if (import.meta.main) {
   }
   process.on("exit", () => whisperChild?.kill());
   void startWhisperServer().then(ok => console.log(ok ?
-    "Whisper model loaded in local whisper-server." : "whisper-server unavailable; using whisper-cli per clip."));
+    "ローカルの whisper-server にモデルを読み込みました。" : "whisper-server が使えないため、クリップごとに whisper-cli を使います。"));
   server.listen(port, "127.0.0.1", () => {
-    console.log(`Rehearsal: http://127.0.0.1:${port}/deck.html?rehearsal=1`);
-    console.log("Audio stays local. Transcripts leave only when you start a consented rehearsal.");
+    console.log(`リハーサル: http://127.0.0.1:${port}/deck.html?rehearsal=1`);
+    console.log("音声はローカルに保持します。文字起こしは、同意してリハーサルを開始した場合だけ送信します。");
   });
 }

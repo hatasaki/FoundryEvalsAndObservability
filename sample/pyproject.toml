@@ -1,7 +1,7 @@
 [project]
 name = "ai-genius-purchasing-agent"
 version = "0.1.0"
-description = "One small purchasing advice agent for five Foundry demonstrations."
+description = "5つの Foundry デモで使う小さな購入助言エージェント。"
 requires-python = ">=3.13,<3.14"
 dependencies = [
     "agent-framework-foundry",
