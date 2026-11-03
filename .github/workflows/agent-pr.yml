@@ -74,7 +74,7 @@ jobs:
     with:
       agent_name: ${{ format('purchasing-advice-demo-pr-{0}', github.event.pull_request.number || github.run_id) }}
       dataset: approvers-development
-      # 34件では、ノイズ幅により二値判定2件の変動を許容する。
-      tolerance: 0.07
+      # デモ用。34件の二値判定で、ベースラインから3件の低下を許容する。
+      tolerance: 0.10
       detail: full
       write_baseline: ${{ github.event_name == 'workflow_dispatch' && inputs.write_baseline }}

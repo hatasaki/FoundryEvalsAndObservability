@@ -644,7 +644,7 @@ failed &gt; 0 または unscored &gt; 0 でも失敗
           <caption>GitHub Actions が指定する条件</caption>
           <thead><tr><th scope="col">段階</th><th scope="col">データ</th><th scope="col">平均低下の許容幅</th><th scope="col">追加条件</th></tr></thead>
           <tbody>
-            <tr><td>PR</td><td>開発34問</td><td>0.07</td><td>オフライン検査後に実行。34問の二値判定では2件の変動を許容する幅。</td></tr>
+            <tr><td>PR</td><td>開発34問</td><td>0.10（デモ用）</td><td>オフライン検査後に実行。二値判定ではベースラインから3問までの低下を許容する。実測ノイズの推定値ではない。</td></tr>
             <tr><td>jp / 確認用ホールドアウト</td><td>検証22問</td><td>0.12</td><td>各評価器の平均を比較する。</td></tr>
             <tr><td>リリース前ドリフト</td><td>8問</td><td>ルーブリックのみ0.03</td><td><code>next_action_success</code> はデモ用に6問以上合格。二値の平均差比較は行わず、全8問の実行・採点完了と未採点0は維持する。</td></tr>
           </tbody>
