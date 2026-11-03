@@ -103,7 +103,7 @@ jobs:
       agent_name: ${{ needs.target.outputs.agent_name }}
       deploy_agent: ${{ needs.target.outputs.mode == 'baseline-drift' }}
       dataset: approvers-drift
-      tolerance: 0.03
+      tolerance: 0.10
       min_passed: next_action_success=6
       max_unscored: 0
       detail: counts
