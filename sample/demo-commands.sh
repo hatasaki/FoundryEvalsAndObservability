@@ -32,31 +32,31 @@ python evaluation/check_prompt_facts.py --baseline agent/.agent_configs/baseline
 
 # --- CI/CD: ワークフローの手動実行（有料） ---
 gh workflow run agent-main.yml --ref BRANCH -f mode=holdout     # PR ブランチの検査。リリースしない
-gh workflow run agent-main.yml --ref main -f mode=release       # 承認を経て main を昇格
+gh workflow run agent-main.yml --ref jp -f mode=release         # 承認を経て jp を昇格
 
 # === 舞台では表示しない準備 ===
 
 # 保存済み候補から PR を作る（ブランチ、フォルダー、タイトル、本文）
 open_pr() {
-  git switch main && git pull --ff-only && git switch -c "$1" || return
+  git switch jp && git pull --ff-only && git switch -c "$1" || return
   cp "evaluation/candidates/$2/"{instructions.md,metadata.yaml,tools.json} \
     agent/.agent_configs/baseline/ || return
   git add agent/.agent_configs/baseline || return
-  git commit -m "$3" && git push -u origin "$1" && gh pr create --title "$3" --body "$4"
+  git commit -m "$3" && git push -u origin "$1" \
+    && gh pr create --base jp --title "$3" --body "$4"
 }
 open_pr demo/reviewed-candidate reviewed "証拠に基づく購入助言の改善をレビュー" \
   "手動で改善して保存した設定です。最適化が生成した採用候補ではありません。"
 open_pr demo/no-grounding regressed "デモ: ツールを使わず、すべての質問に同じ回答" \
   "意図的に悪くした対照例です。評価の失敗を確認し、マージしないでください。"
-git switch main
+git switch jp
 
 # 変更した評価器を登録する（その後、影響するベースラインを更新する）
 python evaluation/evaluate.py --update-evaluators --register-only
 
 # リリースせずにドリフトのベースラインを作る（有料）
-gh workflow run agent-main.yml --ref main -f mode=baseline-drift
+gh workflow run agent-main.yml --ref jp -f mode=baseline-drift
 
 # 名簿とテストセット、またはポリシーの埋め込みを再生成する
 python evaluation/generate_approver_data.py
 python agent/build_embeddings.py          # --check は Azure を使わず整合性を確認する
-

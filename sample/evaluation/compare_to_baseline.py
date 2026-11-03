@@ -7,7 +7,7 @@
 両ファイルは `evaluation/evaluate.py --wait --report` が書く JSON を使う。
 
 使用例（sample/ から）:
-        # main の正常と確認できた実行から、一度だけ作成する:
+        # jp の正常と確認できた実行から、一度だけ作成する:
     python evaluation/compare_to_baseline.py --report report.json \
         --baseline evaluation/baselines/approvers-drift.json --write-baseline
 

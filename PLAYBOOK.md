@@ -25,13 +25,13 @@ Foundry でホストする。**助言のみ**であり、承認、購入、誰�
 | `sample/evaluation/datasets/` | `generate_approver_data.py` で生成する3つのテストセット |
 | `sample/evaluation/candidates/` | 保存済み設定: 手動改善の `reviewed/`、意図的に悪い `regressed/`、過去の最適化例 `optimiser-0.691/` |
 | `sample/infra/` | Foundry テンプレート、監視モジュール、azd フック |
-| `.github/workflows/` | PR ゲートと main からリリースへの昇格 |
+| `.github/workflows/` | jp への PR ゲートと jp からリリースへの昇格 |
 | `presentation/rehearsal/` | HTML スライド用の任意のリハーサルコーチ |
 
 | テストセット | 質問数 | 用途 |
 | --- | --- | --- |
 | 開発 | 34 | 最適化の学習、PR ゲート |
-| ホールドアウト | 22 | 最適化の検証（候補選択に影響する）、main へのマージ |
+| ホールドアウト | 22 | 最適化の検証（候補選択に影響する）、jp へのマージ |
 | ドリフト | 8 | リリースゲートのみ。最適化には絶対に渡さない |
 
 ## 初回セットアップ
@@ -73,13 +73,14 @@ CI と同じく、これらのファイルからインストールする。
 （各約10分。2つの昇格用実行は順番に待機する）:
 
 ```bash
-gh workflow run agent-pr.yml --ref main -f write_baseline=true
-gh workflow run agent-main.yml --ref main -f mode=baseline-holdout
-gh workflow run agent-main.yml --ref main -f mode=baseline-drift
+gh workflow run agent-pr.yml --ref jp -f write_baseline=true
+gh workflow run agent-main.yml --ref jp -f mode=baseline-holdout
+gh workflow run agent-main.yml --ref jp -f mode=baseline-drift
 ```
 
-`gh run list --limit 3` で3件すべての完了を確認してから、ダウンロードしてコミットする。
-push によりリリースへの昇格が開始する。
+`gh run list --limit 3` で3件すべての完了を確認してから、ダウンロードする。
+`jp-dev` の変更としてコミット・push し、`jp` を base とする PR で反映する。
+`jp` への push により有料のリリース昇格が開始する。
 
 ```bash
 rm -f evaluation/baselines/*.json      # gh は既存ファイルを上書きしない
@@ -162,6 +163,17 @@ $5,000 超はカテゴリーマネージャーが必要。Marco は11月2日ま�
 
 ## CI/CD
 
+日本語版のブランチは次の役割で使う。
+
+| ブランチ | 役割 |
+| --- | --- |
+| `jp` | 統合ブランチ。ここへのマージ・push 後にホールドアウトからリリースへの昇格を行う |
+| `jp-dev` | 開発ブランチ。変更を作り、`jp` を base とする PR で開発セットを評価する |
+
+デモ用の作業ブランチも PR の base は `jp` にする。GitHub の既定ブランチに依存せず、
+`gh pr create --base jp` で送り先を明示する。既定ブランチやルールセット自体の変更は別作業である。
+開発ブランチ `jp-dev` と、検証用エージェント名の末尾 `-dev` は別であり、エージェント名は変えない。
+
 両ワークフローは `_agent-eval.yml` を使い、エージェントのデプロイ、テストセットの評価、
 コミット済みベースラインとの比較を行う。Foundry プロジェクトは1つで、エージェント名でデプロイを分離する。
 
@@ -169,12 +181,12 @@ $5,000 超はカテゴリーマネージャーが必要。Marco は11月2日ま�
 | --- | --- |
 | `purchasing-advice-demo` | ライブの質問と最適化。CI はここにデプロイしない |
 | `purchasing-advice-demo-pr-<number>` | PR ゲート: オフライン検査、次に開発セット |
-| `purchasing-advice-demo-dev` | main への push ごと: ホールドアウト、レビュー、次にドリフト |
+| `purchasing-advice-demo-dev` | jp への push ごと: ホールドアウト、レビュー、次にドリフト |
 | `purchasing-advice-demo-release` | ホールドアウト、レビュー、ドリフト、リリース承認の後にのみデプロイ |
 
 ゲートは固定値を下回った場合ではなく、許容幅（PR ゲートは実測ノイズの0.07）を超えて
 低下した場合に失敗する。リリースゲートは、ドリフトの不合格または未採点が1件でもあれば失敗する。
-赤いチェックがマージを阻止するのは、`main` のルールセットで必須チェック名
+赤いチェックがマージを阻止するのは、`jp` のルールセットで必須チェック名
 `1. Offline checks` と `2. Development set vs baseline` を要求した場合だけ。
 これらの識別用の名前は翻訳しない。PR 用エージェントは自動削除されないため、デモ後に削除する。
 

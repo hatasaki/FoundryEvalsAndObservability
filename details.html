@@ -517,7 +517,7 @@ EMBEDDING_DIMENSIONS = 512</code></pre>
           <thead><tr><th scope="col">ファイル</th><th scope="col" class="numeric">件数</th><th scope="col">構成・利用先</th></tr></thead>
           <tbody>
             <tr><td><a href="sample/evaluation/datasets/approvers-development.jsonl">approvers-development.jsonl</a></td><td class="numeric">34</td><td>5部門 × 6通常ケース = 30、難しい追加ケース4。最適化の学習と PR ゲート。</td></tr>
-            <tr><td><a href="sample/evaluation/datasets/approvers-holdout.jsonl">approvers-holdout.jsonl</a></td><td class="numeric">22</td><td>別の3部門 × 6通常ケース = 18、難しい追加ケース4。最適化の validation と main のゲート。</td></tr>
+            <tr><td><a href="sample/evaluation/datasets/approvers-holdout.jsonl">approvers-holdout.jsonl</a></td><td class="numeric">22</td><td>別の3部門 × 6通常ケース = 18、難しい追加ケース4。最適化の validation と jp のゲート。</td></tr>
             <tr><td><a href="sample/evaluation/datasets/approvers-drift.jsonl">approvers-drift.jsonl</a></td><td class="numeric">8</td><td>将来の休暇・委任変更5ケースと、復帰後などの対照3ケース。リリースゲート専用。</td></tr>
           </tbody>
         </table>
@@ -641,7 +641,7 @@ failed &gt; 0 または unscored &gt; 0 でも失敗</code></pre>
           <thead><tr><th scope="col">段階</th><th scope="col">データ</th><th scope="col">平均低下の許容幅</th><th scope="col">追加条件</th></tr></thead>
           <tbody>
             <tr><td>PR</td><td>開発34問</td><td>0.07</td><td>オフライン検査後に実行。34問の二値判定では2件の変動を許容する幅。</td></tr>
-            <tr><td>main / 確認用ホールドアウト</td><td>検証22問</td><td>0.12</td><td>各評価器の平均を比較する。</td></tr>
+            <tr><td>jp / 確認用ホールドアウト</td><td>検証22問</td><td>0.12</td><td>各評価器の平均を比較する。</td></tr>
             <tr><td>リリース前ドリフト</td><td>8問</td><td>0.03</td><td><code>next_action_success</code> は全件合格必須、未採点許容0。</td></tr>
           </tbody>
         </table>
@@ -696,18 +696,20 @@ failed &gt; 0 または unscored &gt; 0 でも失敗</code></pre>
         <p>CLI が baseline の metadata を書き換えて、固定したツールへのパスを参照させる場合もあります。変更一覧だけに頼らず、実際に適用される指示と全ツール・パラメーター説明を確認し、ツールのバイト列を比較します。ローカルの通常形は <code>tools_file: tools.json</code> です。</p>
 
         <h3>10.4 CI/CD の一本道</h3>
-        <pre><code>PR: オフライン検査
+        <p>日本語版の統合ブランチは <code>jp</code>、開発ブランチは <code>jp-dev</code>。通常の変更は <code>jp-dev</code> で作成し、<code>jp</code> を base とする PR で統合します。デモ用の作業ブランチも PR の base は <code>jp</code> です。開発ブランチ名と、検証用エージェントの末尾 <code>-dev</code> は別であり、エージェント名は変えません。</p>
+        <pre><code>jp-dev で開発 → jp を base とする PR:
+      オフライン検査
       → 開発セット評価と基点のベースライン比較
-      → 必須チェックが成功した変更を main へ
+      → 必須チェックが成功した変更を jp へ
 
-main: dev にデプロイしてホールドアウト評価
+jp: dev にデプロイしてホールドアウト評価
       → production 環境で dev をレビュー
       → 同じ dev を再デプロイせずドリフト評価
       → production 環境でリリースを承認
       → 承認済みリビジョンを release にデプロイ</code></pre>
         <p><a href=".github/workflows/agent-pr.yml">agent-pr.yml</a> と <a href=".github/workflows/agent-main.yml">agent-main.yml</a> が <a href=".github/workflows/_agent-eval.yml">_agent-eval.yml</a> を共有します。PR 用は <code>purchasing-advice-demo-pr-番号</code>、昇格の検証は <code>-dev</code>、公開先は <code>-release</code>。ライブ用の名前を上書きせず、確認用の手動実行は必要に応じて <code>-check-実行番号</code> を使います。</p>
-        <p>main の <code>sample/**</code> などへの push は有料の昇格ワークフローを開始します。手動の holdout モードは評価だけで、release モードは main に限定します。ドリフトの詳細は公開ログへ出さず件数中心にし、リリース経路ではホールドアウトと同じ検証済み dev を評価します。</p>
-        <p>GitHub の production 環境にレビュー要件が設定されていること、main のルールセットに <code>1. Offline checks</code> と <code>2. Development set vs baseline</code> が必須として設定されていることが運用上の前提です。YAML にチェックがあるだけでマージ保護が自動的に有効になるわけではありません。</p>
+        <p>jp の <code>sample/**</code> などへの push は有料の昇格ワークフローを開始します。手動の holdout モードは評価だけで、release モードは jp に限定します。ドリフトの詳細は公開ログへ出さず件数中心にし、リリース経路ではホールドアウトと同じ検証済み dev を評価します。</p>
+        <p>GitHub の production 環境にレビュー要件が設定されていること、jp のルールセットに <code>1. Offline checks</code> と <code>2. Development set vs baseline</code> が必須として設定されていることが運用上の前提です。PR 作成時は <code>--base jp</code> を明示します。GitHub 自体の既定ブランチやルールセットを、このコードが変更するわけではありません。</p>
       </section>
 
       <section id="observability">
