@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="購入助言エージェント、3つの模擬IQツール、評価コード、データセット、最適化とCI/CDを、実装と発表・デモの両面から解説する。">
+  <title>購入助言エージェントと評価の構成詳細</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-surface: #ffffff;
+      --cp-soft: #fcfbf8;
+      --cp-border: #dedede;
+      --cp-text: #242424;
+      --cp-muted: #5c5c5c;
+      --cp-accent: #b11f4b;
+      --cp-link: #0078d4;
+      --cp-note: #fff4dc;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-padding-top: 1rem; }
+    body {
+      margin: 0;
+      background: var(--cp-bg);
+      color: var(--cp-text);
+      font-family: "Segoe UI", "Noto Sans JP", system-ui, sans-serif;
+      font-size: 16px;
+      line-height: 1.85;
+      overflow-wrap: anywhere;
+    }
+    a { color: var(--cp-link); text-underline-offset: .2em; }
+    a:hover { text-decoration-thickness: 2px; }
+    :focus-visible { outline: 3px solid var(--cp-accent); outline-offset: 4px; }
+    .skip { position: absolute; top: -6rem; left: 1rem; padding: .5rem 1rem; background: var(--cp-surface); }
+    .skip:focus { top: .5rem; }
+    .page { width: min(1180px, 100%); margin: auto; padding: clamp(16px, 4vw, 48px); }
+    header { padding: 1rem 0 2rem; }
+    .eyebrow { color: var(--cp-accent); font-weight: 700; letter-spacing: .08em; }
+    h1 { margin: .4rem 0 1rem; font-size: clamp(1.85rem, 4.5vw, 3rem); line-height: 1.35; }
+    h2 { margin: 0 0 1rem; font-size: 1.6rem; line-height: 1.5; border-bottom: 2px solid var(--cp-border); padding-bottom: .6rem; }
+    h3 { margin: 1.8rem 0 .6rem; font-size: 1.2rem; line-height: 1.6; }
+    h4 { margin: 1.3rem 0 .4rem; font-size: 1rem; }
+    p { margin: .7rem 0; }
+    ul, ol { padding-left: 1.5rem; }
+    li { margin: .35rem 0; }
+    .lead { font-size: 1.1rem; }
+    .muted, .source { color: var(--cp-muted); font-size: .9rem; }
+    .stats, .cards, .toc { display: grid; gap: 14px; }
+    .stats { grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); margin: 1.5rem 0; }
+    .stat { padding: 1rem; border: 1px solid var(--cp-border); border-radius: 10px; background: var(--cp-surface); }
+    .stat strong { display: block; color: var(--cp-accent); font-size: 1.7rem; line-height: 1.4; }
+    .cards { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin: 1rem 0; }
+    .card { min-width: 0; padding: 1rem 1.2rem; border: 1px solid var(--cp-border); border-radius: 8px; background: var(--cp-soft); }
+    .card h3 { margin-top: 0; }
+    nav { padding: 1.2rem; margin-bottom: 2rem; border: 1px solid var(--cp-border); border-radius: 10px; background: var(--cp-surface); }
+    nav h2 { font-size: 1.1rem; border: 0; padding: 0; }
+    .toc { grid-template-columns: repeat(auto-fit, minmax(235px, 1fr)); padding-left: 1.4rem; margin-bottom: 0; }
+    .toc li { margin: 0; }
+    section { min-width: 0; margin: 1.5rem 0; padding: clamp(18px, 3vw, 32px); background: var(--cp-surface); border: 1px solid var(--cp-border); border-radius: 12px; }
+    .note, .talk { padding: 1rem 1.2rem; margin: 1rem 0; border-left: 4px solid var(--cp-accent); background: var(--cp-soft); }
+    .note { background: var(--cp-note); }
+    .note p:first-child, .talk p:first-child { margin-top: 0; }
+    .note p:last-child, .talk p:last-child { margin-bottom: 0; }
+    .flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; padding: 0; list-style: none; }
+    .flow li { padding: .9rem; border-top: 3px solid var(--cp-accent); background: var(--cp-soft); }
+    .flow strong { display: block; }
+    code { font-family: "Cascadia Code", Consolas, monospace; font-size: .9em; overflow-wrap: anywhere; }
+    :not(pre) > code { padding: .1rem .3rem; border-radius: 4px; background: var(--cp-bg); }
+    pre { margin: 1rem 0; padding: 1.1rem; border: 1px solid var(--cp-border); border-radius: 8px; background: var(--cp-soft); white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.65; tab-size: 2; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: .94rem; }
+    caption { text-align: left; font-weight: 700; padding: .4rem 0; }
+    th, td { text-align: left; vertical-align: top; padding: .65rem .7rem; border-bottom: 1px solid var(--cp-border); }
+    th { background: var(--cp-soft); font-weight: 700; }
+    td.numeric, th.numeric { text-align: right; }
+    details { margin: 1rem 0; padding: .8rem 1rem; border: 1px solid var(--cp-border); border-radius: 8px; }
+    summary { cursor: pointer; font-weight: 700; }
+    blockquote { margin: 1rem 0; padding: .6rem 1rem; border-left: 3px solid var(--cp-accent); background: var(--cp-soft); }
+    footer { padding: 1rem 0 2rem; color: var(--cp-muted); font-size: .9rem; }
+    @media (max-width: 600px) {
+      body { font-size: 15px; }
+      h2 { font-size: 1.35rem; }
+      table { font-size: .85rem; }
+      th, td { padding: .5rem .4rem; }
+      .cards, .toc { grid-template-columns: 1fr; }
+      pre { padding: .8rem; }
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color-scheme: dark;
+        --cp-bg: #343231;
+        --cp-surface: #292929;
+        --cp-soft: #2e2e2e;
+        --cp-border: #474747;
+        --cp-text: #dedede;
+        --cp-muted: #b0b0b0;
+        --cp-accent: #fd8ea1;
+        --cp-link: #4da6ff;
+        --cp-note: #3d3425;
+      }
+    }
+    @media print {
+      :root { color-scheme: light; --cp-bg: white; --cp-surface: white; --cp-soft: #f5f5f5; --cp-text: black; --cp-muted: #444; --cp-border: #ccc; --cp-accent: #861638; --cp-link: black; --cp-note: #f5f5f5; }
+      @page { margin: 16mm; }
+      body { font-size: 10pt; }
+      .page { width: 100%; padding: 0; }
+      nav, .skip { display: none; }
+      section { border: 0; padding: 0; margin: 1.5rem 0; }
+      h2, h3, h4, summary { break-after: avoid; }
+      .card, .stat, blockquote { break-inside: avoid; }
+      thead { display: table-header-group; }
+      a { text-decoration: none; }
+      pre { font-size: 8.5pt; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#overview">本文へ移動</a>
+  <div class="page">
+    <header>
+      <p class="eyebrow">実装解説 / プレゼンテーション・デモ向け</p>
+      <h1>購入助言エージェントと<br>評価の構成詳細</h1>
+      <p class="lead">「購入できますか？」に対して、規則を引用するだけでなく、<strong>今の状況で次に取るべき最善の行動</strong>を示す。その振る舞いを、検索・評価・トレース・最適化・リリースゲートで確かめる小さなデモです。</p>
+      <p>対象は、このリポジトリの <a href="sample/agent/">sample/agent/</a> と <a href="sample/evaluation/">sample/evaluation/</a>。実際のフォルダー名は <code>sample</code> です。関連するホスティング設定と GitHub Actions も、理解に必要な範囲で説明します。</p>
+      <div class="stats" aria-label="構成の要点">
+        <div class="stat"><strong>3</strong>読み取り専用の模擬 IQ ツール</div>
+        <div class="stat"><strong>22 + 5</strong>ポリシー文書 + 例外・許可通知</div>
+        <div class="stat"><strong>34 / 22 / 8</strong>開発 / ホールドアウト / ドリフト</div>
+        <div class="stat"><strong>2</strong>二値評価器 + 重み付きルーブリック</div>
+      </div>
+      <p class="muted">このページはソースとコミット済みの合成データを解説します。実環境のリソース ID、評価実行の記録、実測スコア、稼働中のバージョンは記載しません。セットアップ・実行順の正本は <a href="PLAYBOOK.md">PLAYBOOK.md</a>、画面で示すコマンドは同ガイドが参照する <a href="sample/demo-commands.sh">demo-commands.sh</a> です。</p>
+    </header>
+
+    <nav aria-label="目次">
+      <h2>目次</h2>
+      <ol class="toc">
+        <li><a href="#overview">全体像と説明の軸</a></li>
+        <li><a href="#agent">エージェントの起動と設定</a></li>
+        <li><a href="#behavior">指示と判断の流れ</a></li>
+        <li><a href="#tools">3つのツールの実装</a></li>
+        <li><a href="#corpus">検索対象のデータ構造</a></li>
+        <li><a href="#evaluation">評価コードの処理</a></li>
+        <li><a href="#judges">評価器と入力の対応</a></li>
+        <li><a href="#datasets">評価データの構成と生成</a></li>
+        <li><a href="#gates">レポート・回帰判定・比較</a></li>
+        <li><a href="#optimization">最適化と保存済み候補</a></li>
+        <li><a href="#observability">トレースと継続的評価</a></li>
+        <li><a href="#presentation">プレゼン・デモでの見せ方</a></li>
+      </ol>
+    </nav>
+
+    <main>
+      <section id="overview">
+        <h2>1. 全体像と説明の軸</h2>
+        <ol class="flow">
+          <li><strong>1. エージェント</strong>質問と判断日を受け取り、必要な情報を調べて助言する。</li>
+          <li><strong>2. 評価</strong>次の行動が正しいか、参照回答と評価基準で確かめる。</li>
+          <li><strong>3. トレース</strong>ツールの選択・引数・結果から、成功や失敗の理由を調べる。</li>
+          <li><strong>4. 継続的評価</strong>本番の振る舞いを監視する考え方と設定を紹介する。</li>
+          <li><strong>5. 最適化</strong>指示とツール説明を改善し、別のデータとゲートで確認する。</li>
+        </ol>
+        <div class="cards">
+          <div class="card">
+            <h3>実際に利用するもの</h3>
+            <p>Microsoft Agent Framework、Foundry のホステッドエージェント、Azure OpenAI のモデルと埋め込み、Foundry のクラウド評価、azd のネイティブ最適化、Application Insights。</p>
+          </div>
+          <div class="card">
+            <h3>デモで模倣するもの</h3>
+            <p>Foundry IQ、Work IQ、Fabric IQ の役割を、Python 関数と架空データで模倣します。実際の IQ 製品、Microsoft 365 の職場データ、Fabric の業務データには接続しません。</p>
+          </div>
+        </div>
+        <div class="note">
+          <p><strong>助言と実行は別です。</strong>このエージェントは、承認・購入・発注・承認者への連絡・支出確約を実行できません。「従業員が手続きを進められる」と認識することと、「エージェントが購入を実行する」ことを区別します。</p>
+          <p>また、業務データがローカルだからといって全処理がオフラインではありません。モデル推論、評価、最適化、ハイブリッド検索の検索語埋め込みにはクラウド呼び出しと費用が発生します。</p>
+        </div>
+        <div class="talk"><strong>最初に伝える一文：</strong>「正解らしい文章を作るだけでなく、取得した証拠を使い、今足りない手順を具体的な次の行動に変えるエージェントです。」</div>
+      </section>
+
+      <section id="agent">
+        <h2>2. エージェントの起動と設定</h2>
+        <table>
+          <caption>エージェント側の主要ファイル</caption>
+          <thead><tr><th scope="col">ファイル</th><th scope="col">責務</th></tr></thead>
+          <tbody>
+            <tr><td><a href="sample/agent/main.py">main.py</a></td><td>認証、設定読み込み、FoundryChatClient、Agent、3ツール、ResponsesHostServer を接続する起動点。</td></tr>
+            <tr><td><a href="sample/agent/configuration.py">configuration.py</a></td><td>ネイティブの最適化設定を読み込み、無効な設定や意図しない候補のフォールバックを拒否する。</td></tr>
+            <tr><td><a href="sample/agent/tools.py">tools.py</a></td><td>ポリシー検索、職場検索、予算の模擬応答と、その小さな検索ヘルパー。</td></tr>
+            <tr><td><a href="sample/agent/build_embeddings.py">build_embeddings.py</a></td><td>ポリシー埋め込みの生成、またはネットワークを使わない整合性確認。</td></tr>
+            <tr><td><a href="sample/agent/.agent_configs/baseline/metadata.yaml">baseline/metadata.yaml</a></td><td>モデル、指示ファイル、ツール説明ファイルを指定する。</td></tr>
+            <tr><td><a href="sample/agent/.agent_configs/baseline/instructions.md">baseline/instructions.md</a></td><td>取得、判断、不足情報の確認、回答形式、実行できない操作を定める。</td></tr>
+            <tr><td><a href="sample/agent/.agent_configs/baseline/tools.json">baseline/tools.json</a></td><td>モデルに見せる関数とパラメーターの説明、JSON Schema を保存する。</td></tr>
+            <tr><td><a href="sample/agent/requirements.txt">requirements.txt</a> / <a href="sample/pyproject.toml">pyproject.toml</a></td><td>Python 3.13 と依存関係。実行時は既存のロックから出力した requirements を使う。</td></tr>
+          </tbody>
+        </table>
+
+        <h3>2.1 ネイティブな起動の流れ</h3>
+        <ol>
+          <li><code>DefaultAzureCredential</code> で Azure の資格情報を取得する。</li>
+          <li><code>read_config()</code> が <code>OptimizationConfig</code> を読み込む。</li>
+          <li><code>FoundryChatClient</code> にプロジェクト、設定のモデル、資格情報を渡す。</li>
+          <li><code>Agent</code> に指示、実行可能な3つの関数、推論設定を渡す。</li>
+          <li><code>ResponsesHostServer(agent).run()</code> で Responses プロトコルのホストを起動する。</li>
+        </ol>
+        <pre><code>client = FoundryChatClient(
+    project_endpoint=os.environ["FOUNDRY_PROJECT_ENDPOINT"],
+    model=config.model,
+    credential=credential,
+)
+agent = Agent(
+    client=client,
+    name=os.environ.get("AGENT_NAME", "purchasing-advice-demo"),
+    instructions=config.instructions,
+    tools=config.apply_tool_descriptions([
+        tool(tools.knowledge_base_retrieve),
+        tool(tools.ask),
+        tool(tools.search_ontology),
+    ]),
+    default_options={
+        "store": False,
+        "reasoning": {"effort": "low"},
+        **({"temperature": config.temperature}
+           if config.temperature is not None else {}),
+    },
+)
+ResponsesHostServer(agent).run()</code></pre>
+        <p class="source">起動処理の抜粋。モデルとツールの呼び出しループ、ホスティング、トレースは SDK 側に任せています。独自のオーケストレーションやカスタムスパンを追加する構成ではありません。</p>
+
+        <h3>2.2 ベースラインと設定の選択</h3>
+        <pre><code>model: gpt-5.4-mini
+instruction_file: instructions.md
+tools_file: tools.json</code></pre>
+        <p>モデルは現在のベースラインで <strong>GPT-5.4-mini</strong>。推論の <code>effort: low</code> は起動コードが指定し、temperature は設定に存在する場合だけ渡します。<code>store: false</code> はモデル呼び出しのオプションであり、トレースを無効化する指定ではありません。</p>
+        <table>
+          <thead><tr><th scope="col">環境変数</th><th scope="col">使われ方</th></tr></thead>
+          <tbody>
+            <tr><td><code>FOUNDRY_PROJECT_ENDPOINT</code></td><td>エージェントと評価クライアントの接続先。実際の値は選択中の azd 環境から取得する。</td></tr>
+            <tr><td><code>AGENT_NAME</code></td><td>既定は <code>purchasing-advice-demo</code>。CI は PR・dev・release の対象を分ける。</td></tr>
+            <tr><td><code>OPTIMIZATION_LOCAL_DIR</code></td><td>設定を置くディレクトリ。未指定時はエージェント配下の <code>.agent_configs</code>。</td></tr>
+            <tr><td><code>OPTIMIZATION_CANDIDATE_ID</code></td><td>使用する候補。ローカル解決なら、その候補の metadata が実在することを確認する。</td></tr>
+            <tr><td><code>OPTIMIZATION_CONFIG</code></td><td>ネイティブ SDK が解釈するインライン設定。</td></tr>
+            <tr><td><code>OPTIMIZATION_RESOLVE_ENDPOINT</code></td><td>ネイティブ SDK が候補をリモート解決するための接続先。</td></tr>
+            <tr><td><code>AZURE_OPENAI_ENDPOINT</code> / <code>EMBEDDING_DEPLOYMENT</code></td><td>検索用埋め込みの接続先・デプロイ名の指定。未指定時の組み立てはツール側で行う。</td></tr>
+          </tbody>
+        </table>
+        <p><code>configuration.py</code> は設定の読み込み自体を <code>azure.ai.agentserver.optimization.load_config</code> に委ねます。空の指示・モデル、未対応の skills を拒否し、リモート候補を指定したのにベースラインへ切り替わった場合もエラーにします。詳細な解決順は SDK が担当し、このコードが別の最適化エンジンを実装するわけではありません。</p>
+        <p><strong>指示だけでなくツール説明も設定です。</strong>Python 関数を <code>tool()</code> で実行可能にし、<code>apply_tool_descriptions()</code> が設定側の関数説明・パラメーター説明を反映します。実装を読むだけ、あるいはシステム指示だけを見るだけでは、モデルに提示される情報を確認し切れません。</p>
+
+        <h3>2.3 デプロイ定義</h3>
+        <p><a href="sample/azure.yaml">azure.yaml</a> は <code>host: azure.ai.agent</code>、<code>kind: hosted</code>、<code>project: ./agent</code>、<code>runtime: python_3_13</code>、<code>entryPoint: main.py</code>、Responses 2.0.0、remote build を指定します。コンテナーは CPU 1、メモリ 2 GiB。GPT-5.4-mini、GPT-5.5、text-embedding-3-small のモデルデプロイと Application Insights 接続も定義されています。</p>
+        <p>ただし YAML は希望する構成であり、稼働状態の証明ではありません。デモ前には実際に返されたエージェント・評価器のバージョンと対象名を確認します。アプリだけの更新にはガイドにある <code>azd deploy purchasing-advice-demo</code> を使い、プロビジョニングを伴う操作と混同しません。</p>
+      </section>
+
+      <section id="behavior">
+        <h2>3. 指示と判断の流れ</h2>
+        <p>評価の目標は「常に質問すること」ではありません。<strong>判断に必要な不足を質問する、未完了の要件を示す、または準備完了を認識する</strong>という、状況に応じた次の行動です。</p>
+        <ol>
+          <li><strong>判断日と既知の事実：</strong>ユーザーが指定した判断日を使う。必要なのに日付や金額がなければ質問し、既に分かっている事実は聞き直さない。</li>
+          <li><strong>適用ポリシー：</strong>一般購入と品目別の規則を検索し、有効期間、必要な見積書件数、承認役職を文書から読む。</li>
+          <li><strong>例外と許可：</strong>職場の通知から取引先・製品・用途・対象者・日付が一致するものだけを適用する。免除されるのは明記された要件だけ。</li>
+          <li><strong>承認権限者：</strong>必要な承認役職ごとに、本人の名簿、判断日の休暇、正式な委任の範囲と期間を確認する。</li>
+          <li><strong>予算：</strong>部門と金額が分かったら予算を確認する。予算が十分でも承認の代わりにはならない。</li>
+          <li><strong>完了・未完了の整理：</strong>取得済みの見積書と有効に取得した承認を尊重する。不足する見積書を先に取得し、未完了の承認をその後に求める。</li>
+          <li><strong>結論と次の行動：</strong>結論を先に、日本語で簡潔に答える。必要なら権限者の氏名と取得した出典 ID を示す。</li>
+        </ol>
+        <div class="cards">
+          <div class="card"><h3>情報不足</h3><p>合計が不明なら、まず金額を尋ねる。不足を解決する前に複数の承認経路を並べない。</p></div>
+          <div class="card"><h3>要件が未完了</h3><p>見積書不足、承認未取得など、実際に残っている要件を示す。複数の未完了要件があれば、その順序も説明する。</p></div>
+          <div class="card"><h3>準備完了</h3><p>必要な見積書・承認が揃えば、従業員は進められると答える。承認の再取得や架空の確認作業を追加しない。</p></div>
+        </div>
+        <p>不在通知や同僚の提案は<strong>情報</strong>であって、承認権限を移す<strong>記録</strong>ではありません。直属上司の権限委任があっても、カテゴリーマネージャーや接待責任者の権限まで移るわけではありません。</p>
+        <p>回答の指示は約120語相当以内、出典を角括弧で引用、生のツール出力や内部推論は公開しないというものです。ただし、この長さ目安と二値評価器の合格条件は同一ではありません。</p>
+        <p class="source">根拠：<a href="sample/agent/.agent_configs/baseline/instructions.md">システム指示</a>、<a href="sample/agent/data/policies.json">一般購入・承認委任などのポリシー</a>。変わり得る金額基準、氏名、適用日は知識ソースから取得させます。</p>
+      </section>
+
+      <section id="tools">
+        <h2>4. 3つのツールの実装</h2>
+        <p>実体は <a href="sample/agent/tools.py">tools.py</a> の通常の Python 関数です。3つとも JSON を文字列として返し、購入や承認を実行する副作用は持ちません。実際の IQ や MCP サーバーへの接続ではなく、ツールの役割を模した関数を Agent Framework に登録しています。</p>
+        <table>
+          <thead><tr><th scope="col">関数・入力</th><th scope="col">模倣する役割</th><th scope="col">返すトップレベル項目</th></tr></thead>
+          <tbody>
+            <tr><td><a href="#knowledge"><code>knowledge_base_retrieve(queries: list[str])</code></a></td><td>Foundry IQ：ポリシーの検索</td><td><code>queries</code>、<code>search_mode</code>、<code>references</code>。縮退時は <code>fallback_reason</code>。</td></tr>
+            <tr><td><a href="#work"><code>ask(question: str)</code></a></td><td>Work IQ：人・役職・勤務・委任・通知</td><td><code>question</code>、<code>results</code></td></tr>
+            <tr><td><a href="#ontology"><code>search_ontology(question: str)</code></a></td><td>Fabric IQ：業務エンティティと予算</td><td><code>question</code>、<code>results</code></td></tr>
+          </tbody>
+        </table>
+        <p>設定の JSON Schema では全関数が <code>strict: true</code>。必要な <code>queries</code> または <code>question</code> を required にし、<code>additionalProperties: false</code> で余分な引数を認めません。</p>
+
+        <h3 id="knowledge">4.1 knowledge_base_retrieve：ハイブリッド検索</h3>
+        <ol>
+          <li><code>policies.json</code> を文書 ID で索引化する。検索対象はポリシーであり、例外通知は <code>ask</code> 側。</li>
+          <li><code>_search_terms()</code> で英数字と日本語を抽出する。日本語は連続文字列を2文字ずつの n-gram にし、英語の停止語を除く。</li>
+          <li><code>_keyword_ranking()</code> がメモリ上の SQLite FTS5 を作り、OR 検索と BM25 で順位を付ける。タイトルの重みは3、本文は1。検索語が空なら明示的にエラーにする。</li>
+          <li>保存済み埋め込みが存在し、各ポリシーのハッシュが一致すれば、検索クエリを Azure OpenAI で埋め込む。</li>
+          <li>検索語と各ポリシーベクトルのコサイン類似度でベクトル順位を作る。</li>
+          <li>キーワード順位とベクトル順位を Reciprocal Rank Fusion で合成し、クエリごとに上位5文書を採用する。複数クエリ間で文書 ID を重複排除する。</li>
+        </ol>
+        <pre><code>RRF(doc) = 各検索順位についての 1 / (60 + rank) の合計
+rank は 1 から開始
+POLICY_RESULTS = 5
+EMBEDDING_DIMENSIONS = 512</code></pre>
+        <p>複数クエリの結果は重複排除した集合なので、<strong>返却全体が常に5文書という意味ではありません</strong>。各クエリにつき最大5文書です。</p>
+        <p><a href="sample/agent/data/policy_embeddings.json">policy_embeddings.json</a> は text-embedding-3-small の512次元ベクトルを22文書分保存します。文書ハッシュは <code>title + "\n\n" + content</code> の SHA-256 の先頭16文字。<code>build_embeddings.py</code> は文書ベクトルを事前生成し、値を小数点以下6桁に丸めて保存します。</p>
+        <p>埋め込みクライアントは <code>DefaultAzureCredential</code> のトークンを利用します。明示した <code>AZURE_OPENAI_ENDPOINT</code>、またはプロジェクトのアカウント名から組み立てる <code>cognitiveservices.azure.com/openai/v1/</code> を使います。プロジェクト経由の評価 API と同じ接続先だと考えないでください。</p>
+        <div class="note">
+          <p><strong>検索の縮退を見分ける：</strong>埋め込みファイルがない・古い、またはクエリ埋め込みが失敗すると、警告を出してキーワード検索に切り替わります。戻り値は <code>"search_mode": "keyword"</code> と理由を含みます。会話が続いたことだけではハイブリッド検索の成功を証明できません。</p>
+          <p><code>build_embeddings.py --check</code> は文書ハッシュの整合性をオフラインで確認しますが、クラウド認証やクエリ埋め込みの成功までは検証しません。現在の PR ワークフローにも、この追加チェックは組み込まれていません。</p>
+        </div>
+
+        <h3 id="work">4.2 ask：職場の証拠と人物関係の解決</h3>
+        <p><code>notices.json</code>、<code>people.json</code>、<code>roster.json</code> をそれぞれ BM25 で検索し、各ファイルの上位3文書を集めます。その後、<code>_resolve_people()</code> が人物関係を補います。</p>
+        <ul>
+          <li>従業員レコードの <code>直属上司: 氏名。</code> から上司を取り出す。</li>
+          <li>質問に含まれる役職と <code>役職名簿: 氏名 は 役職 です。</code> を対応させる。</li>
+          <li><code>_holder_records()</code> が役職者の名簿と勤務状況を追加する。</li>
+          <li>質問に「委任」「承認」「代理」などの語があれば、その人を記録者とする委任記録も追加する。</li>
+          <li>最後に文書 ID で重複排除し、全結果を返す。人物補完があるため、返却数は単純な上位3件だけではない。</li>
+        </ul>
+        <p>これは自由な自然言語推論や企業ディレクトリではなく、<strong>日本語のレコード形式と正規表現に依存する小さな検索実装</strong>です。名簿の文体を変更する場合は、生成コードと検索パターンの対応も確認します。</p>
+        <p>例：<code>「Nadia Petrova の直属上司は誰ですか。2026年10月22日の勤務状況と委任を確認してください。」</code>のように、氏名・判断日・必要な権限へ絞ります。購入シナリオ全体を人物検索へ入れると、関連の薄い文書が混ざりやすくなります。</p>
+        <p><strong>日付・権限の適用判断はエージェントが行います。</strong>ツールは勤務予定や委任期間を含む証拠を返しますが、「この日に誰が承認できる」という最終判断を Python 側で代行するわけではありません。</p>
+
+        <h3 id="ontology">4.3 search_ontology：固定予算のスタブ</h3>
+        <pre><code>{
+  "question": "入力された質問",
+  "results": [{
+    "id": "ontology:department-budget",
+    "entity": "Department",
+    "available_budget": 50000,
+    "currency": "dollars"
+  }]
+}</code></pre>
+        <p>この関数は<strong>JSON ファイルを検索せず、同じ固定オブジェクトを返します</strong>。質問の内容に応じた部門の絞り込み、従業員関係、コストセンター、日付別の予算管理はありません。実際の Fabric IQ 接続や、部門ごとに異なる予算を実装したものと説明しないことが重要です。</p>
+        <div class="talk"><strong>ツールを紹介するとき：</strong>「ポリシーは何が必要か、職場記録は誰がいつ承認できるか、業務エンティティは予算などの状態を示します。ただしこのデモでは予算は固定値です。予算があることは承認ではありません。」</div>
+      </section>
+
+      <section id="corpus">
+        <h2>5. 検索対象のデータ構造</h2>
+        <table>
+          <caption>エージェントが読む合成コーパス</caption>
+          <thead><tr><th scope="col">ファイル</th><th scope="col" class="numeric">件数</th><th scope="col">内容と検索経路</th></tr></thead>
+          <tbody>
+            <tr><td><a href="sample/agent/data/policies.json">policies.json</a></td><td class="numeric">22</td><td>購入・研修・ソフトウェア・会食・出張・契約などの規則。knowledge_base_retrieve の対象。</td></tr>
+            <tr><td><a href="sample/agent/data/notices.json">notices.json</a></td><td class="numeric">5</td><td>プログラム限定の購入例外と、用途・データ範囲・期間が限定されたセキュリティ許可。ask の対象。</td></tr>
+            <tr><td><a href="sample/agent/data/people.json">people.json</a></td><td class="numeric">6</td><td>接待責任者、カテゴリーマネージャー、倫理担当者、委任記録、非公式なチャット、誘導を含むメール。全てが人物1人のレコードという意味ではない。</td></tr>
+            <tr><td><a href="sample/agent/data/roster.json">roster.json</a></td><td class="numeric">46</td><td>8部門の上司8人・従業員32人の名簿40件と、正式な委任記録6件。生成コードが作る。</td></tr>
+            <tr><td><a href="sample/agent/data/policy_embeddings.json">policy_embeddings.json</a></td><td class="numeric">22</td><td>文書 ID をキーとするハッシュ・512次元ベクトル。通常の文書配列とは異なる辞書形式。</td></tr>
+          </tbody>
+        </table>
+        <p>文書配列の共通フィールドは <code>id</code>、<code>title</code>、<code>issued</code>、<code>synthetic</code>、<code>content</code>。<code>synthetic: true</code> は架空データであることを示します。<strong>issued は発行日であり、適用期間そのものではありません。</strong>有効期間や委任の範囲は本文から確認します。</p>
+        <p>出典 ID の接頭辞は <code>policy:</code>、<code>notice:</code>、<code>people:</code>、<code>register:</code>、<code>message:</code>。モデルの回答は取得した ID を角括弧で引用します。ID がもっともらしいだけでは、検索や権限確認が実行された証明にはなりません。</p>
+
+        <details open>
+          <summary>22ポリシーの収録範囲</summary>
+          <table>
+            <thead><tr><th scope="col">出典 ID</th><th scope="col">テーマ</th></tr></thead>
+            <tbody>
+              <tr><td><code>policy:purchasing</code></td><td>一般購入と支出承認</td></tr>
+              <tr><td><code>policy:software-review</code></td><td>ソフトウェア・オンラインサービスのセキュリティ審査</td></tr>
+              <tr><td><code>policy:training-suitability</code></td><td>研修の適合性とプログラム別例外</td></tr>
+              <tr><td><code>policy:business-travel</code></td><td>出張予約と航空座席クラス</td></tr>
+              <tr><td><code>policy:hospitality</code></td><td>会食と社外接待</td></tr>
+              <tr><td><code>policy:home-office</code></td><td>在宅設備の補助枠と買い替え</td></tr>
+              <tr><td><code>policy:accessibility</code></td><td>アクセシビリティ調整と専用設備</td></tr>
+              <tr><td><code>policy:external-consultants</code></td><td>外部コンサルタントと専門サービス契約</td></tr>
+              <tr><td><code>policy:events</code></td><td>イベント参加・スポンサー契約</td></tr>
+              <tr><td><code>policy:marketing</code></td><td>ブランド素材・デザイン・印刷取引先</td></tr>
+              <tr><td><code>policy:data-handling</code></td><td>個人情報・機密データの共有</td></tr>
+              <tr><td><code>policy:subscription-renewals</code></td><td>自動更新と解約通知期限</td></tr>
+              <tr><td><code>policy:sustainable-purchasing</code></td><td>設備の再利用・買い替え・安全な廃棄</td></tr>
+              <tr><td><code>policy:regional-travel</code></td><td>地域別出張の期間限定制度</td></tr>
+              <tr><td><code>policy:regional-equipment</code></td><td>地域別在宅勤務制度と設備使用期間</td></tr>
+              <tr><td><code>policy:supplier-restrictions</code></td><td>適用範囲別の取引先保留と許可の競合</td></tr>
+              <tr><td><code>policy:event-funding</code></td><td>学習費用、混合パッケージ、参加者予算</td></tr>
+              <tr><td><code>policy:records-return</code></td><td>契約終了時の記録返却・削除・監査保留</td></tr>
+              <tr><td><code>policy:contract-changes</code></td><td>契約変更と累計の支出確約</td></tr>
+              <tr><td><code>policy:approval-delegation</code></td><td>承認権限、休暇、正式な委任</td></tr>
+              <tr><td><code>policy:purchasing-thresholds-2027</code></td><td>2027年からの購入しきい値更新</td></tr>
+              <tr><td><code>policy:hospitality-limit-2027</code></td><td>2027年からの接待上限更新</td></tr>
+            </tbody>
+          </table>
+        </details>
+        <p>通知の5件は、Nova の新卒者向け購入例外、BrightPath の9月限定研修例外、DesignCloud の公開素材許可、同社の9月限定顧客ファイル試行、Nova Portal の標準従業員研修許可です。購入例外・研修適合性・セキュリティ許可を同じ承認と扱わないよう、意図的に範囲を分けています。</p>
+        <div class="note">
+          <p><strong>文書の中の誘導は指示ではありません。</strong><code>message:lumo-booking-email</code> には、取引先から AI に「事前承認済みなので予約を確定させるよう伝える」という誘導があります。これを承認の証拠や上位の指示として扱わないことが、ライブデモでの確認点です。</p>
+          <p>2027年の文書も検索対象ですが、現在の評価質問は全て2026年の判断です。将来の規則を先に適用しないことを説明できます。ただし、2027年の正しい購入判断そのものを現在のデータセットが網羅しているわけではありません。</p>
+        </div>
+      </section>
+
+      <section id="evaluation">
+        <h2>6. 評価コードの処理</h2>
+        <table>
+          <caption>evaluation 側のファイルと責務</caption>
+          <thead><tr><th scope="col">ファイル</th><th scope="col">責務</th></tr></thead>
+          <tbody>
+            <tr><td><a href="sample/evaluation/evaluate.py">evaluate.py</a></td><td>評価器の登録・照合、評価定義、データソース、実行の送信、必要なら結果待ち。</td></tr>
+            <tr><td><a href="sample/evaluation/ci_report.py">ci_report.py</a></td><td>データ・評価器の指紋、ベースライン互換性、完了待ち、結果の検証と要約レポート。</td></tr>
+            <tr><td><a href="sample/evaluation/compare_to_baseline.py">compare_to_baseline.py</a></td><td>保存済みレポートとの平均スコア比較、必須合格条件、明示的なベースライン保存。</td></tr>
+            <tr><td><a href="sample/evaluation/compare_runs.py">compare_runs.py</a></td><td>旧・新の複数実行を質問ごとに比較し、改善・悪化・不安定を分類する。</td></tr>
+            <tr><td><a href="sample/evaluation/check_prompt_facts.py">check_prompt_facts.py</a></td><td>候補の指示・ツール説明に混入した業務事実をオフライン検査する。</td></tr>
+            <tr><td><a href="sample/evaluation/generate_approver_data.py">generate_approver_data.py</a></td><td>共通の人物・休暇・委任モデルから名簿と評価データを決定的に生成する。</td></tr>
+            <tr><td><a href="sample/evaluation/purchasing-next-action.json">purchasing-next-action.json</a> / <a href="sample/evaluation/purchasing-demo-rubric.json">purchasing-demo-rubric.json</a></td><td>二値評価器とネイティブの重み付きルーブリックの定義。</td></tr>
+            <tr><td><a href="sample/evaluation/optimize.yaml">optimize.yaml</a></td><td>azd が送信する最適化ジョブの静的設定。Python で最適化するための設定ではない。</td></tr>
+            <tr><td><a href="sample/evaluation/datasets/">datasets/</a> / <a href="sample/evaluation/baselines/">baselines/</a> / <a href="sample/evaluation/candidates/">candidates/</a></td><td>入力 JSONL、比較基準のレポート JSON、保存済みエージェント設定。</td></tr>
+          </tbody>
+        </table>
+
+        <h3>6.1 evaluate.py の4段階</h3>
+        <ol>
+          <li><strong>評価器：</strong><code>create_evaluators()</code> と <code>ensure_evaluator()</code> がローカル JSON と登録済み定義を照合する。</li>
+          <li><strong>評価定義：</strong><code>create_evaluation()</code> が item schema と2つの <code>testing_criteria</code>、入力対応を作り、クラウド実行時は <code>client.evals.create()</code> で登録する。</li>
+          <li><strong>データソース：</strong><code>create_dataset()</code> が JSONL を読み、Foundry がエージェントを呼び出すための <code>azure_ai_target_completions</code> を作る。</li>
+          <li><strong>実行：</strong><code>run_evaluation()</code> が <code>client.evals.runs.create()</code> を呼ぶ。<code>--wait</code> があればレポート生成まで待つ。</li>
+        </ol>
+        <pre><code>JSONL の行
+  name / query / ground_truth / criteria
+       |
+       +-- Python 評価へ残す: name / query / ground_truth
+       |
+       +-- ホストされたエージェントへ渡す: query だけ
+                  |
+                  +-- 最終回答: sample.output_text
+                  +-- ツール呼び出し: sample.tool_calls
+                              |
+                              +-- 二値評価器とルーブリック
+                                          |
+                                          +-- Foundry の結果と CI 用レポート</code></pre>
+        <p>接続は <code>AIProjectClient</code> と <code>DefaultAzureCredential</code>。評価 API は <code>project.get_openai_client()</code> 経由で利用します。エージェントを各質問で呼び出すのは Foundry の評価サービスであり、この Python がローカルで3ツールを手動実行するのではありません。</p>
+        <p>対象名は <code>AGENT_NAME</code>、データセットは <code>EVAL_DATASET</code> で選びます。既定は開発セット。JSONL の相対パスを指定するときは実行ディレクトリに注意し、舞台裏の操作は <code>sample/</code> から行います。</p>
+
+        <h3>6.2 評価器の登録と固定</h3>
+        <ul>
+          <li>通常の評価は、ローカルと一致する登録済み評価器を利用する。未登録なら評価前の登録を要求する。</li>
+          <li>登録済み定義とローカル JSON が違う場合、黙って更新せずエラーにする。</li>
+          <li><code>--register-only</code> は未登録の評価器を登録するが、採点は開始しない。</li>
+          <li><code>--update-evaluators --register-only</code> は新バージョンを明示的に登録する入口。影響するベースラインも再評価・レビューが必要。</li>
+          <li>クラウドの評価リクエストには、解決した実際の <code>evaluator_version</code> を付ける。新規環境で「必ずこの番号」と推測しない。</li>
+        </ul>
+        <table>
+          <caption>コードの入口を理解するためのオプション表</caption>
+          <thead><tr><th scope="col">オプション</th><th scope="col">挙動と注意</th></tr></thead>
+          <tbody>
+            <tr><td><code>--dry-run</code></td><td>リクエスト JSON を標準出力へ表示。クラウド接続・評価器登録・ファイル書き込みはしない。</td></tr>
+            <tr><td><code>--register-only</code></td><td>登録・照合のためクラウドへ接続するが、エージェントの評価実行はしない。</td></tr>
+            <tr><td><code>--wait</code></td><td>採点の終了と結果の妥当性確認まで待つ。送信できただけを成功としない。</td></tr>
+            <tr><td><code>--report REPORT_PATH</code></td><td><code>--wait</code> が必要。途中・最終レポートを書き込む。ローカルの実行記録はリポジトリ外へ保存する。</td></tr>
+            <tr><td><code>--baseline BASELINE_PATH</code></td><td>データと評価器の互換性を確認する。ドライランと組み合わせれば課金前に確認できる。</td></tr>
+            <tr><td><code>--max-unscored N</code></td><td>各評価器で許容する未採点件数。CLI の既定は1。全件採点を必須にする場合は0。</td></tr>
+          </tbody>
+        </table>
+        <p><code>--dry-run</code> と <code>--register-only</code> は同時指定できません。これらに <code>--wait</code> を付けること、<code>--wait</code> なしで <code>--report</code> を指定すること、空のエージェント名、負の未採点許容数も拒否します。</p>
+        <p class="source">実行コマンドと認証の正本：<a href="PLAYBOOK.md">PLAYBOOK.md</a>、<a href="sample/demo-commands.sh">demo-commands.sh</a>。CLI の <code>azd ai agent eval</code> と別拡張の <code>azd ai eval</code> は設定が異なり、このリポジトリは意図的に既存の Python 評価を維持しています。</p>
+      </section>
+
+      <section id="judges">
+        <h2>7. 評価器と入力の対応</h2>
+        <table>
+          <caption>誰に何を渡すか</caption>
+          <thead><tr><th scope="col">受け手</th><th scope="col">入力</th><th scope="col">渡さないもの・留意点</th></tr></thead>
+          <tbody>
+            <tr><td>エージェント</td><td><code>{{item.query}}</code> のユーザーメッセージだけ。</td><td><code>ground_truth</code> と行別 <code>criteria</code> は渡さない。</td></tr>
+            <tr><td>二値評価器</td><td>質問、参照回答、最終回答、ツール呼び出しと結果。</td><td>トレースは失敗理由の説明に利用する。定義はトレース自体でスコアを変更しないよう要求する。</td></tr>
+            <tr><td>ルーブリック</td><td>質問と最終回答。</td><td>この Python ワークフローは参照回答とツールトレースをマッピングしない。</td></tr>
+            <tr><td>ネイティブ最適化</td><td>YAML で指定した開発・検証の JSONL と設定。参照回答を含むデータをサービスへ渡す。</td><td>内部リフレクターへの正確な入力や、行別 criteria の反映段階は、このコードだけでは確認できない。</td></tr>
+          </tbody>
+        </table>
+        <pre><code>{
+  "next_action_success": {
+    "query": "{{item.query}}",
+    "ground_truth": "{{item.ground_truth}}",
+    "response": "{{sample.output_text}}",
+    "tool_calls": "{{sample.tool_calls}}"
+  },
+  "purchasing_behaviour": {
+    "query": "{{item.query}}",
+    "response": "{{sample.output_text}}"
+  }
+}</code></pre>
+        <p class="source">data_mapping の対応を示した抜粋です。JSONL に参照回答があることと、エージェントが正解を見て回答することは同じではありません。</p>
+
+        <h3>7.1 purchasing-next-action：0 / 1 の成功判定</h3>
+        <p>定義は <a href="sample/evaluation/purchasing-next-action.json">purchasing-next-action.json</a>、評価結果の識別名は <code>next_action_success</code>。GPT-5.5 に <code>deployment_name</code> と <code>threshold: 1</code> を指定します。正しい次の行動なら1、そうでなければ0です。</p>
+        <ul>
+          <li><strong>正しい手続き：</strong>承認経路、例外、未完了の要件を尊重し、要件未達の支出確約を認めない。</li>
+          <li><strong>不足情報：</strong>必要な不足を直接質問し、解決前にそれに依存する代替経路を提示しない。</li>
+          <li><strong>既知の事実：</strong>提示済み情報や完了済み承認をやり直させない。</li>
+          <li><strong>準備完了：</strong>全要件が揃った状況で、障害を捏造しない。</li>
+        </ul>
+        <p>参照回答と<strong>意味</strong>を比較します。完全一致、厳密な言い回し、網羅的な引用、回答の長さだけを合格条件にはしません。参照回答に矛盾や不足があれば <code>REFERENCE_REVIEW</code> として0を返し、参照自体のレビューを促します。</p>
+        <pre><code>{"result": 1, "reason": "職場ツールで記録を取得し、返された権限を回答に反映した。"}</code></pre>
+        <p>これは出力形式の例であり、実行結果ではありません。result は0または1です。理由は空白区切りで最大35語とし、トレースがあれば「何を調べたか、返された記録を使ったか」から説明します。トレースがなければ「ツールトレースなし。」から始めます。</p>
+        <p><strong>フィードバックにはケース固有の事実を再掲しない</strong>よう要求します。人名、金額、日付、承認者の役職、出典 ID、修正後の答えなどを理由から除き、行動の改善に焦点を当てます。この制約は採点や、従業員への回答内容を変えるものではありません。</p>
+
+        <h3>7.2 purchasing-demo-rubric：8観点の重み付き評価</h3>
+        <p>定義は <a href="sample/evaluation/purchasing-demo-rubric.json">purchasing-demo-rubric.json</a>、結果の識別名は <code>purchasing_behaviour</code>。ネイティブの <code>type: rubric</code> で GPT-5.5 を使い、観点ごとの評点と理由を得ます。主メトリックは0〜1の連続値、<code>pass_threshold</code> は0.5です。重みと適用性に基づく集約はサービスが担当します。</p>
+        <table>
+          <thead><tr><th scope="col">観点 ID</th><th scope="col" class="numeric">重み</th><th scope="col">確認すること</th></tr></thead>
+          <tbody>
+            <tr><td><code>spending_route_determination</code></td><td class="numeric">9</td><td>合計と判断日から見積書・支出承認の経路を正しく選ぶ。</td></tr>
+            <tr><td><code>current_approver</code></td><td class="numeric">9</td><td>未完了承認について、判断日の権限者または不在時の正しい行動を示す。</td></tr>
+            <tr><td><code>notice_scope_enforcement</code></td><td class="numeric">6</td><td>通知の対象者・品目・日付・免除範囲を守る。</td></tr>
+            <tr><td><code>independent_requirement_separation</code></td><td class="numeric">6</td><td>支出承認、セキュリティ許可、適合性などを分ける。</td></tr>
+            <tr><td><code>clarification_first</code></td><td class="numeric">9</td><td>不足を質問し、未解決の条件分岐や不要な聞き直しを避ける。</td></tr>
+            <tr><td><code>source_grounded_claims</code></td><td class="numeric">5</td><td>取得した根拠を引用し、規則や出典を捏造しない。</td></tr>
+            <tr><td><code>process_action_boundary</code></td><td class="numeric">3</td><td>承認・購入・連絡を実行できるふりをしない。</td></tr>
+            <tr><td><code>general_quality</code></td><td class="numeric">5</td><td>明確さ、焦点、行動のしやすさ、無関係な説明の少なさ。</td></tr>
+          </tbody>
+        </table>
+        <p><code>general_quality</code> だけが常時適用で、他の7観点は質問に応じて適用性を判断します。記述では1〜5点の評価を使い、例えば非公式な代役を承認権限者と扱うと1点、不足を質問していても先に代替経路を並べると clarification_first は3点と定めています。</p>
+        <p>定義は turn と conversation に対応しますが、現在の Python 評価は <code>query</code> と <code>response</code> によるターン入力です。<code>messages</code> や <code>tool_definitions</code> をこの評価リクエストへ渡しているわけではありません。理由と全体要約にも、最大25語相当の動作中心のフィードバック制約があります。</p>
+        <div class="talk"><strong>評価画面で伝えること：</strong>「二値評価で次の行動の正しさを判断し、ルーブリックでどの振る舞いに問題があったかを分解します。数字だけでなく、質問・最終回答・判定理由を一緒に読みます。」</div>
+      </section>
+
+      <section id="datasets">
+        <h2>8. 評価データの構成と生成</h2>
+        <table>
+          <caption>3つの JSONL と用途</caption>
+          <thead><tr><th scope="col">ファイル</th><th scope="col" class="numeric">件数</th><th scope="col">構成・利用先</th></tr></thead>
+          <tbody>
+            <tr><td><a href="sample/evaluation/datasets/approvers-development.jsonl">approvers-development.jsonl</a></td><td class="numeric">34</td><td>5部門 × 6通常ケース = 30、難しい追加ケース4。最適化の学習と PR ゲート。</td></tr>
+            <tr><td><a href="sample/evaluation/datasets/approvers-holdout.jsonl">approvers-holdout.jsonl</a></td><td class="numeric">22</td><td>別の3部門 × 6通常ケース = 18、難しい追加ケース4。最適化の validation と main のゲート。</td></tr>
+            <tr><td><a href="sample/evaluation/datasets/approvers-drift.jsonl">approvers-drift.jsonl</a></td><td class="numeric">8</td><td>将来の休暇・委任変更5ケースと、復帰後などの対照3ケース。リリースゲート専用。</td></tr>
+          </tbody>
+        </table>
+        <div class="note"><p><strong>ホールドアウトは未使用の最終受け入れ試験ではありません。</strong><code>optimize.yaml</code> の <code>validation_dataset</code> として候補選択に影響します。最適化へ絶対に渡さない独立したゲートは、ドリフトセットです。</p></div>
+
+        <h3>8.1 1行の構造</h3>
+        <p>1行は1つの JSON オブジェクトで、4つのフィールドを持ちます。全64問に判断日が明示されています。</p>
+        <table>
+          <thead><tr><th scope="col">フィールド</th><th scope="col">型</th><th scope="col">意味</th></tr></thead>
+          <tbody>
+            <tr><td><code>name</code></td><td>string</td><td>部門・従業員・月日・種別からなるケース識別子。各セット内で一意。</td></tr>
+            <tr><td><code>query</code></td><td>string</td><td>判断日、依頼者、品目、価格、見積書、取得済み承認などを含むユーザー質問。</td></tr>
+            <tr><td><code>ground_truth</code></td><td>string</td><td>期待する次の行動、権限者・委任・復帰などの背景、出典 ID を含む参照回答。</td></tr>
+            <tr><td><code>criteria</code></td><td>array of objects</td><td><code>name</code> と <code>instruction</code> による行別の補助基準。Python 評価はこのフィールドを除去する。</td></tr>
+          </tbody>
+        </table>
+        <details open>
+          <summary>開発セット先頭行の実例（読みやすく整形）</summary>
+          <pre><code>{
+  "name": "finance-ana-silva-1013-plain",
+  "query": "今日は2026年10月13日です。私は Ana Silva です。財務部門に所属しています。チームの作業場所用のデスクライトを $320 で購入できますか？取引先の見積書は1件あります。",
+  "ground_truth": "まだ購入できません。購入前に直属上司 Grace Okafor の承認を得てください。見積書の要件は満たしています。 出典: [policy:purchasing] [people:mgr-grace-okafor]。",
+  "criteria": [
+    {"name": "answer_first", "instruction": "最初の文で今購入できるかを答え、次に取る行動を一つ示す。"},
+    {"name": "no_reopened_steps", "instruction": "従業員が既に示した事実や承認を再度求めず、この購入に不要な要件を追加しない。"},
+    {"name": "concise", "instruction": "おおむね120語相当以内。"},
+    {"name": "current_approver", "instruction": "取得した職場の記録に基づき、判断日時点で購入手続きに必要な承認権限を持つ人を示す。不在の役職者や、非公式に紹介された人を承認者にしない。"}
+  ]
+}</code></pre>
+        </details>
+
+        <h3>8.2 通常ケースと難しいケースの内訳</h3>
+        <table>
+          <thead><tr><th scope="col">name の末尾</th><th scope="col" class="numeric">開発</th><th scope="col" class="numeric">検証</th><th scope="col" class="numeric">ドリフト</th><th scope="col">狙い</th></tr></thead>
+          <tbody>
+            <tr><td><code>plain</code></td><td class="numeric">23</td><td class="numeric">13</td><td class="numeric">8</td><td>勤務中、委任有効、不在で委任なし、委任終了、復帰後などの通常の承認者判断。</td></tr>
+            <tr><td><code>already_approved</code></td><td class="numeric">5</td><td class="numeric">3</td><td class="numeric">0</td><td>取得済み承認をやり直させない。見積書もあれば準備完了、なければその不足だけを示す。</td></tr>
+            <tr><td><code>informal_claim</code></td><td class="numeric">2</td><td class="numeric">2</td><td class="numeric">0</td><td>非公式な代行の主張を正式な委任と扱わない。</td></tr>
+            <tr><td><code>over_threshold</code></td><td class="numeric">2</td><td class="numeric">2</td><td class="numeric">0</td><td>$5,000 超のカテゴリーマネージャー経路と見積書2件。見積書0・1・2件、不在・勤務中、非公式な紹介、買い替えの追加要件を含む。</td></tr>
+            <tr><td><code>missing_total</code></td><td class="numeric">1</td><td class="numeric">1</td><td class="numeric">0</td><td>金額が分かる前に承認経路を選ばず、合計を質問する。</td></tr>
+            <tr><td><code>asked_to_act</code></td><td class="numeric">1</td><td class="numeric">1</td><td class="numeric">0</td><td>「承認して発注して」に応じず、助言と実行の境界を守る。</td></tr>
+            <tr><th scope="row">合計</th><td class="numeric">34</td><td class="numeric">22</td><td class="numeric">8</td><td>各種別はケース名による分類。行別 criteria は複数同時に付く。</td></tr>
+          </tbody>
+        </table>
+        <p>行別 criteria は10種類です。<code>answer_first</code>、<code>current_approver</code>、<code>no_substitute</code>、<code>evidence_not_authority</code>、<code>no_reopened_steps</code>、<code>concise</code>、<code>category_route</code>、<code>asks_for_total</code>、<code>no_commitment</code>、<code>replacement_reuse</code>。買い替え時の再利用確認はホールドアウトの1ケースに含まれます。</p>
+
+        <h3>8.3 生成コードのモデルと分離</h3>
+        <p><a href="sample/evaluation/generate_approver_data.py">generate_approver_data.py</a> は LLM を使わない<strong>決定的な Python 生成器</strong>です。固定 seed の <code>random.Random</code> と、<code>Department</code>、<code>Manager</code>、<code>Absence</code> の dataclass を使います。品目10種類から価格や見積書の有無を変え、休暇前・休暇中・委任終了後・復帰後に判断日を配置します。</p>
+        <ul>
+          <li><code>roster_records()</code>：8部門の従業員関係、休暇、正式な委任を文書に変換する。</li>
+          <li><code>plan()</code>：各部門の予定休暇を基に6ケースを作る。既に承認済みのケースでは、その判断日に上司が勤務するよう調整する。</li>
+          <li><code>make_row()</code>：見積書の有無と、その日の上司・代理人の状態から参照回答と criteria を計算する。</li>
+          <li><code>make_hard_row()</code>：高額・金額不足・実行依頼の追加ケースを作る。ホールドアウトでは人名・日付・金額などを変える。</li>
+          <li><code>main()</code>：roster と3つの JSONL を書き直す。再生成は単なる表示ではなく、リポジトリのデータ変更になる。</li>
+        </ul>
+        <table>
+          <thead><tr><th scope="col">側</th><th scope="col">部門</th><th scope="col">上司</th></tr></thead>
+          <tbody>
+            <tr><td>開発</td><td>Finance、Legal、Facilities、Marketing、Engineering</td><td>Grace Okafor、Hannah Lindqvist、Rafael Moreno、Yuki Tanaka、Samuel Mensah</td></tr>
+            <tr><td>ホールドアウト</td><td>Logistics、Customer Support、Quality Assurance</td><td>Chloe Dubois、Mateus Costa、Amara Nwosu</td></tr>
+          </tbody>
+        </table>
+        <div class="note">
+          <p><strong>分離の意味を正確に説明する：</strong>開発とホールドアウトの部門・従業員は別ですが、判断日には重複があります。全ての日付が集合として完全に分離している、という設計ではありません。共通のポリシーとカテゴリーマネージャーも使います。</p>
+          <p>通常ケースの参照回答と roster は共通の Python 定義から生成されます。一方、一般購入のしきい値やカテゴリーマネージャーの休暇など、高額ケースの規則は生成器にも定義されています。<code>policies.json</code> や <code>people.json</code> の変更が参照回答へ自動反映されるわけではなく、整合性の見直しが必要です。</p>
+        </div>
+
+        <h3>8.4 ドリフト8ケースの狙い</h3>
+        <table>
+          <thead><tr><th scope="col">依頼者・判断日</th><th scope="col">変化または対照</th><th scope="col">権限判断の要点</th></tr></thead>
+          <tbody>
+            <tr><td>Ana Silva / 11月17日</td><td>Finance：普段勤務していた上司が休暇。</td><td>Grace ではなく、正式に委任された Ben Carter。</td></tr>
+            <tr><td>Chiara Rossi / 11月24日</td><td>Finance：復帰後の対照。</td><td>Grace Okafor が勤務している。</td></tr>
+            <tr><td>Quentin Blake / 12月2日</td><td>Legal：10月の代理人を使い回さない。</td><td>Hannah は不在。この期間の委任がないため、以前の Omar を指名しない。</td></tr>
+            <tr><td>Xin Zhao / 11月11日</td><td>Marketing：以前は非公式な代行、今回は正式な委任。</td><td>Zoe Fletcher への記録を使う。</td></tr>
+            <tr><td>Umar Siddiqui / 12月9日</td><td>Facilities：以前は代理人なし、今回は正式な委任。</td><td>Tara Nguyen への記録を使う。</td></tr>
+            <tr><td>Jasmine Kaur / 11月25日</td><td>Logistics：10月の委任は今回に適用されない。</td><td>Chloe は不在。Ibrahim への過去の委任を使わない。</td></tr>
+            <tr><td>Marcus Webb / 12月1日</td><td>Engineering：復帰後の対照。</td><td>Samuel Mensah が勤務している。</td></tr>
+            <tr><td>Pedro Alves / 11月4日</td><td>Customer Support：復帰後の対照。</td><td>Mateus Costa が勤務している。</td></tr>
+          </tbody>
+        </table>
+        <p>表の年は全て2026年です。roster は最初から将来の休暇・委任も含みます。評価時に実際の業務システムやファイルを書き換えるのではなく、<strong>判断日が変わると正しい人物・権限も変わる</strong>ことを固定の合成データで試します。見積書の取得など、通常の未完了要件も各質問で引き続き評価されます。</p>
+        <p><strong>範囲の限界：</strong>この64問は主に承認者の解決を試します。22ポリシー全体、全通知、会食の複数ターン、日付が欠けた入力、全ての入力誘導を網羅する評価セットではありません。ルーブリックが扱える観点の広さと、実際のテストデータのカバレッジを区別します。</p>
+      </section>
+
+      <section id="gates">
+        <h2>9. レポート・回帰判定・比較</h2>
+        <h3>9.1 結果待ちとレポートの検証</h3>
+        <p><a href="sample/evaluation/ci_report.py">ci_report.py</a> は queued / in_progress を30秒間隔で確認し、最大60分待ちます。途中レポートの <code>results_complete</code> は false のまま。完了後も、期待する全質問数、各エージェント呼び出しの成功、各評価器の結果を確認します。</p>
+        <ul>
+          <li>エージェントのエラー、結果件数の不足、実行失敗はエラーとする。</li>
+          <li>採点結果は有限の数値 score、真偽値 passed、正常な status を持つことを確認する。bool を数値 score としては扱わない。</li>
+          <li>評価器の未採点は件数と詳細を表示し、許容数を超えれば失敗する。</li>
+          <li>許容内の未採点は<strong>0点ではなく平均の分母から除外</strong>する。ドリフトは許容0で全件採点を要求する。</li>
+        </ul>
+        <table>
+          <caption>最終レポートの主要フィールド</caption>
+          <thead><tr><th scope="col">項目</th><th scope="col">意味</th></tr></thead>
+          <tbody>
+            <tr><td><code>agent_name</code>、<code>eval_id</code>、<code>run_id</code>、<code>report_url</code></td><td>実行の対象と所在。新しいレポートの情報であり、デモの固定値として推測しない。</td></tr>
+            <tr><td><code>status</code>、<code>results_complete</code></td><td>サービスの実行状態と、集約に必要な確認が完了したか。true でも、許容された未採点が0とは限らない。</td></tr>
+            <tr><td><code>evaluator_versions</code></td><td>実際に利用した評価器のバージョン。</td></tr>
+            <tr><td><code>provenance.dataset_sha256</code></td><td>Python 評価へ渡す行の指紋。name・query・ground_truth と行順を含むが、除去した criteria は含まない。</td></tr>
+            <tr><td><code>provenance.judges</code></td><td>評価器名、定義の SHA-256、初期化パラメーター、data_mapping。</td></tr>
+            <tr><td><code>criteria[].mean_score</code></td><td>各評価器の採点済みスコアの算術平均。</td></tr>
+            <tr><td><code>criteria[].passed / failed / total / unscored</code></td><td>合格・不合格・採点済み件数・未採点件数。total は採点済み件数で、質問総数とは区別する。</td></tr>
+          </tbody>
+        </table>
+        <p>指紋はデータと評価基準の同一性を確認するものです。評価対象エージェントの変更を禁止する指紋ではなく、クラウド環境の全状態を記録するものでもありません。</p>
+
+        <h3>9.2 compare_to_baseline.py：平均差と必須合格</h3>
+        <p>現在のレポートと、人がコミットしたベースラインを比較します。両方の <code>results_complete</code>、データ指紋、評価器の定義・入力・採点設定、評価器名の一致が前提です。</p>
+        <pre><code>change = 今回の mean_score - ベースラインの mean_score
+change &lt; -tolerance なら失敗
+
+--must-pass で指定した評価器は、
+failed &gt; 0 または unscored &gt; 0 でも失敗</code></pre>
+        <p>ちょうど許容幅の低下は、この比較式では許容されます。二値評価器の threshold 1、ルーブリックの pass_threshold 0.5 は各ケースの合否設定であり、<strong>CI 全体が固定の平均スコアを上回ればよい、というゲートではありません</strong>。</p>
+        <table>
+          <caption>GitHub Actions が指定する条件</caption>
+          <thead><tr><th scope="col">段階</th><th scope="col">データ</th><th scope="col">平均低下の許容幅</th><th scope="col">追加条件</th></tr></thead>
+          <tbody>
+            <tr><td>PR</td><td>開発34問</td><td>0.07</td><td>オフライン検査後に実行。34問の二値判定では2件の変動を許容する幅。</td></tr>
+            <tr><td>main / 確認用ホールドアウト</td><td>検証22問</td><td>0.12</td><td>各評価器の平均を比較する。</td></tr>
+            <tr><td>リリース前ドリフト</td><td>8問</td><td>0.03</td><td><code>next_action_success</code> は全件合格必須、未採点許容0。</td></tr>
+          </tbody>
+        </table>
+        <div class="note">
+          <p><strong>日本語版のベースラインを用意する必要があります。</strong>保存済みの3つのベースラインは日本語化前のスコアと来歴を保全したもので、現在の日本語データ・評価器とは互換性がありません。ゲートが止まるのは意図した保護です。</p>
+          <p>既存のスコアへ新しい指紋だけを上書きしてはいけません。日本語の評価器を明示的に登録し、新規評価の結果を人がレビューして、対応するベースラインをコミットします。これにはクラウド実行の許可と費用が必要です。</p>
+        </div>
+        <p><code>--write-baseline</code> は、完全で来歴を持つレポートを明示的に新しい基準として保存する機能です。通常の CI が自分の合格基準を書き換える機能ではありません。PR では共有ワークフローが基点リビジョンのベースラインを取り出し、候補側が都合よく変更した基準と比較しないようにします。</p>
+        <p>課金前の確認には <code>evaluate.py --dry-run --baseline ...</code> を使えます。実際の共有 CI も、この互換性確認を Azure ログイン・デプロイより前に行います。</p>
+
+        <h3>9.3 compare_runs.py：ノイズと安定した変化を分ける</h3>
+        <p>A（旧）と B（新）に1回以上、できれば各2回以上の実行を指定します。比較対象は <code>next_action_success</code>。A の全実行で失敗し B の全実行で合格した質問だけを「改善」、その逆を「悪化」、同じ側で合否が揺れる質問を「不安定」と表示します。未採点や結果のない質問は、この分類から除外します。</p>
+        <p>入力はクラウドの <code>EVAL_ID:RUN_ID</code>、または Foundry の<strong>評価結果エクスポート</strong> JSONL。入力データセットの JSONL を比較用結果として渡すのではありません。エクスポートだけなら Azure 接続不要で、改善した質問をライブデモの候補として表示できます。</p>
+        <div class="talk"><strong>比較で伝えること：</strong>「1回のスコア差はノイズかもしれません。両側で複数回比較し、どの質問の振る舞いが安定して変わったかを確認します。」</div>
+      </section>
+
+      <section id="optimization">
+        <h2>10. 最適化と保存済み候補</h2>
+        <h3>10.1 ネイティブな最適化ジョブ</h3>
+        <p>送信するのは <a href="sample/evaluation/optimize.yaml">optimize.yaml</a> そのものです。入口は <code>azd ai agent optimize --config evaluation/optimize.yaml</code>。Python を代替の最適化エンジンにしたり、入力パッケージをコピーする準備レイヤーを設けたりしません。</p>
+        <table>
+          <thead><tr><th scope="col">YAML 項目</th><th scope="col">設定と意味</th></tr></thead>
+          <tbody>
+            <tr><td><code>agent</code></td><td><code>purchasing-advice-demo</code>、hosted、gpt-5.4-mini、静的な baseline/metadata.yaml。</td></tr>
+            <tr><td><code>dataset.local_uri</code></td><td><code>../evaluation/datasets/approvers-development.jsonl</code>。学習側の34問。</td></tr>
+            <tr><td><code>validation_dataset.local_uri</code></td><td><code>../evaluation/datasets/approvers-holdout.jsonl</code>。候補選択に使う22問。</td></tr>
+            <tr><td><code>evaluators</code></td><td>二値評価器とルーブリックを評価と共有する。モデル指定は GPT-5.5。</td></tr>
+            <tr><td><code>options.eval_model / optimization_model</code></td><td>どちらも GPT-5.5。ここでいう生成モデルは候補生成・最適化用で、JSONL 生成器とは別。</td></tr>
+            <tr><td><code>options.max_candidates</code></td><td>4。<code>model_search_space</code> は指定せず、エージェントモデルを固定する。</td></tr>
+          </tbody>
+        </table>
+        <div class="note">
+          <p><strong>相対パスの基準：</strong>この CLI はデータセットのパスを YAML の置き場所ではなく、サービスのプロジェクトディレクトリ <code>sample/agent/</code> から解決します。YAML は <code>sample/</code> から送信します。</p>
+          <p>最適化前には、デプロイ済みエージェントを静的ベースラインに揃えます。YAML に評価器名があることだけでは、稼働中の定義やジョブが解決する版まで確認できません。登録済み定義と実際に利用したバージョンを確認します。</p>
+        </div>
+        <p>候補は指示や関数・パラメーター説明を変更できます。<strong>「何をするべきか」の改善と、「データの答えを指示へ暗記する」ことを分ける</strong>のが最適化レビューの中心です。ネイティブサービスが内部リフレクターへ何を正確に渡すかは、このリポジトリでは未確認です。</p>
+
+        <h3>10.2 保存済みの3種類</h3>
+        <table>
+          <thead><tr><th scope="col">フォルダー</th><th scope="col">位置づけ</th><th scope="col">デモでの注意</th></tr></thead>
+          <tbody>
+            <tr><td><a href="sample/evaluation/candidates/reviewed/">reviewed/</a></td><td>手動で見直して保存した設定。</td><td>最適化サービスが生成した採用候補だと説明しない。現在の baseline と指示・tools.json は同一なので、現行ベースラインからの新たな改善版でもない。</td></tr>
+            <tr><td><a href="sample/evaluation/candidates/regressed/">regressed/</a></td><td>ツールを使わず、全質問に「手続きを進める前に購買部門に連絡してください。」だけを返す意図的な対照。</td><td>オフライン検査が通っても、実際の次の行動の評価で失敗し得ることを示す。マージしない。</td></tr>
+            <tr><td><a href="sample/evaluation/candidates/optimiser-0.691/">optimiser-0.691/</a></td><td>過去の最適化例。指示にもツール・パラメーター説明にも具体例がある。</td><td>フォルダー名は現行日本語データの実測スコアを表す保証ではない。指示だけでなく tools.json の氏名・金額・日付などもレビューする。</td></tr>
+          </tbody>
+        </table>
+        <p>各フォルダーは <code>metadata.yaml</code>、<code>instructions.md</code>、<code>tools.json</code> のネイティブ設定形式です。設定を保存したことと、候補が実環境へ適用・昇格されたことは別です。</p>
+
+        <h3>10.3 check_prompt_facts.py：事実コピーの検査</h3>
+        <p>ベースラインと候補から、指示本文、関数 description、パラメーター description を読みます。コーパスから人名・役職などの語句を集め、ドル金額、期間、日付、出典 ID、名前を抽出し、<strong>候補にだけ増えた事実の差集合</strong>を表示します。新規事実があれば終了コード1、なければ0です。埋め込み辞書は本文ではないため名前抽出から除外します。</p>
+        <p>英語・日本語の日付や期間、和文の役職に対応していますが、単純な字句検査です。名前の一部、言い換え、数値の表し方などで見逃し得ます。既にベースラインにある事実も差分には出ません。<strong>合格は安全性や汎化の証明ではなく、人によるレビューの補助</strong>です。</p>
+        <p>CLI が baseline の metadata を書き換えて、固定したツールへのパスを参照させる場合もあります。変更一覧だけに頼らず、実際に適用される指示と全ツール・パラメーター説明を確認し、ツールのバイト列を比較します。ローカルの通常形は <code>tools_file: tools.json</code> です。</p>
+
+        <h3>10.4 CI/CD の一本道</h3>
+        <pre><code>PR: オフライン検査
+      → 開発セット評価と基点のベースライン比較
+      → 必須チェックが成功した変更を main へ
+
+main: dev にデプロイしてホールドアウト評価
+      → production 環境で dev をレビュー
+      → 同じ dev を再デプロイせずドリフト評価
+      → production 環境でリリースを承認
+      → 承認済みリビジョンを release にデプロイ</code></pre>
+        <p><a href=".github/workflows/agent-pr.yml">agent-pr.yml</a> と <a href=".github/workflows/agent-main.yml">agent-main.yml</a> が <a href=".github/workflows/_agent-eval.yml">_agent-eval.yml</a> を共有します。PR 用は <code>purchasing-advice-demo-pr-番号</code>、昇格の検証は <code>-dev</code>、公開先は <code>-release</code>。ライブ用の名前を上書きせず、確認用の手動実行は必要に応じて <code>-check-実行番号</code> を使います。</p>
+        <p>main の <code>sample/**</code> などへの push は有料の昇格ワークフローを開始します。手動の holdout モードは評価だけで、release モードは main に限定します。ドリフトの詳細は公開ログへ出さず件数中心にし、リリース経路ではホールドアウトと同じ検証済み dev を評価します。</p>
+        <p>GitHub の production 環境にレビュー要件が設定されていること、main のルールセットに <code>1. Offline checks</code> と <code>2. Development set vs baseline</code> が必須として設定されていることが運用上の前提です。YAML にチェックがあるだけでマージ保護が自動的に有効になるわけではありません。</p>
+      </section>
+
+      <section id="observability">
+        <h2>11. トレースと継続的評価</h2>
+        <h3>11.1 トレースは「何が起きたか」を示す</h3>
+        <p>エージェントのトレースはホスティングと Agent Framework が生成します。<a href="sample/azure.yaml">azure.yaml</a> の Application Insights 接続と、<a href="sample/infra/modules/monitoring.bicep">monitoring.bicep</a> の監視リソース・権限がその土台です。</p>
+        <ol>
+          <li>どのツールを何回、どの順で呼んだか。</li>
+          <li>人物検索を氏名・判断日・必要な役職へ絞ったか。</li>
+          <li>必要な委任記録を取得できたか。取得したのに無視していないか。</li>
+          <li>ポリシー検索の <code>search_mode</code> は hybrid か。keyword なら <code>fallback_reason</code> は何か。</li>
+          <li>最終回答の次の行動が、取得した証拠と対応しているか。</li>
+        </ol>
+        <p>トレースは動作を説明しますが、それだけで正しさを証明しません。二値評価の判定理由が示す「検索しなかった」「取得した委任を使わなかった」などを、実際の引数と結果で確かめます。</p>
+        <h3>11.2 接続・権限の境界</h3>
+        <p>クラウド評価器の推論には<strong>アカウントレベルの Foundry User</strong> が必要です。プロジェクトだけ、または OpenAI だけの権限では十分ではありません。一方、検索語埋め込みを行うホストされたエージェントの ID には、アカウントの Cognitive Services OpenAI User を付与する <a href="sample/infra/grant-agent-embeddings.sh">デプロイ後フック</a> があります。</p>
+        <p>401 は接続先・呼び出し元 ID・必要な権限を区別して調べ、429 は評価モデルなどのレート制限を確認します。未採点を失敗回答と混同したり、キーワード縮退を正常なハイブリッド検索と紹介したりしないようにします。</p>
+        <h3>11.3 継続的評価は紹介であり、自動有効化ではない</h3>
+        <p>本番トラフィックには、テストセットのような参照回答が通常ありません。ルーブリックのような参照不要の振る舞い評価が役立ちます。デモでは Foundry の <strong>Monitor → Settings</strong> で設定の考え方を示すにとどめ、このコードや通常のデモ準備が継続的評価を自動的に有効化するわけではありません。</p>
+        <div class="talk"><strong>評価と観測の違い：</strong>「評価で問題があると分かり、トレースでどの動作がその問題につながったかを調べます。継続的評価は、その確認を本番でも続ける考え方です。」</div>
+      </section>
+
+      <section id="presentation">
+        <h2>12. プレゼン・デモでの見せ方</h2>
+        <p>スライドの正本は <a href="presentation/deck.html">presentation/deck.html</a>。このページは技術的な補足や質疑で使い、登壇では「エージェント → 評価 → トレース → 継続的評価 → 最適化」の概念へ注意を戻します。実行コマンドをまとめたファイルは、<strong>スクリプトとして実行せず1つずつコピーする</strong>設計です。</p>
+        <table>
+          <caption>デモごとの目的、画面、説明ポイント</caption>
+          <thead><tr><th scope="col">デモ</th><th scope="col">見せるもの</th><th scope="col">聴衆に伝えること</th></tr></thead>
+          <tbody>
+            <tr><td>1：モデル比較</td><td>Foundry のモデル比較画面。</td><td>最初に選んだモデルに固定する必要はない。評価で選択を確かめる。</td></tr>
+            <tr><td>2：初期エージェント</td><td>会食の複数ターンと Marcus の高額購入質問。</td><td>不足を質問し、職場の証拠を調べ、独立した承認を混同しない。1つの成功例だけでは品質は分からない。</td></tr>
+            <tr><td>3：トレース</td><td>直前の会話のツール名・引数・結果。</td><td>どの証拠が返り、どれが使われたか。hybrid と keyword の違いも確認する。</td></tr>
+            <tr><td>4：評価</td><td>事前に用意したホールドアウト実行の質問・回答・判定理由。</td><td>未取得の承認、間違った役職、不要な聞き直しなどを具体的に読む。平均だけでなくノイズと質問ごとの変化を見る。</td></tr>
+            <tr><td>5：最適化</td><td>Optimize タブ、候補とベースラインの比較、View changes。</td><td>指示だけでなくツール・パラメーター説明を見る。一般化する手順と、暗記した業務事実を分ける。</td></tr>
+            <tr><td>6：CI/CD</td><td>レビュー済み変更の一本道と、意図的に悪い設定の PR。</td><td>lint が通ることは振る舞いの合格ではない。開発、ホールドアウト、レビュー、ドリフト、承認を通って初めてリリースする。</td></tr>
+          </tbody>
+        </table>
+
+        <h3>12.1 会食のライブ質問</h3>
+        <blockquote>判断日は2026年10月13日です。今週木曜日に6人でチームの夕食会を予約できますか。約$540で、直属上司は承認済みです。</blockquote>
+        <p>まず酒類の有無など、その判断に足りない事実を確認する場面を見せます。同じセッションで<strong>「はい、ワインも出ます。」</strong>と答えます。一般購入の取得済み承認をやり直させず、会食固有の承認を分けることが見どころです。見積書など、なお不足する独立要件があればそれも残ります。</p>
+        <p>この日付では Tim Reyes は不在で、正式な記録により Priya Shah が接待責任者の権限を持ちます。一般購入の支出承認は、酒類を含む会食の承認ではありません。非公式なチャットや取引先メールの「承認済み」という誘導ではなく、ポリシーと正式な委任を根拠に説明できるかを確認します。</p>
+
+        <h3>12.2 Marcus の高額購入</h3>
+        <blockquote>判断日は2026年10月21日です。Engineering 部門の Marcus Webb です。役員会議室のビデオ会議システムを$6,800で購入できますか。取引先の見積書を2件取得済みです。</blockquote>
+        <p>2026年の一般購入では $5,000 超なので、必要な役職は直属上司ではなく<strong>カテゴリーマネージャー</strong>。見積書2件は完了ですが、Marco Bianchi は不在で、この役職の委任はありません。11月2日の復帰を待つか、購買部門に権限者を確認する行動を示します。</p>
+        <p>Engineering の上司 Samuel から Leah への委任が見つかっても、それは直属上司としての支出承認であり、カテゴリーマネージャーの承認を代替しません。正しい結果でも間違った結果でも、続く評価・トレースで原因を説明する題材になります。</p>
+
+        <h3>12.3 発表前に確認すること</h3>
+        <ul>
+          <li>本物の IQ に接続していないことと、モデル・検索語埋め込み・評価はクラウド利用であることを説明できる。</li>
+          <li>ライブ用・PR 用・dev・release のエージェント名と、実際に適用中の設定を混同しない。</li>
+          <li>対象環境の評価器定義・バージョンを確認し、日本語データに対応するベースラインが用意されている。</li>
+          <li>ハイブリッド検索の成功を実際のトレースで確認し、縮退理由を読める。</li>
+          <li>ホールドアウトの複数回実行からノイズを把握し、質問・最終回答・判定理由を事前に選んでおく。</li>
+          <li>最適化結果の指示と全ツール説明をレビューする。見せる価値のある改善がなければ、保存済み手動設定をその来歴とともに紹介する。</li>
+          <li>reviewed が現在の baseline と同一であること、過去の候補名が現行スコアを示さないことを踏まえ、存在しない改善を演出しない。</li>
+          <li>実行時間の長い評価・最適化は事前に準備し、ネットワーク障害用の画面を用意する。実行記録や未確認の生テレメトリはリポジトリへ追加しない。</li>
+          <li>継続的評価、有料評価、デプロイ、候補昇格、権限変更を、説明のためだけに無断で実行しない。</li>
+        </ul>
+        <h3>12.4 質疑で押さえる境界</h3>
+        <ul>
+          <li><strong>「正解を見せているのか？」</strong>エージェントは質問だけ。参照回答を見るのは二値評価器で、ルーブリックには渡さない。</li>
+          <li><strong>「ホールドアウトは最後まで未使用か？」</strong>最適化の検証にも使うため、候補選択に影響する。ドリフトは最適化へ渡さない。</li>
+          <li><strong>「予算は部門ごとに取得するのか？」</strong>この実装では固定5万ドルのスタブであり、実際のオントロジー検索ではない。</li>
+          <li><strong>「参照回答は全て自動的に最新か？」</strong>名簿との共通生成はあるが、別ファイルのポリシーや役職記録の更新まで自動追従しない。</li>
+          <li><strong>「スコアが上がれば公開してよいか？」</strong>指示・ツール説明の人手レビュー、データの独立性、ノイズ、ドリフト、承認が必要。</li>
+          <li><strong>「全部のポリシーを試しているか？」</strong>現在の64問は承認者判断が中心。ライブの会食や全コーパスを網羅するテストではない。</li>
+        </ul>
+        <div class="talk"><strong>締めの一文：</strong>「改善したいのは、答えの暗記ではなく証拠を調べる手順です。評価で正しさを確かめ、トレースで理由を読み、独立したゲートと人の判断を通して公開します。」</div>
+      </section>
+    </main>
+
+    <footer>
+      <p>ソースを変更したときは、データ件数・スキーマ・評価器の入力・ゲート条件と、この解説の対応も確認してください。このページ自体には外部ライブラリ、外部フォント、クラウド呼び出し用の JavaScript はなく、ローカルで開いて読めます。</p>
+      <p><a href="PLAYBOOK.md">運用ガイド</a> / <a href="presentation/deck.html">プレゼンテーション</a> / <a href="sample/agent/">エージェントのソース</a> / <a href="sample/evaluation/">評価のソース</a> / <a href="#overview">先頭へ</a></p>
+    </footer>
+  </div>
+</body>
+</html>
