@@ -607,9 +607,9 @@ EMBEDDING_DIMENSIONS = 512</code></pre>
       <section id="gates">
         <h2>9. レポート・回帰判定・比較</h2>
         <h3>9.1 結果待ちとレポートの検証</h3>
-        <p><a href="sample/evaluation/ci_report.py">ci_report.py</a> は queued / in_progress を30秒間隔で確認し、最大60分待ちます。途中レポートの <code>results_complete</code> は false のまま。完了後も、期待する全質問数、各エージェント呼び出しの成功、各評価器の結果を確認します。</p>
+        <p><a href="sample/evaluation/ci_report.py">ci_report.py</a> は queued / in_progress を30秒間隔で確認し、最大60分待ちます。完了直後の集計・明細の反映遅延は、同じ全体期限内で最大5分、30秒間隔で待ちます。途中レポートの <code>results_complete</code> は false のまま。完了後も、期待する全質問数、各エージェント呼び出しの成功、各評価器の結果を確認します。</p>
         <ul>
-          <li>エージェントのエラー、結果件数の不足、実行失敗はエラーとする。</li>
+          <li>エージェントのエラー、待機期限を超えた結果件数の不足、想定より多い件数、実行失敗はエラーとする。</li>
           <li>採点結果は有限の数値 score、真偽値 passed、正常な status を持つことを確認する。bool を数値 score としては扱わない。</li>
           <li>評価器の未採点は件数と詳細を表示し、許容数を超えれば失敗する。</li>
           <li>許容内の未採点は<strong>0点ではなく平均の分母から除外</strong>する。ドリフトは許容0で全件採点を要求する。</li>

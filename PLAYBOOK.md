@@ -239,6 +239,7 @@ DECISION_DEPLOYMENT="<deployment-name>" npm start
 | `azd up` が `githubRepository` 未指定で失敗 | `azd env set GITHUB_REPOSITORY <owner>/<name>` を実行してから `azd up` |
 | `azd up` 後に GitHub 変数がない | `gh auth login`、次に `azd hooks run postprovision` |
 | ワークフローが待機する | 別の評価がそのエージェントを使用中、または昇格の承認待ち |
+| 評価完了直後に結果の件数が不足する | 集計・明細の反映を30秒間隔で最大5分待つ（全体の60分以内）。全件が揃わなければ失敗する。件数や合格基準は緩めない |
 | ベースラインに来歴がない、または入力が異なる | 正常と確認できたリビジョンでベースラインモードを実行し、成果物をレビューしてコミット |
 | 登録済み評価器がローカル JSON と異なる | `python evaluation/evaluate.py --update-evaluators --register-only` を実行してベースラインを更新 |
 | 未採点の質問がある | 評価器のレート制限。再実行し、繰り返す場合は `azure.yaml` の GPT-5.5 容量を増やして `azd provision` |
