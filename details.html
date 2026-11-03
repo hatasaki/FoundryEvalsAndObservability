@@ -218,6 +218,7 @@ agent = Agent(
     default_options={
         "store": False,
         "reasoning": {"effort": "low"},
+        "max_tokens": 4096,
         **({"temperature": config.temperature}
            if config.temperature is not None else {}),
     },
@@ -229,7 +230,7 @@ ResponsesHostServer(agent).run()</code></pre>
         <pre><code>model: gpt-5.4-mini
 instruction_file: instructions.md
 tools_file: tools.json</code></pre>
-        <p>モデルは現在のベースラインで <strong>GPT-5.4-mini</strong>。推論の <code>effort: low</code> は起動コードが指定し、temperature は設定に存在する場合だけ渡します。<code>store: false</code> はモデル呼び出しのオプションであり、トレースを無効化する指定ではありません。</p>
+        <p>モデルは現在のベースラインで <strong>GPT-5.4-mini</strong>。推論の <code>effort: low</code> と生成上限 <code>max_tokens: 4096</code> は起動コードが指定し、temperature は設定に存在する場合だけ渡します。生成上限には推論・ツール引数を含み、SDK が Responses API の <code>max_output_tokens</code> に変換します。入力のコンテキスト長や購入金額の上限ではありません。<code>store: false</code> はモデル呼び出しのオプションであり、トレースを無効化する指定ではありません。</p>
         <table>
           <thead><tr><th scope="col">環境変数</th><th scope="col">使われ方</th></tr></thead>
           <tbody>
