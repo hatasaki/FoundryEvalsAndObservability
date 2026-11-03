@@ -13,7 +13,7 @@ sample/ から実行する:
 出力:
         agent/data/roster.json                           (`ask` ツールの検索対象)
         evaluation/datasets/approvers-development.jsonl  (開発用: 最適化の学習、PR ゲート)
-        evaluation/datasets/approvers-holdout.jsonl      (ホールドアウト: 最適化の検証、main)
+        evaluation/datasets/approvers-holdout.jsonl      (ホールドアウト: 最適化の検証、jp)
         evaluation/datasets/approvers-drift.jsonl        (ドリフト: リリースゲート専用)
 """
 

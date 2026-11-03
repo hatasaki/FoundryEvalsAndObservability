@@ -29,7 +29,8 @@ def main() -> None:
             ),
             default_options={
                 "store": False,
-                "reasoning": {"effort": "low"},
+                "reasoning": {"effort": "medium"},
+                "max_tokens": 4096,
                 **({"temperature": config.temperature} if config.temperature is not None else {}),
             },
         )

@@ -106,23 +106,44 @@ def wait_for_evaluation(
         time.sleep(30)
         run = client.evals.runs.retrieve(run_id, eval_id=eval_id)
 
-    report["status"] = run.status
-    report["report_url"] = run.report_url
-    report["result_counts"] = run.result_counts.model_dump()
-    if report_path:
-        report_path.write_text(json.dumps(report, indent=2) + "\n")
-    if run.status != "completed":
-        raise RuntimeError(f"評価 {run_id} が状態 {run.status} で終了しました: {run.error}")
-    # エージェントは全問に回答する必要がある。評価器の未採点は --max-unscored で許容する。
-    if run.error is not None or run.result_counts.total != expected_rows:
-        raise RuntimeError(f"評価 {run_id} が不完全です: {run.result_counts}")
+    # サービスの完了と、集計・結果一覧の反映は同時とは限らない。
+    results_deadline = min(deadline, time.monotonic() + 300)
+    while True:
+        report["status"] = run.status
+        report["report_url"] = run.report_url
+        report["result_counts"] = run.result_counts.model_dump()
+        if report_path:
+            report_path.write_text(json.dumps(report, indent=2) + "\n")
+        if run.status != "completed":
+            raise RuntimeError(f"評価 {run_id} が状態 {run.status} で終了しました: {run.error}")
+        if run.error is not None:
+            raise RuntimeError(f"評価 {run_id} がエラーで終了しました: {run.error}")
+        items = list(client.evals.runs.output_items.list(run_id, eval_id=eval_id, limit=100))
+        total = run.result_counts.total
+        if total > expected_rows or len(items) > expected_rows:
+            raise RuntimeError(
+                f"評価結果が想定の{expected_rows}件を超えました: 集計{total}件、明細{len(items)}件"
+            )
+        if total == expected_rows and len(items) == expected_rows:
+            break
+        remaining = results_deadline - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError(
+                f"評価 {run_id} の結果反映が待機期限を超えました: "
+                f"集計{total}/{expected_rows}件、明細{len(items)}/{expected_rows}件"
+            )
+        print(
+            f"評価結果の反映待ち: 集計{total}/{expected_rows}件、"
+            f"明細{len(items)}/{expected_rows}件",
+            flush=True,
+        )
+        time.sleep(min(30, remaining))
+        run = client.evals.runs.retrieve(run_id, eval_id=eval_id)
 
     scores: dict[str, list[float]] = {name: [] for name in expected_criteria}
     passes = dict.fromkeys(expected_criteria, 0)
     unscored = dict.fromkeys(expected_criteria, 0)
-    items = list(client.evals.runs.output_items.list(run_id, eval_id=eval_id, limit=100))
-    if len(items) != expected_rows:
-        raise RuntimeError(f"評価結果は {expected_rows} 件必要ですが、{len(items)} 件でした")
+    # エージェントは全問に回答する必要がある。評価器の未採点は --max-unscored で許容する。
     for item in items:
         if item.sample.error is not None:
             raise RuntimeError(

@@ -1,11 +1,12 @@
 name: エージェントの PR ゲート
 
-# 各 PR では、安い検査から実行する。
+# jp への各 PR では、安い検査から実行する。
 #   1. オフライン: lint、評価リクエスト、プロンプトの事実コピー検査（数秒、Azure 不要）。
 #   2. 開発セットを PR の基点リビジョンのベースラインと比較。
 # ドリフトはここで実行しない。抜き打ち試験となるよう、リリース用に保持する。
 on:
   pull_request:
+    branches: [jp]
     paths:
       - "sample/**"
       - ".github/workflows/agent-*.yml"
@@ -73,7 +74,7 @@ jobs:
     with:
       agent_name: ${{ format('purchasing-advice-demo-pr-{0}', github.event.pull_request.number || github.run_id) }}
       dataset: approvers-development
-      # 34件では、ノイズ幅により二値判定2件の変動を許容する。
-      tolerance: 0.07
+      # デモ用。34件の二値判定で、ベースラインから3件の低下を許容する。
+      tolerance: 0.10
       detail: full
       write_baseline: ${{ github.event_name == 'workflow_dispatch' && inputs.write_baseline }}

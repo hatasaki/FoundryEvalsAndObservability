@@ -6,9 +6,11 @@ Microsoft Foundry の購入助言エージェントを、最初のプロンプ�
 
 ## エージェント
 
-`purchasing-advice-demo`: Microsoft Agent Framework と GPT-5.4-mini（低い推論設定）を使用し、
+`purchasing-advice-demo`: Microsoft Agent Framework と GPT-5.4-mini（推論 `medium`）を使用し、
 Foundry でホストする。**助言のみ**であり、承認、購入、誰かへの連絡はできない。
 ツールは Microsoft IQ を模したローカルの代替実装であり、実際の IQ には接続しない。
+モデル呼び出しごとの生成上限は推論・ツール引数を含め4,096トークン。異常な巨大出力を抑え、
+独自の引数切り捨てや再試行ループは追加しない。
 
 | ツール | 模しているサービス | 回答する内容 |
 | --- | --- | --- |
@@ -25,13 +27,16 @@ Foundry でホストする。**助言のみ**であり、承認、購入、誰�
 | `sample/evaluation/datasets/` | `generate_approver_data.py` で生成する3つのテストセット |
 | `sample/evaluation/candidates/` | 保存済み設定: 手動改善の `reviewed/`、意図的に悪い `regressed/`、過去の最適化例 `optimiser-0.691/` |
 | `sample/infra/` | Foundry テンプレート、監視モジュール、azd フック |
-| `.github/workflows/` | PR ゲートと main からリリースへの昇格 |
+| `.github/workflows/` | jp への PR ゲートと jp からリリースへの昇格 |
 | `presentation/rehearsal/` | HTML スライド用の任意のリハーサルコーチ |
+
+`reviewed/` は汎用的な改善だけを残した手動レビュー版。ケース固有の事実を含めず、
+ツール説明を実装の能力に合わせる。最適化サービスが生成した候補そのものとして紹介しない。
 
 | テストセット | 質問数 | 用途 |
 | --- | --- | --- |
 | 開発 | 34 | 最適化の学習、PR ゲート |
-| ホールドアウト | 22 | 最適化の検証（候補選択に影響する）、main へのマージ |
+| ホールドアウト | 22 | 最適化の検証（候補選択に影響する）、jp へのマージ |
 | ドリフト | 8 | リリースゲートのみ。最適化には絶対に渡さない |
 
 ## 初回セットアップ
@@ -63,23 +68,33 @@ GitHub Actions の ID、GitHub 環境 `demo`（Azure 変数）と `production`�
 `requirements*.txt` は `uv.lock` から出力したもの（各ファイルの冒頭に出力コマンドがある）。
 CI と同じく、これらのファイルからインストールする。
 
+新規の CI 用エージェントにも、アカウントの **Cognitive Services OpenAI User** が必要。
+CI 用の Foundry User / Contributor は RBAC 作成権限を含まないため、権限を持つ操作者が
+初回デプロイ後にエージェントの ID へ付与する。再デプロイ後も ID と権限を確認し、
+トレースが `hybrid` になってから採点する。権限不足でキーワード検索へ縮退した実行は、
+ハイブリッド検索のベースラインとの性能比較に使わない。
+
 **ベースライン。** 各ゲートは、テストセットを `evaluation/baselines/` のコミット済み
 ベースラインと比較する。合格基準を更新するのは人であり、パイプライン自身ではない。
 質問、参照回答、評価器を変更した場合や独自の基準を使う場合に更新する。
-日本語化前のスコアと来歴は保全してあるが、翻訳後のデータ・評価器とは互換性がないため、
-ゲートは停止する。日本語版の評価器を明示的に登録し、新規評価の結果をレビューして
-ベースラインを作成する。既存のスコアに新しいフィンガープリントを上書きしない。
+コミット済みの日本語ベースラインは、現在の日本語データ・評価器に対応する。
+データや評価器を変更した場合は互換性検査で停止するため、評価器を明示的に登録し、
+新規評価の結果を人がレビューしてベースラインを再作成する。
+既存のスコアに新しいフィンガープリントを上書きしない。
+ルーブリックの標準入力スキーマとモデル指定の説明文5件は、サービスが英語に正規化するため
+標準文言を維持する。日本語の採点観点・重み・しきい値は変更しない。
 以下は有料であり、実行前に許可が必要。`sample/` から実行する
 （各約10分。2つの昇格用実行は順番に待機する）:
 
 ```bash
-gh workflow run agent-pr.yml --ref main -f write_baseline=true
-gh workflow run agent-main.yml --ref main -f mode=baseline-holdout
-gh workflow run agent-main.yml --ref main -f mode=baseline-drift
+gh workflow run agent-pr.yml --ref jp -f write_baseline=true
+gh workflow run agent-main.yml --ref jp -f mode=baseline-holdout
+gh workflow run agent-main.yml --ref jp -f mode=baseline-drift
 ```
 
-`gh run list --limit 3` で3件すべての完了を確認してから、ダウンロードしてコミットする。
-push によりリリースへの昇格が開始する。
+`gh run list --limit 3` で3件すべての完了を確認してから、ダウンロードする。
+`jp-dev` の変更としてコミット・push し、`jp` を base とする PR で反映する。
+`jp` への push により有料のリリース昇格が開始する。
 
 ```bash
 rm -f evaluation/baselines/*.json      # gh は既存ファイルを上書きしない
@@ -162,6 +177,17 @@ $5,000 超はカテゴリーマネージャーが必要。Marco は11月2日ま�
 
 ## CI/CD
 
+日本語版のブランチは次の役割で使う。
+
+| ブランチ | 役割 |
+| --- | --- |
+| `jp` | 統合ブランチ。ここへのマージ・push 後にホールドアウトからリリースへの昇格を行う |
+| `jp-dev` | 開発ブランチ。変更を作り、`jp` を base とする PR で開発セットを評価する |
+
+デモ用の作業ブランチも PR の base は `jp` にする。GitHub の既定ブランチに依存せず、
+`gh pr create --base jp` で送り先を明示する。既定ブランチやルールセット自体の変更は別作業である。
+開発ブランチ `jp-dev` と、検証用エージェント名の末尾 `-dev` は別であり、エージェント名は変えない。
+
 両ワークフローは `_agent-eval.yml` を使い、エージェントのデプロイ、テストセットの評価、
 コミット済みベースラインとの比較を行う。Foundry プロジェクトは1つで、エージェント名でデプロイを分離する。
 
@@ -169,12 +195,17 @@ $5,000 超はカテゴリーマネージャーが必要。Marco は11月2日ま�
 | --- | --- |
 | `purchasing-advice-demo` | ライブの質問と最適化。CI はここにデプロイしない |
 | `purchasing-advice-demo-pr-<number>` | PR ゲート: オフライン検査、次に開発セット |
-| `purchasing-advice-demo-dev` | main への push ごと: ホールドアウト、レビュー、次にドリフト |
+| `purchasing-advice-demo-dev` | jp への push ごと: ホールドアウト、レビュー、次にドリフト |
 | `purchasing-advice-demo-release` | ホールドアウト、レビュー、ドリフト、リリース承認の後にのみデプロイ |
 
-ゲートは固定値を下回った場合ではなく、許容幅（PR ゲートは実測ノイズの0.07）を超えて
-低下した場合に失敗する。リリースゲートは、ドリフトの不合格または未採点が1件でもあれば失敗する。
-赤いチェックがマージを阻止するのは、`main` のルールセットで必須チェック名
+ゲートは固定値を下回った場合ではなく、許容幅を超えて低下した場合に失敗する。
+PR ゲートの許容幅はデモ用に0.10とする。開発34問の二値判定では、
+ベースラインから3問までの低下を許容する。実測ノイズの推定値ではない。
+ドリフトの二値判定だけはデモ用の絶対条件とし、8問中6問以上の
+合格を要求する（`--min-passed next_action_success=6`）。この評価器には平均の相対比較を重ねない。
+ルーブリックは引き続きベースラインから0.03を超える低下で失敗する。
+全8問の実行・採点完了と未採点0は必要で、実行エラーも引き続き阻止する。
+赤いチェックがマージを阻止するのは、`jp` のルールセットで必須チェック名
 `1. Offline checks` と `2. Development set vs baseline` を要求した場合だけ。
 これらの識別用の名前は翻訳しない。PR 用エージェントは自動削除されないため、デモ後に削除する。
 
@@ -210,6 +241,7 @@ DECISION_DEPLOYMENT="<deployment-name>" npm start
 | `azd up` が `githubRepository` 未指定で失敗 | `azd env set GITHUB_REPOSITORY <owner>/<name>` を実行してから `azd up` |
 | `azd up` 後に GitHub 変数がない | `gh auth login`、次に `azd hooks run postprovision` |
 | ワークフローが待機する | 別の評価がそのエージェントを使用中、または昇格の承認待ち |
+| 評価完了直後に結果の件数が不足する | 集計・明細の反映を30秒間隔で最大5分待つ（全体の60分以内）。全件が揃わなければ失敗する。件数や合格基準は緩めない |
 | ベースラインに来歴がない、または入力が異なる | 正常と確認できたリビジョンでベースラインモードを実行し、成果物をレビューしてコミット |
 | 登録済み評価器がローカル JSON と異なる | `python evaluation/evaluate.py --update-evaluators --register-only` を実行してベースラインを更新 |
 | 未採点の質問がある | 評価器のレート制限。再実行し、繰り返す場合は `azure.yaml` の GPT-5.5 容量を増やして `azd provision` |

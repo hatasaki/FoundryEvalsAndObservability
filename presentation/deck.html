@@ -3698,7 +3698,7 @@
               <span class="concept-icon">H</span>
               <h3>ホールドアウト</h3>
               <p>最適化も参照し、最良の候補を選ぶために使う。</p>
-              <div class="concept-detail">main へのマージ時に実行。</div>
+              <div class="concept-detail">jp へのマージ時に実行。</div>
             </div>
             <div class="concept-card orange story-reveal reveal-3">
               <span class="concept-icon">Δ</span>
@@ -3770,7 +3770,7 @@
               <span class="delivery-phase">本番への道のり</span>
               <ol class="delivery-pipeline">
                 <li><span class="step-number">1</span><strong>PR + 開発評価</strong></li>
-                <li><span class="step-number">2</span><strong>main にマージ</strong></li>
+                <li><span class="step-number">2</span><strong>jp にマージ</strong></li>
                 <li><span class="step-number">3</span><strong>ホールドアウト評価</strong></li>
                 <li><span class="step-number">4</span><strong>ドリフト評価</strong></li>
                 <li><span class="step-number">5</span><strong>デプロイ</strong></li>
@@ -4078,15 +4078,15 @@
         key: "安い検査を先に行い、それで検出できない問題を評価で見つける。",
         definition: "PR のチェックは提案された変更ごとに実行する。ブランチのルールセットで必須にした場合だけマージを阻止する。",
         transition: "リリース後も、本番の証拠をテストへ戻し続ける。",
-        talk: "準備済みの2つの PR を示す。まずレビュー済み改善。PR で開発セットに合格し、マージ後は main が -dev をホールドアウトで評価する。レビュー担当者の確認、全ドリフトケースの合格、別のリリース承認を経て、同じコミットをデプロイする。次にツールを使わず毎回同じ回答の悪いプロンプト。安いオフライン検査は合格するが、開発評価はベースライン比較で失敗し、ブランチ保護の必須チェックで通常のマージを阻止する。必要なら過去の事実コピー候補へライブで事実検査を行う。1秒でモデルは不要。ゲートは通常の変動を超えてベースラインより低下しないことを要求する。管理者は迂回できるが、その操作は記録される。公式 Foundry 評価 GitHub Action を聞かれたら、同じ評価 API を使うがレポートだけを書き、実行 ID や合否を出さないためマージをゲート判定できないと説明する。今回は実行 ID を保持してゲートを追加した。",
-        checkpoint: "準備: 最適化完了後、両 PR と main の昇格実行を開く。任意のライブ操作は運用ガイドの事実検査。当日 CI が動かなければ、スライド14・15とライブコマンドを使う。",
+        talk: "準備済みの2つの PR を示す。通常は jp-dev で開発し、PR の base は jp にする。まずレビュー済み改善。PR で開発セットに合格し、マージ後は jp が -dev をホールドアウトで評価する。レビュー担当者の確認、デモ用のドリフト条件の合格、別のリリース承認を経て、同じコミットをデプロイする。次にツールを使わず毎回同じ回答の悪いプロンプト。安いオフライン検査は合格するが、開発評価はベースライン比較で失敗し、ブランチ保護の必須チェックで通常のマージを阻止する。必要なら過去の事実コピー候補へライブで事実検査を行う。1秒でモデルは不要。開発とホールドアウトのゲートは通常の変動を超えてベースラインより低下しないことを要求し、ドリフトはデモ用の合格件数で確認する。管理者は迂回できるが、その操作は記録される。公式 Foundry 評価 GitHub Action を聞かれたら、同じ評価 API を使うがレポートだけを書き、実行 ID や合否を出さないためマージをゲート判定できないと説明する。今回は実行 ID を保持してゲートを追加した。",
+        checkpoint: "準備: 最適化完了後、base が jp の両 PR と jp の昇格実行を開く。任意のライブ操作は運用ガイドの事実検査。当日 CI が動かなければ、スライド14・15とライブコマンドを使う。",
         source: "GitHub Actions のリリース検査デモ。microsoft/ai-agent-evals v3-beta の action.py（2026年10月19日確認）。"
       },
       {
         key: "すべての変更を同じ経路で本番へ進め、本番の証拠を次の変更へ戻す。",
         definition: "ホールドアウトとドリフトを開発から分離し、調整に使ったテストへの適合でなく汎化をスコアで確認する。",
         transition: "出発点の、1つのエージェントと1つの問いに戻る。",
-        talk: "左から右へ読む。公開前は実ユーザーが使う前にシミュレーションで動作を調べる。生成ケースをテストにする前にレビューし、過学習を防ぐためホールドアウトとドリフトを開発から分離する。全変更を同じ経路へ通す。PR の開発評価、main へのマージ、ホールドアウト、最後のドリフトを経て、初めてデプロイする。本番では実トレースをサンプリングして継続的評価する。参照回答がないためルーブリックを使う。新しい PR に戻すものは2つ。直接デプロイしない最適化候補と、レビューして機密情報を除いた本番の失敗から作る新しい評価ケース。次の変更はそれらにも対応する。シミュレーションとトレースからのデータ生成はプレビューで、ゲートとアラートはワークフローへ明示的に組み込む必要がある。",
+        talk: "左から右へ読む。公開前は実ユーザーが使う前にシミュレーションで動作を調べる。生成ケースをテストにする前にレビューし、過学習を防ぐためホールドアウトとドリフトを開発から分離する。全変更を同じ経路へ通す。jp-dev での開発、PR の開発評価、jp へのマージ、ホールドアウト、最後のドリフトを経て、初めてデプロイする。本番では実トレースをサンプリングして継続的評価する。参照回答がないためルーブリックを使う。新しい PR に戻すものは2つ。直接デプロイしない最適化候補と、レビューして機密情報を除いた本番の失敗から作る新しい評価ケース。次の変更はそれらにも対応する。シミュレーションとトレースからのデータ生成はプレビューで、ゲートとアラートはワークフローへ明示的に組み込む必要がある。",
         source: "Microsoft Learn と GitHub Docs、2026年9月24日確認: https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/evaluation-dataset-synthetic ; https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/evaluation-datasets ; https://learn.microsoft.com/en-us/azure/foundry/observability/how-to/traces-to-dataset ; https://learn.microsoft.com/en-us/azure/foundry/concepts/observability ; https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments"
       },
       {

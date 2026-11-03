@@ -2,7 +2,7 @@ name: エージェントの昇格
 
 on:
   push:
-    branches: [main]
+    branches: [jp]
     paths:
       - "sample/**"
       - ".github/workflows/agent-main.yml"
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 評価のみ、main の昇格、または明示的なベースライン作成
+        description: 評価のみ、jp の昇格、または明示的なベースライン作成
         type: choice
         options:
           - holdout
@@ -23,7 +23,7 @@ permissions:
   contents: read
   pull-requests: read
 
-# 2つの評価と承認の間は dev を固定する。新しい main の候補は待機する。
+# 2つの評価と承認の間は dev を固定する。新しい jp の候補は待機する。
 concurrency:
   group: purchasing-promotion-${{ github.ref }}
   cancel-in-progress: false
@@ -31,7 +31,7 @@ concurrency:
 
 jobs:
   target:
-    name: ${{ github.ref == 'refs/heads/main' && 'dev 実行を準備' || '確認用の実行を準備' }}
+    name: ${{ github.ref == 'refs/heads/jp' && 'dev 実行を準備' || '確認用の実行を準備' }}
     runs-on: ubuntu-latest
     outputs:
       agent_name: ${{ steps.target.outputs.agent_name }}
@@ -51,11 +51,11 @@ jobs:
             holdout|release|baseline-holdout|baseline-drift) ;;
             *) echo "::error::不明な昇格モードです: $MODE"; exit 1 ;;
           esac
-          if [ "$MODE" = "release" ] && [ "$GITHUB_REF" != "refs/heads/main" ]; then
-            echo "::error::昇格できるのは main だけです。PR ブランチには holdout を使ってください。"
+          if [ "$MODE" = "release" ] && [ "$GITHUB_REF" != "refs/heads/jp" ]; then
+            echo "::error::昇格できるのは jp だけです。PR ブランチには holdout を使ってください。"
             exit 1
           fi
-          if [ "$GITHUB_REF" = "refs/heads/main" ]; then
+          if [ "$GITHUB_REF" = "refs/heads/jp" ]; then
             agent="purchasing-advice-demo-dev"
           else
             pr=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$GITHUB_REF_NAME" \
@@ -104,7 +104,7 @@ jobs:
       deploy_agent: ${{ needs.target.outputs.mode == 'baseline-drift' }}
       dataset: approvers-drift
       tolerance: 0.03
-      must_pass: next_action_success
+      min_passed: next_action_success=6
       max_unscored: 0
       detail: counts
       write_baseline: ${{ needs.target.outputs.mode == 'baseline-drift' }}
