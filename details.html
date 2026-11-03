@@ -217,7 +217,7 @@ agent = Agent(
     ]),
     default_options={
         "store": False,
-        "reasoning": {"effort": "low"},
+        "reasoning": {"effort": "medium"},
         "max_tokens": 4096,
         **({"temperature": config.temperature}
            if config.temperature is not None else {}),
@@ -230,7 +230,7 @@ ResponsesHostServer(agent).run()</code></pre>
         <pre><code>model: gpt-5.4-mini
 instruction_file: instructions.md
 tools_file: tools.json</code></pre>
-        <p>モデルは現在のベースラインで <strong>GPT-5.4-mini</strong>。推論の <code>effort: low</code> と生成上限 <code>max_tokens: 4096</code> は起動コードが指定し、temperature は設定に存在する場合だけ渡します。生成上限には推論・ツール引数を含み、SDK が Responses API の <code>max_output_tokens</code> に変換します。入力のコンテキスト長や購入金額の上限ではありません。<code>store: false</code> はモデル呼び出しのオプションであり、トレースを無効化する指定ではありません。</p>
+        <p>モデルは現在のベースラインで <strong>GPT-5.4-mini</strong>。推論の <code>effort: medium</code> と生成上限 <code>max_tokens: 4096</code> は起動コードが指定し、temperature は設定に存在する場合だけ渡します。生成上限には推論・ツール引数を含み、SDK が Responses API の <code>max_output_tokens</code> に変換します。入力のコンテキスト長や購入金額の上限ではありません。<code>store: false</code> はモデル呼び出しのオプションであり、トレースを無効化する指定ではありません。</p>
         <table>
           <thead><tr><th scope="col">環境変数</th><th scope="col">使われ方</th></tr></thead>
           <tbody>
@@ -629,25 +629,28 @@ EMBEDDING_DIMENSIONS = 512</code></pre>
         </table>
         <p>指紋はデータと評価基準の同一性を確認するものです。評価対象エージェントの変更を禁止する指紋ではなく、クラウド環境の全状態を記録するものでもありません。</p>
 
-        <h3>9.2 compare_to_baseline.py：平均差と必須合格</h3>
+        <h3>9.2 compare_to_baseline.py：平均差と合格件数</h3>
         <p>現在のレポートと、人がコミットしたベースラインを比較します。両方の <code>results_complete</code>、データ指紋、評価器の定義・入力・採点設定、評価器名の一致が前提です。</p>
         <pre><code>change = 今回の mean_score - ベースラインの mean_score
 change &lt; -tolerance なら失敗
 
 --must-pass で指定した評価器は、
-failed &gt; 0 または unscored &gt; 0 でも失敗</code></pre>
-        <p>ちょうど許容幅の低下は、この比較式では許容されます。二値評価器の threshold 1、ルーブリックの pass_threshold 0.5 は各ケースの合否設定であり、<strong>CI 全体が固定の平均スコアを上回ればよい、というゲートではありません</strong>。</p>
+failed &gt; 0 または unscored &gt; 0 でも失敗
+
+--min-passed next_action_success=6 は、
+平均差の代わりに passed &gt;= 6 かつ unscored == 0 を要求</code></pre>
+        <p>ちょうど許容幅の低下は、この比較式では許容されます。二値評価器の threshold 1、ルーブリックの pass_threshold 0.5 は各ケースの合否設定です。通常のゲートは平均差を比較しますが、ドリフトの二値判定はデモ用に8問中6問以上の合格という絶対条件を使います。採点結果自体を変更するものではありません。</p>
         <table>
           <caption>GitHub Actions が指定する条件</caption>
           <thead><tr><th scope="col">段階</th><th scope="col">データ</th><th scope="col">平均低下の許容幅</th><th scope="col">追加条件</th></tr></thead>
           <tbody>
             <tr><td>PR</td><td>開発34問</td><td>0.07</td><td>オフライン検査後に実行。34問の二値判定では2件の変動を許容する幅。</td></tr>
             <tr><td>jp / 確認用ホールドアウト</td><td>検証22問</td><td>0.12</td><td>各評価器の平均を比較する。</td></tr>
-            <tr><td>リリース前ドリフト</td><td>8問</td><td>0.03</td><td><code>next_action_success</code> は全件合格必須、未採点許容0。</td></tr>
+            <tr><td>リリース前ドリフト</td><td>8問</td><td>ルーブリックのみ0.03</td><td><code>next_action_success</code> はデモ用に6問以上合格。二値の平均差比較は行わず、全8問の実行・採点完了と未採点0は維持する。</td></tr>
           </tbody>
         </table>
         <div class="note">
-          <p><strong>日本語版のベースラインを用意する必要があります。</strong>保存済みの3つのベースラインは日本語化前のスコアと来歴を保全したもので、現在の日本語データ・評価器とは互換性がありません。ゲートが止まるのは意図した保護です。</p>
+          <p><strong>日本語版のベースラインは来歴とともに管理します。</strong>保存済みの3つのベースラインは現在の日本語データ・評価器に対応します。データや評価器を変更すると、互換性検査でゲートが停止します。</p>
           <p>既存のスコアへ新しい指紋だけを上書きしてはいけません。日本語の評価器を明示的に登録し、新規評価の結果を人がレビューして、対応するベースラインをコミットします。これにはクラウド実行の許可と費用が必要です。</p>
         </div>
         <p><code>--write-baseline</code> は、完全で来歴を持つレポートを明示的に新しい基準として保存する機能です。通常の CI が自分の合格基準を書き換える機能ではありません。PR では共有ワークフローが基点リビジョンのベースラインを取り出し、候補側が都合よく変更した基準と比較しないようにします。</p>

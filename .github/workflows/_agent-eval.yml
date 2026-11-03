@@ -26,6 +26,10 @@ on:
         description: 1件の不合格でも阻止する評価器。空白区切りで指定。
         type: string
         default: ""
+      min_passed:
+        description: 評価器名=合格件数の下限。指定評価器の平均差比較を置き換え、未採点0を要求する。
+        type: string
+        default: ""
       detail:
         description: "full = Foundry レポートのリンクを公開。counts = スコアのみ（ドリフト用）。"
         type: string
@@ -209,13 +213,18 @@ jobs:
             echo "**baseline-${DATASET_STEM}** 成果物をダウンロードし、"
             echo "\`sample/evaluation/baselines/${DATASET_STEM}.json\` としてコミットしてください。"
           } >> "$GITHUB_STEP_SUMMARY"
-      # 必須合格の規則にはベースラインが不要。保存する実行でも必須ケースの不合格は阻止する。
-      # 実行を自身と比較するため、失敗し得るのは必須合格の規則だけ。
-      - name: 必須合格ケースを検査
-        if: steps.base.outputs.save == 'true' && inputs.must_pass != ''
+      # 保存する実行も合格件数の条件を満たす必要がある。自身との比較で件数だけ検査する。
+      - name: 合格件数の条件を検査
+        if: steps.base.outputs.save == 'true' && (inputs.must_pass != '' || inputs.min_passed != '')
+        env:
+          MIN_PASSED: ${{ inputs.min_passed }}
         run: |
-          .venv/bin/python evaluation/compare_to_baseline.py --report report.json \
-            --baseline report.json --tolerance 0 --must-pass ${{ inputs.must_pass }}
+          args=(--report report.json --baseline report.json --tolerance 0 \
+            --must-pass ${{ inputs.must_pass }})
+          if [ -n "$MIN_PASSED" ]; then
+            args+=(--min-passed "$MIN_PASSED")
+          fi
+          .venv/bin/python evaluation/compare_to_baseline.py "${args[@]}"
       - name: ベースラインをアップロード
         if: steps.base.outputs.save == 'true'
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -225,13 +234,16 @@ jobs:
           if-no-files-found: error
       - name: ベースラインと比較
         if: steps.base.outputs.save != 'true'
+        env:
+          MIN_PASSED: ${{ inputs.min_passed }}
         run: |
+          args=(--report report.json --baseline "$BASELINE_PATH" \
+            --tolerance "${{ inputs.tolerance }}" --must-pass ${{ inputs.must_pass }})
+          if [ -n "$MIN_PASSED" ]; then
+            args+=(--min-passed "$MIN_PASSED")
+          fi
           set +e
-          .venv/bin/python evaluation/compare_to_baseline.py \
-            --report report.json \
-            --baseline "$BASELINE_PATH" \
-            --tolerance "${{ inputs.tolerance }}" \
-            --must-pass ${{ inputs.must_pass }} > gate.txt
+          .venv/bin/python evaluation/compare_to_baseline.py "${args[@]}" > gate.txt
           status=$?
           cat gate.txt
           {

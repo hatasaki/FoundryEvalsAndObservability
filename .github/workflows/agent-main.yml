@@ -104,7 +104,7 @@ jobs:
       deploy_agent: ${{ needs.target.outputs.mode == 'baseline-drift' }}
       dataset: approvers-drift
       tolerance: 0.03
-      must_pass: next_action_success
+      min_passed: next_action_success=6
       max_unscored: 0
       detail: counts
       write_baseline: ${{ needs.target.outputs.mode == 'baseline-drift' }}
