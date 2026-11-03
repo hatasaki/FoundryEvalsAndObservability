@@ -72,7 +72,7 @@
       "properties": {
         "model": {
           "type": "string",
-          "description": "LLM 評価器のモデルデプロイ名"
+          "description": "Model deployment name for the LLM judge"
         }
       }
     },
@@ -91,19 +91,19 @@
       "properties": {
         "query": {
           "type": "string",
-          "description": "ユーザーの質問（ターンモード）"
+          "description": "User query (turn mode)"
         },
         "response": {
           "type": "string",
-          "description": "エージェントの回答（ターンモード）"
+          "description": "Agent response (turn mode)"
         },
         "messages": {
           "type": "array",
-          "description": "会話メッセージ（会話モード）"
+          "description": "Conversation messages (conversation mode)"
         },
         "tool_definitions": {
           "type": "array",
-          "description": "エージェントが利用できるツール定義"
+          "description": "Tool definitions available to the agent"
         }
       }
     },
